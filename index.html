@@ -150,7 +150,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 </head>
 <body>
 
-<!-- Login Screen -->
 <div id="login-screen">
   <div class="login-box">
     <h2 style="text-align:center;margin-bottom:10px">AX 포털 로그인</h2>
@@ -161,7 +160,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<!-- Main App -->
 <div id="app-container">
   <div class="sb">
     <div class="sb-top"><h1>AX 포털</h1><p>AI Transformation 통합 관리</p></div>
@@ -189,7 +187,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
-<!-- Multi-select Modal -->
 <div id="ms-modal">
   <div class="ms-content">
     <h3 style="font-weight:700;margin-bottom:8px">항목 선택</h3>
@@ -216,6 +213,17 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// 🔥 여기에 알려주신 Firebase 설정값을 입력해 두었습니다!
+const firebaseConfig = {
+  apiKey: "AIzaSyAv4SD_lsng3eYiOkh5pzS1Va2qF_V4Tjw",
+  authDomain: "hr-ax-portal.firebaseapp.com",
+  projectId: "hr-ax-portal",
+  storageBucket: "hr-ax-portal.firebasestorage.app",
+  messagingSenderId: "660181665311",
+  appId: "1:660181665311:web:ef9cc243a13bb97da6772a",
+  measurementId: "G-Z64P04D580"
+};
 
 // ── STATE ────────────────────────────────────────────
 window.S = {
@@ -290,20 +298,20 @@ window.recomputeAll = () => {
   S.team.forEach(m => { m._tasks=[]; });
   S.pocs.forEach(p => { p._owner=''; });
 
-  S.docs.forEach(d => parseRef(d.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._doc.push(d.code); }));
+  S.docs.forEach(d => window.parseRef(d.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._doc.push(d.code); }));
   S.exps.forEach(e => {
-    parseRef(e.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._exp.push(e.code); });
-    parseRef(e.docRef).forEach(c => { const d = S.docs.find(x=>x.code===c); if(d) d._exp.push(e.code); });
+    window.parseRef(e.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._exp.push(e.code); });
+    window.parseRef(e.docRef).forEach(c => { const d = S.docs.find(x=>x.code===c); if(d) d._exp.push(e.code); });
   });
   S.terms.forEach(t => {
-    parseRef(t.tskRef).forEach(c => { const tsk = S.tasks.find(x=>x.code===c); if(tsk) tsk._trm.push(t.code); });
-    parseRef(t.docRef).forEach(c => { const d = S.docs.find(x=>x.code===c); if(d) d._trm.push(t.code); });
+    window.parseRef(t.tskRef).forEach(c => { const tsk = S.tasks.find(x=>x.code===c); if(tsk) tsk._trm.push(t.code); });
+    window.parseRef(t.docRef).forEach(c => { const d = S.docs.find(x=>x.code===c); if(d) d._trm.push(t.code); });
   });
   S.dats.forEach(d => {
-    parseRef(d.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._dat.push(d.code); });
+    window.parseRef(d.tskRef).forEach(c => { const t = S.tasks.find(x=>x.code===c); if(t) t._dat.push(d.code); });
   });
   S.tasks.forEach(t => {
-    parseRef(t.assignee).forEach(mName => { const m = S.team.find(x=>x.name===mName); if(m) m._tasks.push(t.code); });
+    window.parseRef(t.assignee).forEach(mName => { const m = S.team.find(x=>x.name===mName); if(m) m._tasks.push(t.code); });
   });
   S.pocs.forEach(p => {
     if(p.tsk) { const t = S.tasks.find(x=>x.code===p.tsk); if(t) p._owner = t.assignee; }
@@ -311,7 +319,7 @@ window.recomputeAll = () => {
 };
 
 window.stateChanged = () => {
-  recomputeAll();
+  window.recomputeAll();
   if (window.saveStateFn) window.saveStateFn();
   if (window.currentView === 'docs') window.V.docs(window.dtab);
   if (window.currentView === 'team') window.V.team();
@@ -384,10 +392,7 @@ window.applyMs = () => {
   window.stateChanged();
 };
 
-
 // ── LOGIN & FIREBASE ─────────────────────────────────
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'ax-portal';
 let db, auth, userDocRef;
 window.isSaving = false;
 let firstLoad = true;
@@ -396,6 +401,7 @@ window.handleLogin = () => {
   const id = document.getElementById('login-id').value;
   const pw = document.getElementById('login-pw').value;
   
+  // 로그인 아이디, 비번: admin / admin
   if (id === 'admin' && pw === 'admin') {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
@@ -406,50 +412,49 @@ window.handleLogin = () => {
 };
 
 const initAuth = async () => {
-  if (Object.keys(firebaseConfig).length === 0) { 
-    if(firstLoad) { firstLoad=false; window.go('home'); }
-    return; 
-  }
-  const app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-
   try {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
-      }
-  } catch(e) { console.error("Auth error", e); }
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'portal', 'state');
-      onSnapshot(userDocRef, snap => {
-        if (snap.exists() && !window.isSaving) {
-          const data = snap.data();
-          Object.keys(data).forEach(k => { if(S[k]) S[k] = data[k]; });
-          window.recomputeAll();
-          if(firstLoad) {
-             firstLoad = false;
-             window.go('home');
-          } else if (window.currentView) {
-             window.go(window.currentView, document.getElementById('n-'+window.currentView));
+    // 익명 로그인 실행
+    await signInAnonymously(auth);
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        // 모든 사용자가 데이터를 공유할 수 있도록 공통(shared) 문서 경로 사용
+        userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
+        
+        onSnapshot(userDocRef, snap => {
+          if (snap.exists() && !window.isSaving) {
+            const data = snap.data();
+            Object.keys(data).forEach(k => { if(S[k]) S[k] = data[k]; });
+            window.recomputeAll();
+            
+            if(firstLoad) {
+               firstLoad = false;
+               window.go('home');
+            } else if (window.currentView) {
+               window.go(window.currentView, document.getElementById('n-'+window.currentView));
+            }
+          } else if (!snap.exists()) {
+             window.saveStateFn(); // 최초 접근 시 빈 데이터 저장
+             if(firstLoad) { firstLoad=false; window.go('home'); }
           }
-        } else if (!snap.exists()) {
-           window.saveStateFn();
-           if(firstLoad) { firstLoad=false; window.go('home'); }
-        }
-      }, err => console.error(err));
-    }
-  });
+        }, err => console.error("Firebase 데이터 읽기 에러:", err));
+      }
+    });
+  } catch(e) { 
+    console.error("Firebase 연결 에러 (설정이나 권한을 확인해주세요):", e);
+    if(firstLoad) { firstLoad=false; window.go('home'); }
+  }
 };
 
 window.saveStateFn = () => {
   if (!userDocRef) return;
   window.isSaving = true;
   window.recomputeAll();
-  setDoc(userDocRef, S).then(() => { setTimeout(() => window.isSaving = false, 600); });
+  setDoc(userDocRef, S).then(() => { setTimeout(() => window.isSaving = false, 600); }).catch(e => console.error("저장 실패:", e));
 };
 
 // ── NAVIGATION ───────────────────────────────────────
@@ -881,9 +886,6 @@ window.dlXlsx = () => {
   ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]); ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
   XLSX.writeFile(wb,'AX_포털_전체데이터.xlsx'); window.toast('Excel 다운로드 완료');
 };
-
-// No auto-init if config empty here because handleLogin controls it
-// But if run locally without Canvas environment, allow direct access after manual login click
 
 </script>
 </body>
