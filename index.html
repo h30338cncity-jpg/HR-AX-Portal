@@ -214,7 +214,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// 🔥 여기에 알려주신 Firebase 설정값을 입력해 두었습니다!
+// Firebase 설정값
 const firebaseConfig = {
   apiKey: "AIzaSyAv4SD_lsng3eYiOkh5pzS1Va2qF_V4Tjw",
   authDomain: "hr-ax-portal.firebaseapp.com",
@@ -401,7 +401,6 @@ window.handleLogin = () => {
   const id = document.getElementById('login-id').value;
   const pw = document.getElementById('login-pw').value;
   
-  // 로그인 아이디, 비번: admin / admin
   if (id === 'admin' && pw === 'admin') {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
@@ -417,18 +416,16 @@ const initAuth = async () => {
     auth = getAuth(app);
     db = getFirestore(app);
 
-    // 익명 로그인 실행
     await signInAnonymously(auth);
 
     onAuthStateChanged(auth, user => {
       if (user) {
-        // 모든 사용자가 데이터를 공유할 수 있도록 공통(shared) 문서 경로 사용
         userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
         
         onSnapshot(userDocRef, snap => {
           if (snap.exists() && !window.isSaving) {
             const data = snap.data();
-            Object.keys(data).forEach(k => { if(S[k]) S[k] = data[k]; });
+            Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
             window.recomputeAll();
             
             if(firstLoad) {
@@ -438,7 +435,7 @@ const initAuth = async () => {
                window.go(window.currentView, document.getElementById('n-'+window.currentView));
             }
           } else if (!snap.exists()) {
-             window.saveStateFn(); // 최초 접근 시 빈 데이터 저장
+             window.saveStateFn();
              if(firstLoad) { firstLoad=false; window.go('home'); }
           }
         }, err => console.error("Firebase 데이터 읽기 에러:", err));
@@ -454,7 +451,34 @@ window.saveStateFn = () => {
   if (!userDocRef) return;
   window.isSaving = true;
   window.recomputeAll();
-  setDoc(userDocRef, S).then(() => { setTimeout(() => window.isSaving = false, 600); }).catch(e => console.error("저장 실패:", e));
+
+  // 순환 참조 및 임시 데이터(_)를 제외한 순수 데이터 추출
+  const cleanData = (arr) => arr.map(obj => {
+    const cleanObj = {};
+    Object.keys(obj).forEach(k => {
+      if (!k.startsWith('_')) cleanObj[k] = obj[k];
+    });
+    return cleanObj;
+  });
+
+  const dataToSave = {
+    team: cleanData(S.team),
+    tasks: cleanData(S.tasks),
+    docs: cleanData(S.docs),
+    exps: cleanData(S.exps),
+    terms: cleanData(S.terms),
+    dats: cleanData(S.dats),
+    pocs: cleanData(S.pocs),
+    cnt: S.cnt
+  };
+
+  setDoc(userDocRef, dataToSave).then(() => { 
+    setTimeout(() => window.isSaving = false, 600); 
+  }).catch(e => { 
+    console.error("저장 실패:", e); 
+    window.isSaving = false;
+    window.toast("저장 오류: 콘솔을 확인하세요.");
+  });
 };
 
 // ── NAVIGATION ───────────────────────────────────────
