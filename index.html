@@ -24,13 +24,12 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .topbar{height:50px;flex-shrink:0;background:#F8F9FA;border-bottom:1px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 18px;gap:10px}
 .topbar h2{font-size:15px;font-weight:700;flex:1}
 .topbar-r{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
-.content{flex:1;overflow-y:auto;padding:18px}
 /* Buttons */
 .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:opacity .12s;white-space:nowrap}
 .btn:hover{opacity:.85}.btn-g{background:#1D9E75;color:#fff}
 .btn-o{background:var(--color-background-primary);border:1px solid var(--color-border-secondary);color:var(--color-text-primary)}
 .btn-sm{padding:4px 9px;font-size:11px}
-.add-row{display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 11px;background:transparent;border:1px dashed var(--color-border-secondary);border-radius:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer}
+.add-row{display:flex;align-items:center;gap:5px;padding:5px 11px;background:transparent;border:1px dashed var(--color-border-secondary);border-radius:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer}
 .add-row:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
 .del-btn{width:22px;height:22px;border:none;border-radius:4px;background:transparent;color:var(--color-text-secondary);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .del-btn:hover{background:var(--color-background-secondary);color:#E24B4A}
@@ -49,10 +48,11 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:700;margin-bottom:3px}
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
 /* Table */
-.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 table{width:100%;border-collapse:collapse;background:var(--color-background-primary)}
-thead tr{background:#f8fafc;border-bottom:2px solid var(--color-border-secondary)}
-th{padding:8px 9px;text-align:left;font-size:11px;font-weight:700;color:var(--color-text-secondary);white-space:nowrap}
+thead tr{background:#f8fafc;}
+th{padding:8px 9px;text-align:left;font-size:11px;font-weight:700;color:var(--color-text-secondary);white-space:nowrap;position:sticky;top:0;z-index:10;background:#f8fafc;}
+th::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--color-border-secondary);}
 td{padding:5px 6px;border-bottom:1px dashed #e2e8f0;font-size:12px;vertical-align:middle}
 tbody tr:nth-child(even){background:#fafafa}
 tbody tr:hover{background:#f1f5f9}
@@ -62,12 +62,12 @@ td input[type="text"]:focus,td select:focus{border-color:#1D9E75;background:var(
 td input[type="text"]:hover:not(:focus){border-color:var(--color-border-tertiary)}
 td select{cursor:pointer}
 .code-list{display:flex;flex-wrap:wrap;gap:4px}
-.doc-search-bar{width:100%;padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;margin-bottom:10px;font-size:12px;outline:none}
+.doc-search-bar{width:100%;padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;font-size:12px;outline:none}
 .doc-search-bar:focus{border-color:#1D9E75}
 /* Kanban */
-.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start}
-.kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px}
-.kcol-hd{font-size:11px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;height:100%;}
+.kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px;display:flex;flex-direction:column;overflow:hidden;}
+.kcol-hd{font-size:11px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .kcard{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);cursor:grab}
 .kcard:active{cursor:grabbing}
 .kcard-code{font-size:10px;font-family:var(--font-mono);margin-bottom:4px;font-weight:700}
@@ -96,12 +96,16 @@ td select{cursor:pointer}
 .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
 .pd{background:#EAF3DE;color:#27500A}.pp{background:#FAEEDA;color:#633806}
 .pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
-/* Team */
+/* Team & Emoji Picker */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .team-card{background:var(--color-background-primary);border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.02)}
 .tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.avatar{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.avatar-input{width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:18px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;padding:0;margin:0}
+.emoji-picker{position:relative}
+.emoji-btn{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;user-select:none;transition:border-color 0.1s}
+.emoji-btn:hover{border-color:#1D9E75}
+.emoji-grid{position:absolute;top:40px;left:0;background:#fff;border:1px solid var(--color-border-tertiary);border-radius:8px;padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:100;width:170px}
+.emoji-item{cursor:pointer;font-size:16px;text-align:center;padding:4px;border-radius:4px;transition:background 0.1s}
+.emoji-item:hover{background:var(--color-background-secondary)}
 .tci{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--color-text-primary);padding:3px 2px}
 .tci.nm{font-size:14px;font-weight:700;border-bottom:1px solid transparent}
 .tci.nm:focus{border-bottom-color:#1D9E75}
@@ -141,10 +145,9 @@ td select{cursor:pointer}
 .ms-item label{flex:1;cursor:pointer;display:flex;align-items:center;gap:8px}
 .ms-tbl-wrap{border:1px solid var(--color-border-tertiary);border-radius:6px;overflow:hidden;flex:1;overflow-y:auto;margin-bottom:14px}
 .ms-tbl{width:100%;border-collapse:collapse}
-.ms-tbl th{background:#f8fafc;padding:6px 8px;border-bottom:1px solid var(--color-border-secondary);position:sticky;top:0}
+.ms-tbl th{background:#f8fafc;padding:6px 8px;border-bottom:1px solid var(--color-border-secondary);position:sticky;top:0;z-index:10}
 .ms-tbl td{padding:6px 8px;border-bottom:1px solid var(--color-border-tertiary)}
 .ms-tbl tr:hover{background:#f1f5f9}
-/* Datalist trick */
 input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 </style>
 </head>
@@ -179,7 +182,11 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="topbar">
       <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
       <h2 id="pg-title">홈 대시보드</h2>
-      <div class="topbar-r" id="pg-actions"></div>
+      <div class="topbar-r">
+        <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소">↩️</button>
+        <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행">↪️</button>
+        <div id="pg-actions" style="display:flex;gap:6px;margin-left:6px;"></div>
+      </div>
     </div>
     <div class="content" id="content"></div>
   </div>
@@ -214,9 +221,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// Firebase 설정값
 const firebaseConfig = {
-   apiKey: "AIzaSyAv4SD_lsng3eYiOkH5pzS1Va2qF_V4Tjw",
+  apiKey: "AIzaSyAv4SD_lsng3eYi0kh5pzSlVa2qF_V4Tjw",
   authDomain: "hr-ax-portal.firebaseapp.com",
   projectId: "hr-ax-portal",
   storageBucket: "hr-ax-portal.firebasestorage.app",
@@ -227,31 +233,14 @@ const firebaseConfig = {
 
 // ── STATE ────────────────────────────────────────────
 window.S = {
-  team:[
-    {name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}
-  ],
-  tasks:[
-    {code:'TSK-001',name:'',assignee:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}
-  ],
-  docs:[
-    {code:'DOC-001',dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]}
-  ],
-  exps:[
-    {code:'EXP-001',sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]}
-  ],
-  terms:[
-    {code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:'',_parent:[],_child:[]}
-  ],
-  dats:[
-    {code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}
-  ],
-  pocs:[
-    {code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}
-  ],
-  cnt:{tsk:1,doc:1,exp:1,trm:1,dat:1,poc:1},
-  ontoTask:'',
-  ontoNodes:{},
-  ontoEdges:{}
+  team:[{name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}],
+  tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
+  docs:[{code:'DOC-001',dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]}],
+  exps:[{code:'EXP-001',sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]}],
+  terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:'',_parent:[],_child:[]}],
+  dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}],
+  pocs:[{code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}],
+  ontoTask:'', ontoNodes:{}, ontoEdges:{}
 };
 
 window.currentView = 'home';
@@ -259,9 +248,55 @@ window.docSearchQuery = '';
 window.datFilter = 'all';
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 
+// Undo & Redo History
+window.undoStack = [];
+window.redoStack = [];
+window.isHistoryAction = false;
+
+window.pushHistory = () => {
+  if (window.isHistoryAction) return;
+  window.undoStack.push(JSON.stringify(window.buildDataToSave()));
+  window.redoStack = [];
+  if (window.undoStack.length > 50) window.undoStack.shift();
+};
+
+window.undo = () => {
+  if (window.undoStack.length === 0) return;
+  window.isHistoryAction = true;
+  window.redoStack.push(JSON.stringify(window.buildDataToSave()));
+  Object.assign(window.S, JSON.parse(window.undoStack.pop()));
+  window.stateChanged();
+  window.isHistoryAction = false;
+};
+
+window.redo = () => {
+  if (window.redoStack.length === 0) return;
+  window.isHistoryAction = true;
+  window.undoStack.push(JSON.stringify(window.buildDataToSave()));
+  Object.assign(window.S, JSON.parse(window.redoStack.pop()));
+  window.stateChanged();
+  window.isHistoryAction = false;
+};
+
 // ── UTILS & CORE ─────────────────────────────────────
 const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
-window.nc = (k,p) => { S.cnt[k] = (S.cnt[k] || S[k+'s']?.length || 0) + 1; return p+'-'+String(S.cnt[k]).padStart(3,'0'); };
+
+// 중간에 비어있는 코드를 채워넣는 스마트 ID 생성기
+window.nc = (arrKey, pfx) => {
+  const arr = window.S[arrKey] || [];
+  const usedIds = arr.map(x => {
+    const match = x.code.match(new RegExp(`^${pfx}-(\\d+)$`));
+    return match ? parseInt(match[1], 10) : 0;
+  }).filter(id => id > 0).sort((a, b) => a - b);
+  
+  let nextId = 1;
+  for (let i = 0; i < usedIds.length; i++) {
+    if (usedIds[i] === nextId) nextId++;
+    else if (usedIds[i] > nextId) break;
+  }
+  return pfx + '-' + String(nextId).padStart(3, '0');
+};
+
 window.toast = m => { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300) };
 window.upd = (arrKey,code,f,v) => { const r=S[arrKey].find(r=>r.code===code); if(r) r[f]=v; };
 window.del = (arrKey,code) => { const arr=S[arrKey]; const i=arr.findIndex(r=>r.code===code); if(i>-1) arr.splice(i,1); };
@@ -273,9 +308,16 @@ window.pill = v => {
 window.parseRef = str => (str||'').split(',').map(s=>s.trim()).filter(s=>s);
 window.mergeRef = arr => [...new Set(arr)].join(', ');
 
+// 삭제된 항목은 빨간 취소선 뱃지로 표시
 window.badge = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
+  const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
+  const arr = S[m[pfx]];
+  const exists = arr ? arr.find(x => x.code === c) : false;
+  if (!exists && m[pfx]) {
+    return `<span class="code" style="color:#E24B4A; text-decoration:line-through; background:#FCEBEB; border:1px solid #F7C1C1" title="삭제된 항목">${c}</span>`;
+  }
   const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
   return `<span class="code ${cls}">${c}</span>`;
 };
@@ -284,12 +326,6 @@ window.fmtCodeList = (strOrArr) => {
   return arr.map(window.badge).join('');
 };
 
-window.teamOpts = (sel='') => {
-  const m = S.team.filter(x=>x.name.trim());
-  return `<option value="">선택 안됨</option>` + m.map(x=>`<option${x.name===sel?' selected':''}>${x.name}</option>`).join('');
-};
-
-// Reference Auto-Computation
 window.recomputeAll = () => {
   S.tasks.forEach(t => { t._doc=[]; t._trm=[]; t._dat=[]; t._exp=[]; });
   S.docs.forEach(d => { d._exp=[]; d._trm=[]; });
@@ -319,7 +355,7 @@ window.recomputeAll = () => {
 
 window.stateChanged = () => {
   window.recomputeAll();
-  if (window.saveStateFn) window.saveStateFn();
+  if (window.saveStateFn && !window.isHistoryAction) window.saveStateFn();
   if (window.currentView === 'docs') window.V.docs(window.dtab);
   if (window.currentView === 'team') window.V.team();
   if (window.currentView === 'poc') window.V.poc();
@@ -337,6 +373,12 @@ window.openMs = (arrKey, rowCode, field, type) => {
   if(type==='TRM') opts = S.terms.filter(x=>x.code!==rowCode).map(x=>({ v:x.code, l:`${x.term||'미입력'}`, sub:x.otype }));
   if(type==='DAT') opts = S.dats.map(x=>({ v:x.code, l:`${x.name||'미입력'}`, sub:x.dtype }));
   if(type==='TEAM') opts = S.team.filter(x=>x.name).map(x=>({ v:x.name, l:x.name, sub:x.role }));
+
+  valArr.forEach(val => {
+    if (!opts.find(o => o.v === val)) {
+      opts.push({ v: val, l: val, sub: '삭제된 항목', deleted: true });
+    }
+  });
 
   msState = { arrKey, rowCode, field, type, opts, valArr };
   document.getElementById('ms-search').value = '';
@@ -357,8 +399,8 @@ window.renderMsList = () => {
       <tr>
         <td style="width:30px;text-align:center"><input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}></td>
         <td><label for="ms-${o.v}" style="cursor:pointer">${window.badge(o.v)}</label></td>
-        <td><label for="ms-${o.v}" style="cursor:pointer">${o.sub}</label></td>
-        <td><label for="ms-${o.v}" style="cursor:pointer;font-weight:700">${o.l}</label></td>
+        <td><label for="ms-${o.v}" style="cursor:pointer;${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${o.sub}</label></td>
+        <td><label for="ms-${o.v}" style="cursor:pointer;font-weight:700;${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${o.l}</label></td>
       </tr>
     `).join('');
     listEl.innerHTML = `
@@ -374,7 +416,7 @@ window.renderMsList = () => {
         ${filtered.map(o => `
           <div class="ms-item">
             <input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}>
-            <label for="ms-${o.v}">${msState.type!=='TEAM'?window.badge(o.v):''} <strong>${o.l}</strong> <span style="color:gray;font-size:11px">(${o.sub||''})</span></label>
+            <label for="ms-${o.v}" style="${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${msState.type!=='TEAM'?window.badge(o.v):''} <strong>${o.l}</strong> <span style="color:gray;font-size:11px">(${o.sub||''})</span></label>
           </div>
         `).join('') || '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}
       </div>`;
@@ -383,6 +425,7 @@ window.renderMsList = () => {
 
 window.closeMs = () => document.getElementById('ms-modal').style.display = 'none';
 window.applyMs = () => {
+  window.pushHistory();
   const cbs = document.querySelectorAll('#ms-list input[type="checkbox"]:checked');
   const vals = Array.from(cbs).map(cb => cb.value);
   const row = S[msState.arrKey].find(x => x.code === msState.rowCode);
@@ -391,6 +434,23 @@ window.applyMs = () => {
   window.stateChanged();
 };
 
+// ── EMOJI PICKER ─────────────────────────────────────
+const EMJ_LIST = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'];
+window.toggleEmoji = (idx, e) => {
+  e.stopPropagation();
+  document.querySelectorAll('.emoji-grid').forEach(el => { if(el.id !== `eg-${idx}`) el.style.display = 'none'; });
+  const eg = document.getElementById(`eg-${idx}`);
+  eg.style.display = eg.style.display === 'none' ? 'grid' : 'none';
+};
+window.setEmoji = (idx, emoji) => {
+  window.pushHistory();
+  S.team[idx].emoji = emoji;
+  window.stateChanged();
+};
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.emoji-picker')) { document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); }
+});
+
 // ── LOGIN & FIREBASE ─────────────────────────────────
 let db, auth, userDocRef;
 let saveTimeout;
@@ -398,14 +458,11 @@ let saveTimeout;
 window.handleLogin = () => {
   const id = document.getElementById('login-id').value;
   const pw = document.getElementById('login-pw').value;
-  
   if (id === 'admin' && pw === 'admin') {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     initAuth();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-  }
+  } else { document.getElementById('login-err').style.display = 'block'; }
 };
 
 const initAuth = async () => {
@@ -413,11 +470,7 @@ const initAuth = async () => {
     const app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
-
-    await signInAnonymously(auth).catch(e => {
-        alert("데이터베이스 인증에 실패했습니다.\nFirebase Console > Authentication에서 '익명' 로그인이 사용 설정되어 있는지 꼭 확인해 주세요.\n\n상세 내용: " + e.message);
-    });
-
+    await signInAnonymously(auth).catch(e => { alert("Firebase 인증 실패: " + e.message); });
     userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
     
     try {
@@ -431,46 +484,29 @@ const initAuth = async () => {
         window.recomputeAll();
         window.go('home');
     } catch (err) {
-        alert("데이터베이스 연결이 거부되었습니다.\nFirebase Console > Firestore Database에서 데이터베이스를 만들었는지, 그리고 규칙(Rules)이 허용(테스트 모드)으로 되어 있는지 확인해 주세요.\n\n상세 내용: " + err.message);
+        alert("데이터베이스 연결 실패: " + err.message);
         window.go('home');
     }
-  } catch(e) { 
-    alert("Firebase 설정 정보가 잘못되었거나 초기화에 실패했습니다.\n\n상세 내용: " + e.message);
-    window.go('home');
-  }
+  } catch(e) { window.go('home'); }
 };
 
 window.buildDataToSave = () => {
   const cleanData = (arr) => arr.map(obj => {
     const cleanObj = {};
-    Object.keys(obj).forEach(k => {
-      // 자동 계산되는 필드(_)는 제외하고 저장합니다.
-      if (!k.startsWith('_')) cleanObj[k] = obj[k];
-    });
+    Object.keys(obj).forEach(k => { if (!k.startsWith('_')) cleanObj[k] = obj[k]; });
     return cleanObj;
   });
   return {
-    team: cleanData(S.team),
-    tasks: cleanData(S.tasks),
-    docs: cleanData(S.docs),
-    exps: cleanData(S.exps),
-    terms: cleanData(S.terms),
-    dats: cleanData(S.dats),
-    pocs: cleanData(S.pocs),
-    cnt: S.cnt
+    team: cleanData(S.team), tasks: cleanData(S.tasks), docs: cleanData(S.docs),
+    exps: cleanData(S.exps), terms: cleanData(S.terms), dats: cleanData(S.dats), pocs: cleanData(S.pocs)
   };
 };
 
 window.saveStateFn = () => {
   if (!userDocRef) return;
-  window.recomputeAll();
-  
   clearTimeout(saveTimeout);
-  // 입력이 끝난 뒤에 모아서 한 번에 저장합니다. (Firebase 한도 초과 방지)
   saveTimeout = setTimeout(() => {
-     setDoc(userDocRef, window.buildDataToSave()).catch(e => { 
-       console.error("데이터 저장 실패:", e);
-     });
+     setDoc(userDocRef, window.buildDataToSave()).catch(e => console.error("데이터 저장 실패:", e));
   }, 800);
 };
 
@@ -483,9 +519,8 @@ window.go = (v, el) => {
   (el||document.getElementById('n-'+v))?.classList.add('active');
   document.getElementById('pg-title').textContent = titles[v] || '';
   document.getElementById('pg-actions').innerHTML = '';
-  const c = document.getElementById('content');
-  if(v==='onto'||v==='docs') c.style.cssText = 'flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column';
-  else c.style.cssText = 'flex:1;overflow-y:auto;padding:18px';
+  // 핵심: 컨텐츠 래퍼 자체가 스크롤되지 않고 꽉 찬 상태(flex:1) 유지하도록 공통 적용
+  document.getElementById('content').style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--color-background-tertiary);';
   if(window.V[v]) window.V[v]();
 };
 
@@ -495,17 +530,19 @@ window.V.home = () => {
   const dd=S.dats, own=dd.filter(x=>x.own==='보유').length;
   const pd=S.pocs, pdone=pd.filter(x=>x.status==='완료').length;
   document.getElementById('content').innerHTML=`
-    <div class="g4" style="margin-bottom:14px">
-      <div class="card"><div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div><div>${window.pill('완료')} ${done} · ${window.pill('진행중')} ${prog}</div><div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#1D9E75"></div></div></div>
-      <div class="card"><div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div><div>${window.pill('최신')} ${S.docs.filter(d=>d.cur==='최신').length}건</div><div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#0F6E56"></div></div></div>
-      <div class="card"><div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${dd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div></div>
-      <div class="card"><div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${pd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div></div>
-    </div>
-    <div class="sec"><h3>시스템 바로가기</h3></div>
-    <div class="g3">
-      <div class="sys-card" onclick="window.go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
-      <div class="sys-card" onclick="window.go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
-      <div class="sys-card" onclick="window.go('onto')"><div class="sys-ic">🔗</div><div class="sys-nm">온톨로지·관계</div><div class="sys-ds">연결 데이터를 기반으로 관계망 자동 시각화</div></div>
+    <div style="flex:1; overflow-y:auto; padding:18px;">
+      <div class="g4" style="margin-bottom:14px">
+        <div class="card"><div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div><div>${window.pill('완료')} ${done} · ${window.pill('진행중')} ${prog}</div><div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#1D9E75"></div></div></div>
+        <div class="card"><div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div><div>${window.pill('최신')} ${S.docs.filter(d=>d.cur==='최신').length}건</div><div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#0F6E56"></div></div></div>
+        <div class="card"><div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${dd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div></div>
+        <div class="card"><div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${pd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div></div>
+      </div>
+      <div class="sec"><h3>시스템 바로가기</h3></div>
+      <div class="g3">
+        <div class="sys-card" onclick="window.go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
+        <div class="sys-card" onclick="window.go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
+        <div class="sys-card" onclick="window.go('onto')"><div class="sys-ic">🔗</div><div class="sys-nm">온톨로지·관계</div><div class="sys-ds">연결 데이터를 기반으로 관계망 자동 시각화</div></div>
+      </div>
     </div>`;
 };
 
@@ -513,32 +550,41 @@ window.V.home = () => {
 let draggedK = null;
 window.kDrag = (e, code) => { draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
-window.kDrop = (e, col) => { if(draggedK) { window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
+window.kDrop = (e, col) => { if(draggedK) { window.pushHistory(); window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
 
 window.V.tasks = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addTask()">+ 과제 추가</button>`;
   const cols=['미착수','진행중','검증중','완료','이슈'];
   const cc={'미착수':'pt','진행중':'pp','검증중':'pp','완료':'pd','이슈':'pw'};
-  document.getElementById('content').innerHTML=`<div class="kanban">${cols.map(col=>`
-    <div class="kcol" ondragover="kAllow(event)" ondrop="kDrop(event, '${col}')">
-      <div class="kcol-hd"><span>${col}</span><span class="pill ${cc[col]}">${S.tasks.filter(t=>t.status===col).length}</span></div>
-      ${S.tasks.filter(t=>t.status===col).map(t=>`
-        <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')">
-          <div class="kcard-code">${window.badge(t.code)}</div>
-          <input class="knm" placeholder="과제명" value="${t.name||''}" oninput="window.upd('tasks','${t.code}','name',this.value); window.saveStateFn()">
-          <select class="kas" onchange="window.upd('tasks','${t.code}','assignee',this.value); window.stateChanged()">
-             ${window.teamOpts(t.assignee)}
-          </select>
-          <div class="kcard-ft">
-            <select onchange="window.upd('tasks','${t.code}','status',this.value); window.stateChanged()">
-              ${cols.map(s=>`<option${s===t.status?' selected':''}>${s}</option>`).join('')}
-            </select>
-            <button class="del-btn" onclick="window.del('tasks','${t.code}'); window.stateChanged()">×</button>
-          </div>
-        </div>`).join('')}
-    </div>`).join('')}</div>`;
+  document.getElementById('content').innerHTML=`
+    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden;">
+      <div class="kanban">
+        ${cols.map(col=>`
+          <div class="kcol" ondragover="window.kAllow(event)" ondrop="window.kDrop(event, '${col}')">
+            <div class="kcol-hd"><span>${col}</span><span class="pill ${cc[col]}">${S.tasks.filter(t=>t.status===col).length}</span></div>
+            <div style="flex:1; overflow-y:auto; padding-right:4px;">
+              ${S.tasks.filter(t=>t.status===col).map(t=>`
+                <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')">
+                  <div class="kcard-code">${window.badge(t.code)}</div>
+                  <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()">
+                  <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
+                    <input type="text" value="${t.assignee||''}" readonly style="flex:1;background:transparent;border:1px solid transparent;font-size:11px;color:var(--color-text-secondary);cursor:pointer;outline:none;padding:2px;" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" placeholder="담당자">
+                    <button class="btn-sm btn-o" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" title="선택">🔍</button>
+                  </div>
+                  <div class="kcard-ft">
+                    <select onchange="window.pushHistory(); window.upd('tasks','${t.code}','status',this.value); window.stateChanged()">
+                      ${cols.map(s=>`<option${s===t.status?' selected':''}>${s}</option>`).join('')}
+                    </select>
+                    <button class="del-btn" onclick="window.pushHistory(); window.del('tasks','${t.code}'); window.stateChanged()">×</button>
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
 };
-window.addTask = () => { S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
+
+window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
 
 window.dtab = 'tsk';
 window.V.docs = (tab) => {
@@ -569,7 +615,7 @@ window.V.docs = (tab) => {
         <div class="card">
           <div style="font-size:12px;font-weight:700;margin-bottom:10px">데이터 연결 흐름</div>
           <table style="width:100%;font-size:11px">
-            <thead><tr><th style="width:120px;border-bottom:2px solid #ccc;padding-bottom:8px">과제 (TSK)</th><th style="border-bottom:2px solid #ccc;padding-bottom:8px">자동 연결된 데이터 (문서, 용어, 데이터셋, 예외기준)</th></tr></thead>
+            <thead><tr><th style="width:120px;border-bottom:2px solid #ccc;padding-bottom:8px;position:relative;">과제 (TSK)</th><th style="border-bottom:2px solid #ccc;padding-bottom:8px;position:relative;">자동 연결된 데이터 (문서, 용어, 데이터셋, 예외기준)</th></tr></thead>
             <tbody>
               ${S.tasks.map(t=>`<tr>
                 <td style="border-bottom:1px solid #eee;padding:10px 4px"><strong>${window.badge(t.code)}</strong><br><span style="color:gray;display:inline-block;margin-top:4px">${t.name||'미입력'}</span></td>
@@ -609,28 +655,35 @@ window.V.docs = (tab) => {
   const tbody=currentRows.map(row=>{
     const cells=c.fl.map(f=>{
       if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
-      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
-      if(c.sl?.[f]) return `<td><select onchange="window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
-      if(c.dl?.[f]) return `<td><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"></td>`;
-      return `<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"></td>`;
+      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
+      if(c.sl?.[f]) return `<td><select onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
+      if(c.dl?.[f]) return `<td><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"></td>`;
+      return `<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"></td>`;
     }).join('');
-    return `<tr><td>${window.badge(row.code)}</td>${cells}<td><button class="del-btn" onclick="window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td></tr>`;
+    return `<tr><td>${window.badge(row.code)}</td>${cells}<td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td></tr>`;
   }).join('');
   
   document.getElementById('content').innerHTML=`
     <div class="stabs">${stH}</div>
-    <div style="flex:1;overflow:auto;padding:14px">
-      <input type="text" class="doc-search-bar" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
-      <div class="tw"><table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table></div>
-      <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
-      <div class="note">※ 돋보기(🔍) 클릭 시 다중 항목 선택이 가능합니다. 키보드 Tab을 이용해 다음 칸으로 편리하게 이동할 수 있습니다.</div>
+    <div style="flex:1; display:flex; flex-direction:column; padding:14px 18px 18px; overflow:hidden; gap:10px;">
+      <input type="text" class="doc-search-bar" style="flex-shrink:0; margin:0;" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
+      <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="flex:1; overflow:auto;">
+          <table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
+        </div>
+      </div>
+      <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
+        <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
+        <div class="note" style="margin:0;">※ 돋보기(🔍) 클릭 시 다중 항목 선택이 가능합니다. Tab키로 다음 칸 이동이 가능합니다.</div>
+      </div>
     </div>`;
 };
 
 window.addDocRow = (tab) => {
-  const m={tsk:['tasks','tsk','TSK'],doc:['docs','doc','DOC'],exp:['exps','exp','EXP'],trm:['terms','trm','TRM'],dat:['dats','dat','DAT']};
+  window.pushHistory();
+  const m={tsk:['tasks','TSK'],doc:['docs','DOC'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
   const d={tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},doc:{dtype:'법령',name:'',summary:'',tskRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}};
-  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][2])});
+  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][1])});
   window.stateChanged();
 };
 
@@ -650,15 +703,21 @@ window.V.data = () => {
 
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>`;
   document.getElementById('content').innerHTML=`
-    <div class="g4" style="margin-bottom:14px">
-      <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')" style="cursor:pointer;border-bottom: ${window.datFilter==='all'?'3px solid var(--color-border-secondary)':''}"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
-      <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
-      <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
-      <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
-      <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="cursor:pointer;border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
-    </div>
-    <div class="tw"><table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
-    <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table></div>`;
+    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px;">
+      <div class="g4" style="flex-shrink:0;">
+        <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')" style="cursor:pointer;border-bottom: ${window.datFilter==='all'?'3px solid var(--color-border-secondary)':''}"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
+        <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
+        <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
+        <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
+        <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="cursor:pointer;border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
+      </div>
+      <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="flex:1; overflow:auto;">
+          <table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
+          <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
+        </div>
+      </div>
+    </div>`;
 };
 
 // ── ONTO ─────────────────────────────────────────────
@@ -806,52 +865,64 @@ window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=d
 window.V.poc = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addPoc()">+ PoC 추가</button>`;
   document.getElementById('content').innerHTML=`
-    <div class="g4" style="margin-bottom:14px">
-      ${['미착수','진행중','완료','이슈'].map(s=>`<div class="card"><div class="stat-l">${s}</div><div class="stat-n">${S.pocs.filter(p=>p.status===s).length}</div></div>`).join('')}
-    </div>
-    <div class="tw"><table><thead><tr><th>코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
-    <tbody>${S.pocs.map(p=>`<tr>
-      <td>${window.badge(p.code)}</td>
-      <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" oninput="window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
-      <td><input type="text" value="${p.logic||''}" oninput="window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"></td>
-      <td><input type="text" value="${p.result||''}" oninput="window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"></td>
-      <td><input type="text" value="${p.issue||''}" oninput="window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"></td>
-      <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
-      <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" oninput="window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
-      <td><select onchange="window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
-      <td><button class="del-btn" onclick="window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
-    </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table></div>`;
+    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px;">
+      <div class="g4" style="flex-shrink:0;">
+        ${['미착수','진행중','완료','이슈'].map(s=>`<div class="card"><div class="stat-l">${s}</div><div class="stat-n">${S.pocs.filter(p=>p.status===s).length}</div></div>`).join('')}
+      </div>
+      <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="flex:1; overflow:auto;">
+          <table><thead><tr><th>코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
+          <tbody>${S.pocs.map(p=>`<tr>
+            <td>${window.badge(p.code)}</td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
+            <td><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"></td>
+            <td><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"></td>
+            <td><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"></td>
+            <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
+            <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
+            <td><select onchange="window.pushHistory(); window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
+            <td><button class="del-btn" onclick="window.pushHistory(); window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
+          </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
+        </div>
+      </div>
+    </div>`;
 };
-window.addPoc = () => { S.pocs.push({code:window.nc('poc','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}); window.stateChanged(); };
+window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}); window.stateChanged(); };
 
 // ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addMember()">+ 팀원 추가</button>`;
   document.getElementById('content').innerHTML=`
-    <div class="banner">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 프로필 이모지를 직접 입력할 수 있으며 Tab 키로 자연스러운 입력칸 이동이 가능합니다.</div>
-    <div class="team-grid">${S.team.map((m,i)=>`
-      <div class="team-card">
-        <div class="tc-top">
-          <div class="avatar">
-            <select class="avatar-input" onchange="S.team[${i}].emoji=this.value; window.saveStateFn()">
-              ${['👤','👩‍💼','👨‍💼','👩‍🔬','👨‍🔬','👩‍💻','👨‍💻','🧑‍🎨','👩‍🏫','👨‍🏫','🤖','💡','📊','⚙️'].map(e=>`<option value="${e}" ${m.emoji===e?'selected':''}>${e}</option>`).join('')}
-            </select>
-          </div>
-          <button class="del-btn" onclick="S.team.splice(${i},1); window.stateChanged()">×</button>
-        </div>
-        <input class="tci nm" placeholder="이름" value="${m.name||''}" oninput="S.team[${i}].name=this.value; window.saveStateFn()">
-        <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" oninput="S.team[${i}].role=this.value; window.saveStateFn()">
-        <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
-        <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" oninput="S.team[${i}].note=this.value; window.saveStateFn()"></div>
-      </div>`).join('')}</div>`;
+    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px;">
+      <div class="banner" style="flex-shrink:0; margin:0;">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 프로필 이모지를 직접 선택할 수 있으며 Tab 키로 입력칸 이동이 가능합니다.</div>
+      <div style="flex:1; overflow-y:auto; padding-right:4px;">
+        <div class="team-grid">${S.team.map((m,i)=>`
+          <div class="team-card">
+            <div class="tc-top">
+              <div class="emoji-picker" id="ep-${i}">
+                <div class="emoji-btn" onclick="window.toggleEmoji(${i}, event)">${m.emoji||'👤'}</div>
+                <div class="emoji-grid" id="eg-${i}" style="display:none;">
+                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'].map(e=>`<div class="emoji-item" onclick="window.setEmoji(${i}, '${e}')">${e}</div>`).join('')}
+                </div>
+              </div>
+              <button class="del-btn" onclick="window.pushHistory(); S.team.splice(${i},1); window.stateChanged()">×</button>
+            </div>
+            <input class="tci nm" placeholder="이름" value="${m.name||''}" onchange="window.pushHistory(); S.team[${i}].name=this.value; window.saveStateFn()">
+            <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" onchange="window.pushHistory(); S.team[${i}].role=this.value; window.saveStateFn()">
+            <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
+            <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" onchange="window.pushHistory(); S.team[${i}].note=this.value; window.saveStateFn()"></div>
+          </div>`).join('')}</div>
+      </div>
+    </div>`;
 };
-window.addMember = () => { S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
+window.addMember = () => { window.pushHistory(); S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
 
 // ── EXCEL ────────────────────────────────────────────
 window.handleExcelUpload = (e) => {
   const f = e.target.files[0]; if(!f) return;
   const reader = new FileReader();
   reader.onload = (evt) => {
+    window.pushHistory();
     const data = new Uint8Array(evt.target.result);
     const wb = XLSX.read(data, {type: 'array'});
     const sm = {'TSK_과제':'tasks','DOC_기준문서':'docs','EXP_예외기준':'exps','TRM_용어객체':'terms','DAT_데이터셋':'dats','POC_현황':'pocs','TEAM_RR':'team'};
@@ -880,7 +951,7 @@ window.handleExcelUpload = (e) => {
 
 window.getKeyByHeader = (sheet, hdr) => {
   const m = {
-    '과제명':'name', '담당자':'assignee', '팀/직무':'team', '과제목적':'purpose', '현황':'status', '비고':'note',
+    '과제명':'name', '담당자':'assignee', '과제목적':'purpose', '현황':'status', '비고':'note',
     '구분':'dtype', '문서명/조항':'name', '핵심내용':'summary', '관련TSK':'tskRef', '관리부서':'dept', '현행화':'cur', '위치':'loc',
     '예외상황':'sit', '처리방법':'hand', '판단주체':'owner', '관련DOC':'docRef', '기준유무':'rule', 'AI처리':'ai',
     '용어명':'term', '정의':'def', '객체유형':'otype', '상위객체':'parent', '하위객체':'child', '유사어':'sim', '구분기준':'crit',
