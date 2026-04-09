@@ -28,7 +28,7 @@ body{display:flex;height:100vh;overflow:hidden;font-family:var(--font-sans,syste
 .del-btn{width:22px;height:22px;border:none;border-radius:4px;background:transparent;color:var(--color-text-secondary);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .del-btn:hover{background:var(--color-background-secondary);color:#E24B4A}
 /* Cards & Grid */
-.card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:14px}
+.card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:14px;transition:all 0.15s;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -42,18 +42,21 @@ body{display:flex;height:100vh;overflow:hidden;font-family:var(--font-sans,syste
 .sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:700;margin-bottom:3px}
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
 /* Table */
-.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--color-border-tertiary)}
+.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 table{width:100%;border-collapse:collapse;background:var(--color-background-primary)}
-thead tr{background:var(--color-background-secondary)}
-th{padding:7px 9px;text-align:left;font-size:11px;font-weight:700;color:var(--color-text-secondary);border-bottom:2px solid var(--color-border-secondary);white-space:nowrap}
-td{padding:4px 6px;border-bottom:1px solid var(--color-border-tertiary);font-size:12px;vertical-align:middle}
+thead tr{background:#f8fafc;border-bottom:2px solid var(--color-border-secondary)}
+th{padding:8px 9px;text-align:left;font-size:11px;font-weight:700;color:var(--color-text-secondary);white-space:nowrap}
+td{padding:5px 6px;border-bottom:1px dashed #e2e8f0;font-size:12px;vertical-align:middle}
+tbody tr:nth-child(even){background:#fafafa}
+tbody tr:hover{background:#f1f5f9}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--color-background-secondary)}
-td input[type="text"],td select{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 5px;font-size:12px;color:var(--color-text-primary);font-family:inherit;outline:none}
-td input[type="text"]:focus,td select:focus{border-color:var(--color-border-secondary);background:var(--color-background-primary)}
+td input[type="text"],td select{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;color:var(--color-text-primary);font-family:inherit;outline:none;transition:border-color 0.1s}
+td input[type="text"]:focus,td select:focus{border-color:#1D9E75;background:var(--color-background-primary)}
 td input[type="text"]:hover:not(:focus){border-color:var(--color-border-tertiary)}
 td select{cursor:pointer}
 .code-list{display:flex;flex-wrap:wrap;gap:4px}
+.doc-search-bar{width:100%;padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;margin-bottom:10px;font-size:12px;outline:none}
+.doc-search-bar:focus{border-color:#1D9E75}
 /* Kanban */
 .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start}
 .kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px}
@@ -61,8 +64,11 @@ td select{cursor:pointer}
 .kcard{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);cursor:grab}
 .kcard:active{cursor:grabbing}
 .kcard-code{font-size:10px;font-family:var(--font-mono);margin-bottom:4px;font-weight:700}
-.kcard input,.kcard select{width:100%;background:transparent;border:none;outline:none;color:var(--color-text-primary);font-size:12px;font-family:inherit;padding:1px 0}
-.kcard .knm{font-weight:500}.kcard .kas{font-size:11px;color:var(--color-text-secondary);cursor:pointer}
+.kcard input,.kcard select{width:100%;background:transparent;border:1px solid transparent;outline:none;color:var(--color-text-primary);font-size:12px;font-family:inherit;padding:2px 4px;border-radius:4px}
+.kcard input:hover, .kcard select:hover{border-color:var(--color-border-tertiary)}
+.kcard input:focus, .kcard select:focus{border-color:#1D9E75;background:var(--color-background-primary)}
+.kcard .knm{font-weight:500;margin-bottom:4px}
+.kcard .kas{font-size:11px;cursor:pointer}
 .kcard-ft{margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 .kcard-ft select{font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-primary);cursor:pointer}
 /* Subtabs */
@@ -84,16 +90,17 @@ td select{cursor:pointer}
 .pd{background:#EAF3DE;color:#27500A}.pp{background:#FAEEDA;color:#633806}
 .pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
 /* Team */
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
-.team-card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:13px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.team-card{background:var(--color-background-primary);border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.02)}
 .tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.avatar{width:34px;height:34px;border-radius:50%;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:15px}
-.tci{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--color-text-primary)}
-.tci.nm{font-size:13px;font-weight:700;border-bottom:1px solid transparent;padding:1px 0}
-.tci.nm:focus{border-bottom-color:var(--color-border-secondary)}
-.tci.rl{font-size:11px;color:var(--color-text-secondary)}
-.tc-field{margin-top:7px}
-.tc-label{font-size:10px;font-weight:700;color:var(--color-text-secondary);margin-bottom:2px}
+.avatar{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.avatar-input{width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:18px;outline:none}
+.tci{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--color-text-primary);padding:3px 2px}
+.tci.nm{font-size:14px;font-weight:700;border-bottom:1px solid transparent}
+.tci.nm:focus{border-bottom-color:#1D9E75}
+.tci.rl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.tc-field{margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0}
+.tc-label{font-size:10px;font-weight:700;color:var(--color-text-secondary);margin-bottom:4px}
 /* ONTO */
 .onto-wrap{display:flex;height:100%;overflow:hidden}
 .o-side{width:258px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden}
@@ -106,28 +113,32 @@ td select{cursor:pointer}
 .g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px}
 .gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
 .gcb:hover{background:var(--color-background-secondary)}
-.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:190px;line-height:1.7;z-index:10}
+.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:190px;line-height:1.7;z-index:10;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
 .g-tip.on{opacity:1}
-/* Onto side */
 .o-sec{font-size:12px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)}
 .o-div{height:1px;background:var(--color-border-tertiary);margin:10px 0}
-.nl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:11px;transition:background .12s}
-.nl-item:hover{background:var(--color-background-secondary)}
-.nl-item.on{background:var(--color-background-secondary);font-weight:700}
-.nl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.nl-meta{font-size:10px;color:var(--color-text-secondary);margin-top:1px}
 .hint{text-align:center;padding:20px 10px;color:var(--color-text-secondary);font-size:11px;line-height:1.9}
-.note{font-size:11px;color:var(--color-text-secondary);margin-top:6px}
-.banner{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px}
+.note{font-size:11px;color:var(--color-text-secondary);margin-top:8px}
+.banner{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px}
 .topbar-sel{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:7px;padding:5px 10px;font-size:12px;color:var(--color-text-primary);outline:none;cursor:pointer;min-width:160px;max-width:220px}
 .topbar-sel:focus{border-color:#1D9E75}
 .toast{position:fixed;bottom:18px;right:18px;background:#1D9E75;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
 .toast.show{opacity:1}
 /* Modal */
-#ms-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center}
-.ms-content{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:380px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.1)}
-.ms-item{display:flex;align-items:center;gap:8px;padding:6px;font-size:12px;border-bottom:1px solid var(--color-border-tertiary)}
-.ms-item label{flex:1;cursor:pointer}
+#ms-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.ms-content{background:#fff;border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:500px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
+.ms-search{width:100%;padding:8px 10px;border:1px solid var(--color-border-secondary);border-radius:6px;margin-bottom:12px;font-size:12px;outline:none}
+.ms-search:focus{border-color:#1D9E75}
+.ms-item{display:flex;align-items:center;gap:8px;padding:8px;font-size:12px;border-bottom:1px solid var(--color-border-tertiary);transition:background 0.1s}
+.ms-item:hover{background:#f8fafc}
+.ms-item label{flex:1;cursor:pointer;display:flex;align-items:center;gap:8px}
+.ms-tbl-wrap{border:1px solid var(--color-border-tertiary);border-radius:6px;overflow:hidden;flex:1;overflow-y:auto;margin-bottom:14px}
+.ms-tbl{width:100%;border-collapse:collapse}
+.ms-tbl th{background:#f8fafc;padding:6px 8px;border-bottom:1px solid var(--color-border-secondary);position:sticky;top:0}
+.ms-tbl td{padding:6px 8px;border-bottom:1px solid var(--color-border-tertiary)}
+.ms-tbl tr:hover{background:#f1f5f9}
+/* Datalist trick */
+input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -147,7 +158,7 @@ td select{cursor:pointer}
 </div>
 <div class="main">
   <div class="topbar">
-    <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent">☰</button>
+    <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
     <h2 id="pg-title">홈 대시보드</h2>
     <div class="topbar-r" id="pg-actions"></div>
   </div>
@@ -158,9 +169,10 @@ td select{cursor:pointer}
 <!-- Multi-select Modal -->
 <div id="ms-modal">
   <div class="ms-content">
-    <h3 style="font-weight:700;margin-bottom:12px">항목 선택</h3>
-    <div id="ms-list" style="flex:1;overflow-y:auto;margin-bottom:14px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
+    <h3 style="font-weight:700;margin-bottom:8px">항목 선택</h3>
+    <input type="text" id="ms-search" class="ms-search" placeholder="검색어를 입력하세요..." oninput="filterMs()">
+    <div id="ms-list" style="flex:1;display:flex;flex-direction:column;min-height:150px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
       <button class="btn btn-o" onclick="closeMs()">취소</button>
       <button class="btn btn-g" onclick="applyMs()">적용</button>
     </div>
@@ -168,6 +180,12 @@ td select{cursor:pointer}
 </div>
 
 <input type="file" id="excel-upload" accept=".xlsx" style="display:none" onchange="handleExcelUpload(event)">
+<datalist id="dl-dtype">
+  <option value="정형 (RDB/Excel)"></option>
+  <option value="반정형 (JSON/XML/Log)"></option>
+  <option value="비정형 (텍스트/이미지/음성)"></option>
+  <option value="외부 API"></option>
+</datalist>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -179,10 +197,10 @@ import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/f
 // ── STATE ────────────────────────────────────────────
 window.S = {
   team:[
-    {name:'',role:'',tasks:'',note:'',_tasks:[]}
+    {name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}
   ],
   tasks:[
-    {code:'TSK-001',name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}
+    {code:'TSK-001',name:'',assignee:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}
   ],
   docs:[
     {code:'DOC-001',dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]}
@@ -206,14 +224,16 @@ window.S = {
 };
 
 window.currentView = 'home';
-let msState = { arrKey:'', rowCode:'', field:'', type:'' };
+window.docSearchQuery = '';
+window.datFilter = 'all';
+let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 
 // ── UTILS & CORE ─────────────────────────────────────
 const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
-window.nc = (k,p) => { S.cnt[k]++; return p+'-'+String(S.cnt[k]).padStart(3,'0') };
+window.nc = (k,p) => { S.cnt[k] = (S.cnt[k] || S[k+'s']?.length || 0) + 1; return p+'-'+String(S.cnt[k]).padStart(3,'0'); };
 window.toast = m => { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300) };
-window.upd = (arr,code,f,v) => { const r=arr.find(r=>r.code===code); if(r) r[f]=v; };
-window.del = (arr,code) => { const i=arr.findIndex(r=>r.code===code); if(i>-1) arr.splice(i,1); };
+window.upd = (arrKey,code,f,v) => { const r=S[arrKey].find(r=>r.code===code); if(r) r[f]=v; };
+window.del = (arrKey,code) => { const arr=S[arrKey]; const i=arr.findIndex(r=>r.code===code); if(i>-1) arr.splice(i,1); };
 window.pct = (n,d) => d ? Math.round(n/d*100) : 0;
 window.pill = v => {
   const m={'완료':'pd','진행중':'pp','검증중':'pp','미착수':'pt','이슈':'pw','최신':'pd','갱신필요':'pw','미확인':'pt','보유':'pd','일부보유':'pp','미보유':'pw','명문화됨':'pd','담당자재량':'pp','기준없음':'pt','가능':'pd','조건부가능':'pp','불가':'pw','일반':'pt','개인정보':'pw','민감정보':'pw'};
@@ -221,6 +241,23 @@ window.pill = v => {
 };
 window.parseRef = str => (str||'').split(',').map(s=>s.trim()).filter(s=>s);
 window.mergeRef = arr => [...new Set(arr)].join(', ');
+
+// Format codes with correct badge color based on prefix
+window.badge = (c) => {
+  if(!c) return '';
+  const pfx = c.split('-')[0];
+  const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
+  return `<span class="code ${cls}">${c}</span>`;
+};
+window.fmtCodeList = (strOrArr) => {
+  const arr = Array.isArray(strOrArr) ? strOrArr : window.parseRef(strOrArr);
+  return arr.map(window.badge).join('');
+};
+
+window.teamOpts = (sel='') => {
+  const m = S.team.filter(x=>x.name.trim());
+  return `<option value="">선택 안됨</option>` + m.map(x=>`<option${x.name===sel?' selected':''}>${x.name}</option>`).join('');
+};
 
 // Reference Auto-Computation
 window.recomputeAll = () => {
@@ -258,37 +295,70 @@ window.stateChanged = () => {
   if (window.currentView === 'poc') window.V.poc();
   if (window.currentView === 'tasks') window.V.tasks();
   if (window.currentView === 'onto') window.V.onto();
+  if (window.currentView === 'data') window.V.data();
 };
 
 // ── MULTI-SELECT MODAL ───────────────────────────────
 window.openMs = (arrKey, rowCode, field, type) => {
-  msState = { arrKey, rowCode, field, type };
-  const valArr = parseRef(S[arrKey].find(x=>x.code===rowCode)?.[field] || '');
+  const valArr = window.parseRef(S[arrKey].find(x=>x.code===rowCode)?.[field] || '');
   let opts = [];
-  if(type==='TSK') opts = S.tasks.map(x=>({ v:x.code, l:`${x.code} / ${x.name||'미입력'}` }));
-  if(type==='DOC') opts = S.docs.map(x=>({ v:x.code, l:`${x.code} / ${x.name||'미입력'}` }));
-  if(type==='TRM') opts = S.terms.map(x=>({ v:x.code, l:`${x.code} / ${x.term||'미입력'}` }));
-  if(type==='DAT') opts = S.dats.map(x=>({ v:x.code, l:`${x.code} / ${x.name||'미입력'}` }));
-  if(type==='TEAM') opts = S.team.filter(x=>x.name).map(x=>({ v:x.name, l:x.name }));
+  if(type==='TSK') opts = S.tasks.map(x=>({ v:x.code, l:`${x.name||'미입력'}`, sub:x.status }));
+  if(type==='DOC') opts = S.docs.map(x=>({ v:x.code, l:`${x.name||'미입력'}`, sub:x.dtype }));
+  if(type==='TRM') opts = S.terms.filter(x=>x.code!==rowCode).map(x=>({ v:x.code, l:`${x.term||'미입력'}`, sub:x.otype }));
+  if(type==='DAT') opts = S.dats.map(x=>({ v:x.code, l:`${x.name||'미입력'}`, sub:x.dtype }));
+  if(type==='TEAM') opts = S.team.filter(x=>x.name).map(x=>({ v:x.name, l:x.name, sub:x.role }));
 
-  const html = opts.map(o => `
-    <div class="ms-item">
-      <input type="checkbox" id="ms-${o.v}" value="${o.v}" ${valArr.includes(o.v)?'checked':''}>
-      <label for="ms-${o.v}">${o.l}</label>
-    </div>
-  `).join('') || '<div style="padding:10px;font-size:11px;color:gray">등록된 항목이 없습니다</div>';
-  
-  document.getElementById('ms-list').innerHTML = html;
+  msState = { arrKey, rowCode, field, type, opts, valArr };
+  document.getElementById('ms-search').value = '';
+  window.renderMsList();
   document.getElementById('ms-modal').style.display = 'flex';
+  document.getElementById('ms-search').focus();
 };
+
+window.filterMs = () => window.renderMsList();
+
+window.renderMsList = () => {
+  const q = document.getElementById('ms-search').value.toLowerCase();
+  const filtered = msState.opts.filter(o => o.v.toLowerCase().includes(q) || o.l.toLowerCase().includes(q) || (o.sub||'').toLowerCase().includes(q));
+  const listEl = document.getElementById('ms-list');
+  
+  if (msState.type === 'DOC') {
+    const rows = filtered.map(o => `
+      <tr>
+        <td style="width:30px;text-align:center"><input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}></td>
+        <td><label for="ms-${o.v}" style="cursor:pointer">${window.badge(o.v)}</label></td>
+        <td><label for="ms-${o.v}" style="cursor:pointer">${o.sub}</label></td>
+        <td><label for="ms-${o.v}" style="cursor:pointer;font-weight:700">${o.l}</label></td>
+      </tr>
+    `).join('');
+    listEl.innerHTML = `
+      <div class="ms-tbl-wrap">
+        <table class="ms-tbl">
+          <thead><tr><th>선택</th><th>문서코드</th><th>구분</th><th>문서/조항명</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="4" style="text-align:center;color:gray;padding:15px">항목이 없습니다</td></tr>`}</tbody>
+        </table>
+      </div>`;
+  } else {
+    listEl.innerHTML = `
+      <div class="ms-tbl-wrap" style="border:none;background:var(--color-background-primary)">
+        ${filtered.map(o => `
+          <div class="ms-item">
+            <input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}>
+            <label for="ms-${o.v}">${msState.type!=='TEAM'?window.badge(o.v):''} <strong>${o.l}</strong> <span style="color:gray;font-size:11px">(${o.sub||''})</span></label>
+          </div>
+        `).join('') || '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}
+      </div>`;
+  }
+};
+
 window.closeMs = () => document.getElementById('ms-modal').style.display = 'none';
 window.applyMs = () => {
   const cbs = document.querySelectorAll('#ms-list input[type="checkbox"]:checked');
   const vals = Array.from(cbs).map(cb => cb.value);
   const row = S[msState.arrKey].find(x => x.code === msState.rowCode);
   if(row) row[msState.field] = vals.join(', ');
-  closeMs();
-  stateChanged();
+  window.closeMs();
+  window.stateChanged();
 };
 
 // ── FIREBASE ─────────────────────────────────────────
@@ -316,7 +386,7 @@ const initAuth = async () => {
         if (snap.exists() && !window.isSaving) {
           const data = snap.data();
           Object.keys(data).forEach(k => { if(S[k]) S[k] = data[k]; });
-          recomputeAll();
+          window.recomputeAll();
           if (window.currentView) window.go(window.currentView, document.getElementById('n-'+window.currentView));
         }
       }, err => console.error(err));
@@ -327,6 +397,7 @@ const initAuth = async () => {
 window.saveStateFn = () => {
   if (!userDocRef) return;
   window.isSaving = true;
+  window.recomputeAll();
   setDoc(userDocRef, S).then(() => { setTimeout(() => window.isSaving = false, 600); });
 };
 
@@ -359,9 +430,9 @@ window.V.home = () => {
     </div>
     <div class="sec"><h3>시스템 바로가기</h3></div>
     <div class="g3">
-      <div class="sys-card" onclick="go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
-      <div class="sys-card" onclick="go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
-      <div class="sys-card" onclick="go('onto')"><div class="sys-ic">🔗</div><div class="sys-nm">온톨로지·관계</div><div class="sys-ds">연결 데이터를 기반으로 관계망 자동 시각화</div></div>
+      <div class="sys-card" onclick="window.go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
+      <div class="sys-card" onclick="window.go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
+      <div class="sys-card" onclick="window.go('onto')"><div class="sys-ic">🔗</div><div class="sys-nm">온톨로지·관계</div><div class="sys-ds">연결 데이터를 기반으로 관계망 자동 시각화</div></div>
     </div>`;
 };
 
@@ -369,48 +440,47 @@ window.V.home = () => {
 let draggedK = null;
 window.kDrag = (e, code) => { draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
-window.kDrop = (e, col) => { if(draggedK) { upd(S.tasks, draggedK, 'status', col); stateChanged(); } };
+window.kDrop = (e, col) => { if(draggedK) { window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
 
 window.V.tasks = () => {
-  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addTask()">+ 과제 추가</button>`;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addTask()">+ 과제 추가</button>`;
   const cols=['미착수','진행중','검증중','완료','이슈'];
   const cc={'미착수':'pt','진행중':'pp','검증중':'pp','완료':'pd','이슈':'pw'};
   document.getElementById('content').innerHTML=`<div class="kanban">${cols.map(col=>`
     <div class="kcol" ondragover="kAllow(event)" ondrop="kDrop(event, '${col}')">
       <div class="kcol-hd"><span>${col}</span><span class="pill ${cc[col]}">${S.tasks.filter(t=>t.status===col).length}</span></div>
       ${S.tasks.filter(t=>t.status===col).map(t=>`
-        <div class="kcard" draggable="true" ondragstart="kDrag(event, '${t.code}')">
-          <div class="kcard-code">${t.code}</div>
-          <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="upd(S.tasks,'${t.code}','name',this.value); stateChanged()">
-          <div style="display:flex;align-items:center;margin-top:4px;gap:4px">
-            <input class="kas" placeholder="담당자 선택" value="${t.assignee||''}" onchange="upd(S.tasks,'${t.code}','assignee',this.value); stateChanged()">
-            <button class="btn-sm btn-o" onclick="openMs('tasks','${t.code}','assignee','TEAM')" style="padding:1px 4px;font-size:10px">선택</button>
-          </div>
+        <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')">
+          <div class="kcard-code">${window.badge(t.code)}</div>
+          <input class="knm" placeholder="과제명" value="${t.name||''}" oninput="window.upd('tasks','${t.code}','name',this.value); window.saveStateFn()">
+          <select class="kas" onchange="window.upd('tasks','${t.code}','assignee',this.value); window.stateChanged()">
+             ${window.teamOpts(t.assignee)}
+          </select>
           <div class="kcard-ft">
-            <select onchange="upd(S.tasks,'${t.code}','status',this.value); stateChanged()">
+            <select onchange="window.upd('tasks','${t.code}','status',this.value); window.stateChanged()">
               ${cols.map(s=>`<option${s===t.status?' selected':''}>${s}</option>`).join('')}
             </select>
-            <button class="del-btn" onclick="del(S.tasks,'${t.code}'); stateChanged()">×</button>
+            <button class="del-btn" onclick="window.del('tasks','${t.code}'); window.stateChanged()">×</button>
           </div>
         </div>`).join('')}
     </div>`).join('')}</div>`;
 };
-window.addTask = () => { S.tasks.push({code:nc('tsk','TSK'),name:'',assignee:'',team:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); stateChanged(); };
+window.addTask = () => { S.tasks.push({code:window.nc('tsk','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
 
 window.dtab = 'tsk';
 window.V.docs = (tab) => {
   window.dtab = tab || window.dtab;
-  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button><button class="btn btn-g btn-sm" onclick="dlXlsx()">↓ Excel 다운로드</button>`;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button><button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>`;
   
   const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
-  const stH=tabs.map(([id,lb,cl])=>`<div class="stab${dtab===id?' on-'+id:''}" onclick="V.docs('${id}')">${lb}</div>`).join('');
+  const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
 
-  if (dtab === 'rel') {
+  if (window.dtab === 'rel') {
     let orphans = [];
     ['tasks','docs','exps','terms','dats'].forEach(k => {
       S[k].forEach(item => {
         let hasLink = false;
-        Object.keys(item).forEach(f => { if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk') && parseRef(item[f]).length > 0) hasLink = true; });
+        Object.keys(item).forEach(f => { if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk') && window.parseRef(item[f]).length > 0) hasLink = true; });
         if (!hasLink && item.code) orphans.push(item);
       });
     });
@@ -421,21 +491,21 @@ window.V.docs = (tab) => {
         <div class="sec"><h3>통합 연결 대시보드</h3></div>
         <div class="card" style="margin-bottom:14px;background:#FCEBEB;border-color:#F7C1C1">
           <div style="font-size:12px;font-weight:700;color:#791F1F;margin-bottom:6px">미연결 항목 (고립)</div>
-          <div class="code-list">${orphans.map(o=>`<span class="code pw" title="${o.name||o.term||o.sit||''}">${o.code}</span>`).join('') || '<span style="font-size:11px;color:gray">미연결 항목이 없습니다.</span>'}</div>
+          <div class="code-list">${orphans.map(o=>`<span title="${o.name||o.term||o.sit||''}">${window.badge(o.code)}</span>`).join('') || '<span style="font-size:11px;color:gray">미연결 항목이 없습니다.</span>'}</div>
         </div>
         <div class="card">
           <div style="font-size:12px;font-weight:700;margin-bottom:10px">데이터 연결 흐름</div>
           <table style="width:100%;font-size:11px">
-            <thead><tr><th style="width:120px">과제 (TSK)</th><th>자동 연결된 데이터 (문서, 용어, 데이터셋, 예외기준)</th></tr></thead>
+            <thead><tr><th style="width:120px;border-bottom:2px solid #ccc;padding-bottom:8px">과제 (TSK)</th><th style="border-bottom:2px solid #ccc;padding-bottom:8px">자동 연결된 데이터 (문서, 용어, 데이터셋, 예외기준)</th></tr></thead>
             <tbody>
               ${S.tasks.map(t=>`<tr>
-                <td style="border-bottom:1px solid #eee;padding:8px 4px"><strong>${t.code}</strong><br><span style="color:gray">${t.name||'미입력'}</span></td>
-                <td style="border-bottom:1px solid #eee;padding:8px 4px">
+                <td style="border-bottom:1px solid #eee;padding:10px 4px"><strong>${window.badge(t.code)}</strong><br><span style="color:gray;display:inline-block;margin-top:4px">${t.name||'미입력'}</span></td>
+                <td style="border-bottom:1px solid #eee;padding:10px 4px">
                   <div class="code-list">
-                    ${t._doc.map(c=>`<span class="code cd">${c}</span>`).join('')}
-                    ${t._dat.map(c=>`<span class="code ca">${c}</span>`).join('')}
-                    ${t._trm.map(c=>`<span class="code cr">${c}</span>`).join('')}
-                    ${t._exp.map(c=>`<span class="code ce">${c}</span>`).join('')}
+                    ${window.fmtCodeList(t._doc)}
+                    ${window.fmtCodeList(t._dat)}
+                    ${window.fmtCodeList(t._trm)}
+                    ${window.fmtCodeList(t._exp)}
                     ${(t._doc.length+t._dat.length+t._trm.length+t._exp.length)===0 ? '<span style="color:gray">연결된 항목 없음</span>':''}
                   </div>
                 </td>
@@ -448,52 +518,75 @@ window.V.docs = (tab) => {
   }
 
   const cfgs={
-    tsk:{k:'tasks',hd:['과제명','담당자','팀/직무','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],fl:['name','assignee','team','purpose','_doc','_trm','_dat','status','note'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat'],cl:'ct'},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심내용','관련TSK','관련EXP(자동)','관련TRM(자동)','관리부서','현행화','위치','비고'],fl:['dtype','name','summary','tskRef','_exp','_trm','dept','cur','loc','note'],sl:{dtype:['법령','사규','지침','운영문서','매뉴얼','SOP','평가기준','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm'],cl:'cd'},
-    exp:{k:'exps',hd:['예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM(자동)','기준유무','AI처리','비고'],fl:['sit','hand','owner','tskRef','docRef','_trm','rule','ai','note'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{owner:'TEAM',tskRef:'TSK',docRef:'DOC'},ro:['_trm'],cl:'ce'},
-    trm:{k:'terms',hd:['용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],fl:['term','def','otype','parent','child','sim','crit','tskRef','docRef','note'],sl:{otype:['객체','속성','기준값','이벤트','역할','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[],cl:'cr'},
-    dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유여부','수집주기','민감도','관련TSK','관련DOC','관련TRM','비고(품질 이슈 등)'],fl:['name','dtype','src','own','cycle','sens','tskRef','docRef','trmRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},ro:[],cl:'ca'}
+    tsk:{k:'tasks',hd:['과제명','담당자','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],fl:['name','assignee','purpose','_doc','_trm','_dat','status','note'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat']},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심내용','관련TSK','관련EXP(자동)','관련TRM(자동)','관리부서','현행화','위치','비고'],fl:['dtype','name','summary','tskRef','_exp','_trm','dept','cur','loc','note'],sl:{dtype:['법령','사규','지침','운영문서','매뉴얼','SOP','평가기준','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    exp:{k:'exps',hd:['예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM(자동)','기준유무','AI처리','비고'],fl:['sit','hand','owner','tskRef','docRef','_trm','rule','ai','note'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
+    trm:{k:'terms',hd:['용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],fl:['term','def','otype','parent','child','sim','crit','tskRef','docRef','note'],sl:{otype:['객체','속성','기준값','이벤트','역할','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
+    dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유여부','수집주기','민감도','관련TSK','관련DOC','관련TRM','비고(품질 이슈 등)'],fl:['name','dtype','src','own','cycle','sens','tskRef','docRef','trmRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
   
-  const c=cfgs[dtab];
-  const tbody=S[c.k].map(row=>{
+  const c=cfgs[window.dtab];
+  let currentRows = S[c.k];
+  
+  // Search filtering
+  if(window.docSearchQuery) {
+     const q = window.docSearchQuery.toLowerCase();
+     currentRows = currentRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+  }
+
+  const tbody=currentRows.map(row=>{
     const cells=c.fl.map(f=>{
-      if(c.ro?.includes(f)) return `<td><div class="code-list">${(row[f]||[]).map(x=>`<span class="code ${c.cl}">${x}</span>`).join('')}</div></td>`;
-      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="upd(S.${c.k},'${row.code}','${f}',this.value); stateChanged()"><button class="btn-sm btn-o" onclick="openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')">선택</button></div></td>`;
-      if(c.sl?.[f]) return `<td><select onchange="upd(S.${c.k},'${row.code}','${f}',this.value); stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
-      return `<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="upd(S.${c.k},'${row.code}','${f}',this.value); stateChanged()"></td>`;
+      if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
+      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
+      if(c.sl?.[f]) return `<td><select onchange="window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
+      if(c.dl?.[f]) return `<td><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"></td>`;
+      return `<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="window.upd('${c.k}','${row.code}','${f}',this.value); window.saveStateFn()"></td>`;
     }).join('');
-    return `<tr><td><span class="code ${c.cl}">${row.code}</span></td>${cells}<td><button class="del-btn" onclick="del(S.${c.k},'${row.code}'); stateChanged()">×</button></td></tr>`;
+    return `<tr><td>${window.badge(row.code)}</td>${cells}<td><button class="del-btn" onclick="window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td></tr>`;
   }).join('');
   
   document.getElementById('content').innerHTML=`
     <div class="stabs">${stH}</div>
     <div style="flex:1;overflow:auto;padding:14px">
-      <div class="tw"><table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody}</tbody></table></div>
-      <button class="add-row" onclick="addDocRow('${dtab}')">+ 행 추가</button>
-      <div class="note">※ 선택 버튼을 클릭하여 다중 선택이 가능합니다. (자동) 표시가 있는 열은 다른 시트의 연결 상태에 따라 자동 반영됩니다.</div>
+      <input type="text" class="doc-search-bar" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
+      <div class="tw"><table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table></div>
+      <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
+      <div class="note">※ 돋보기(🔍) 클릭 시 다중 항목 선택이 가능합니다. 키보드 Tab을 이용해 다음 칸으로 편리하게 이동할 수 있습니다.</div>
     </div>`;
 };
 
 window.addDocRow = (tab) => {
-  const m={tsk:['tasks','TSK'],doc:['docs','DOC'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
-  const d={tsk:{name:'',assignee:'',team:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},doc:{dtype:'법령',name:'',summary:'',tskRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}};
-  S[m[tab][0]].push({...d[tab], code:nc(m[tab][0], m[tab][1])});
-  stateChanged();
+  const m={tsk:['tasks','tsk','TSK'],doc:['docs','doc','DOC'],exp:['exps','exp','EXP'],trm:['terms','trm','TRM'],dat:['dats','dat','DAT']};
+  const d={tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},doc:{dtype:'법령',name:'',summary:'',tskRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}};
+  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][1], m[tab][2])});
+  window.stateChanged();
 };
 
+// ── DATASET ──────────────────────────────────────────
+window.setDatFilter = (f) => { window.datFilter = f; window.V.data(); };
+
 window.V.data = () => {
-  const dd=S.dats, o=dd.filter(d=>d.own==='보유').length, pa=dd.filter(d=>d.own==='일부보유').length, n=dd.filter(d=>d.own==='미보유').length;
-  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="go('docs');V.docs('dat')">+ 추가</button>`;
+  const dd=S.dats, o=dd.filter(d=>d.own==='보유').length, pa=dd.filter(d=>d.own==='일부보유').length, n=dd.filter(d=>d.own==='미보유').length, sens=dd.filter(d=>d.sens!=='일반').length;
+  
+  let fdd = dd;
+  if(window.datFilter === '보유') fdd = dd.filter(d=>d.own==='보유');
+  else if(window.datFilter === '일부보유') fdd = dd.filter(d=>d.own==='일부보유');
+  else if(window.datFilter === '미보유') fdd = dd.filter(d=>d.own==='미보유');
+  else if(window.datFilter === '민감') fdd = dd.filter(d=>d.sens!=='일반');
+
+  const cardStyle = (f) => `card ${window.datFilter===f?'':'style="opacity:0.6"'}`;
+
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>`;
   document.getElementById('content').innerHTML=`
     <div class="g4" style="margin-bottom:14px">
-      <div class="card"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
-      <div class="card"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
-      <div class="card"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
-      <div class="card"><div class="stat-l">민감데이터</div><div class="stat-n">${dd.filter(d=>d.sens!=='일반').length}</div></div>
+      <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
+      <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
+      <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
+      <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
+      <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
     </div>
     <div class="tw"><table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
-    <tbody>${dd.map(d=>`<tr><td><span class="code ca">${d.code}</span></td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${pill(d.own)}</td><td>${pill(d.sens)}</td><td><div class="code-list">${(d.tskRef||'').split(',').filter(x=>x).map(x=>`<span class="code ct">${x.trim()}</span>`).join('')}</div></td></tr>`).join('')}</tbody></table></div>`;
+    <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table></div>`;
 };
 
 // ── ONTO ─────────────────────────────────────────────
@@ -504,7 +597,7 @@ window.V.onto = () => {
       ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
     </select>
     <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 재설정</button>
-    <button class="btn btn-g btn-sm" onclick="dlOnto()">↓ Excel</button>`;
+    <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
       <div class="o-side">
@@ -521,14 +614,14 @@ window.V.onto = () => {
         ${!S.ontoTask?`<div class="g-empty"><div class="g-empty-msg">상단에서 <strong>과제를 선택</strong>하면<br>기준문서에서 연결된 데이터가<br>자동으로 온톨로지 맵을 구성합니다</div></div>`:''}
       </div>
     </div>`;
-  renderOAb();
-  if(S.ontoTask) { buildOntoGraphData(); setTimeout(initOG,60); }
+  window.renderOAb();
+  if(S.ontoTask) { window.buildOntoGraphData(); setTimeout(window.initOG,60); }
 };
 
 window.switchOntoTask = (code) => { S.ontoTask=code; S.ontoSel=null; window.V.onto(); };
-window.oSelN = id => { S.ontoSel=id; if(oGMain) oGMain.selectAll('.ong').select('circle').attr('stroke',d=>d.id===id?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===id?3.5:2.5); renderOAb(); };
+window.oSelN = id => { S.ontoSel=id; if(window.oGMain) window.oGMain.selectAll('.ong').select('circle').attr('stroke',d=>d.id===id?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===id?3.5:2.5); window.renderOAb(); };
 
-function buildOntoGraphData() {
+window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
   if (!S.ontoTask) return;
   const t = S.tasks.find(x=>x.code===S.ontoTask);
@@ -536,28 +629,26 @@ function buildOntoGraphData() {
   
   nodes.push({id: t.code, label: t.name||t.code, srcType: 'TSK', def: t.purpose});
   
-  parseRef(t._doc).forEach(c => { const d=S.docs.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DOC', def:d.summary}); edges.push({source:t.code, target:c, rtype:'포함/참조', id:`E-${t.code}-${c}`}); } });
-  parseRef(t._dat).forEach(c => { const d=S.dats.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DAT', def:d.dtype}); edges.push({source:t.code, target:c, rtype:'데이터활용', id:`E-${t.code}-${c}`}); } });
-  parseRef(t._trm).forEach(c => { const d=S.terms.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.term||c, srcType:'TRM', def:d.def}); edges.push({source:t.code, target:c, rtype:'용어/객체', id:`E-${t.code}-${c}`}); } });
-  parseRef(t._exp).forEach(c => { const d=S.exps.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.sit||c, srcType:'EXP', def:d.hand}); edges.push({source:t.code, target:c, rtype:'예외조건', id:`E-${t.code}-${c}`}); } });
+  window.parseRef(t._doc).forEach(c => { const d=S.docs.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DOC', def:d.summary}); edges.push({source:t.code, target:c, rtype:'포함/참조', id:`E-${t.code}-${c}`}); } });
+  window.parseRef(t._dat).forEach(c => { const d=S.dats.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DAT', def:d.dtype}); edges.push({source:t.code, target:c, rtype:'데이터활용', id:`E-${t.code}-${c}`}); } });
+  window.parseRef(t._trm).forEach(c => { const d=S.terms.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.term||c, srcType:'TRM', def:d.def}); edges.push({source:t.code, target:c, rtype:'용어/객체', id:`E-${t.code}-${c}`}); } });
+  window.parseRef(t._exp).forEach(c => { const d=S.exps.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.sit||c, srcType:'EXP', def:d.hand}); edges.push({source:t.code, target:c, rtype:'예외조건', id:`E-${t.code}-${c}`}); } });
 
   // Add interconnections
   nodes.forEach(n => {
     if(n.srcType === 'DOC') {
       const d = S.docs.find(x=>x.code===n.id);
-      parseRef(d._trm).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'정의/기준', id:`E-${n.id}-${c}`}); });
-      parseRef(d._exp).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'예외사항', id:`E-${n.id}-${c}`}); });
+      window.parseRef(d._trm).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'정의/기준', id:`E-${n.id}-${c}`}); });
+      window.parseRef(d._exp).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'예외사항', id:`E-${n.id}-${c}`}); });
     }
   });
 
-  // Remove duplicate nodes based on ID
   nodes = [...new Map(nodes.map(item => [item.id, item])).values()];
-  
   S.ontoNodes[S.ontoTask] = nodes;
   S.ontoEdges[S.ontoTask] = edges;
-}
+};
 
-function renderOAb() {
+window.renderOAb = () => {
   const b = document.getElementById('o-abody');
   if(!b) return;
   if(!S.ontoSel) {
@@ -578,42 +669,41 @@ function renderOAb() {
     ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:8px;border-radius:6px;line-height:1.6;margin-bottom:8px">${n.def}</div>`:''}
     <div class="o-div"></div>
     <div class="o-sec">연결된 관계 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${rel.length}개</span></div>
-    ${rel.map(e=>{const isF=e.source===n.id, o=nodes.find(x=>x.id===(isF?e.target:e.source)); return`<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--color-border-tertiary)">
+    ${rel.map(e=>{const isF=e.source===n.id, o=nodes.find(x=>x.id===(isF?e.target:e.source)); return`<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px dashed #e2e8f0">
       <div style="width:7px;height:7px;border-radius:50%;background:${NC[o?.srcType]||'#888'};flex-shrink:0;margin-top:4px"></div>
       <div><div style="font-size:11px">${isF?'→':''} <strong>${o?.label||'?'}</strong> ${!isF?'←':''}</div>
       <div style="font-size:10px;color:var(--color-text-secondary)">${e.rtype}</div></div></div>`}).join('')||`<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 관계 없음</div>`}
   `;
-}
+};
 
 // D3 Logic
-let oSvg, oGMain, oSim, oZoom;
-function initOG() {
-  if(oSim) oSim.stop();
+window.initOG = () => {
+  if(window.oSim) window.oSim.stop();
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
   d3.select('#o-svg').selectAll('*').remove();
-  oSvg = d3.select('#o-svg');
-  const df = oSvg.append('defs');
+  window.oSvg = d3.select('#o-svg');
+  const df = window.oSvg.append('defs');
   df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
     .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
-  oGMain = oSvg.append('g');
-  oZoom = d3.zoom().scaleExtent([0.1,4]).on('zoom',e=>oGMain.attr('transform',e.transform));
-  oSvg.call(oZoom);
+  window.oGMain = window.oSvg.append('g');
+  window.oZoom = d3.zoom().scaleExtent([0.1,4]).on('zoom',e=>window.oGMain.attr('transform',e.transform));
+  window.oSvg.call(window.oZoom);
   
   const nodes = S.ontoNodes[S.ontoTask]||[];
   nodes.forEach((n,i)=>{if(!n.x||!n.y){n.x=W/2+Math.cos(i*2*Math.PI/nodes.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/nodes.length)*150}});
   const links = S.ontoEdges[S.ontoTask]||[];
   
-  oSim = d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(140)).force('charge',d3.forceManyBody().strength(-500)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(50));
+  window.oSim = d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(140)).force('charge',d3.forceManyBody().strength(-500)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(50));
   
-  const eG = oGMain.append('g');
+  const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
   eS.append('line').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('marker-end','url(#oarr)');
   eS.append('text').attr('text-anchor','middle').attr('font-size','9px').attr('fill','#3d3d3a').attr('opacity',0.7).attr('pointer-events','none').text(d=>d.rtype);
   
-  const nG = oGMain.append('g');
+  const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
-    .call(d3.drag().on('start',(e,d)=>{if(!e.active)oSim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;}).on('end',(e,d)=>{if(!e.active)oSim.alphaTarget(0);d.fx=null;d.fy=null;}))
+    .call(d3.drag().on('start',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;}).on('end',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0);d.fx=null;d.fy=null;}))
     .on('click',(e,d)=>{e.stopPropagation();window.oSelN(d.id);})
     .on('mouseenter',(e,d)=>{
       const tip=document.getElementById('o-tip'); if(!tip) return;
@@ -628,58 +718,58 @@ function initOG() {
   nS.append('text').attr('text-anchor','middle').attr('dy','4px').attr('font-size','11px').attr('fill','#fff').attr('font-weight','700').attr('pointer-events','none').text(d=>d.label.substring(0,3));
   nS.append('text').attr('text-anchor','middle').attr('dy','38px').attr('font-size','11px').attr('fill','#3d3d3a').attr('pointer-events','none').text(d=>d.label);
   
-  oSim.on('tick',()=>{
+  window.oSim.on('tick',()=>{
     eS.select('line').attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x-dx/l*28}).attr('y2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y-dy/l*28});
     eS.select('text').attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2-6);
     nS.attr('transform',d=>`translate(${d.x},${d.y})`);
   });
   
-  oSvg.on('click',()=>{S.ontoSel=null;renderOAb();oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
-}
-window.resetOLayout = () => { if(!S.ontoTask) return; const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; (S.ontoNodes[S.ontoTask]||[]).forEach((n,i,a)=>{n.x=W/2+Math.cos(i*2*Math.PI/a.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/a.length)*150; n.fx=null; n.fy=null;}); oSim?.alpha(1).restart(); };
-window.oZS = (k) => oSvg?.transition().duration(300).call(oZoom.scaleBy,k);
-window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; oSvg?.transition().duration(400).call(oZoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.85)); };
+  window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
+};
+window.resetOLayout = () => { if(!S.ontoTask) return; const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; (S.ontoNodes[S.ontoTask]||[]).forEach((n,i,a)=>{n.x=W/2+Math.cos(i*2*Math.PI/a.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/a.length)*150; n.fx=null; n.fy=null;}); window.oSim?.alpha(1).restart(); };
+window.oZS = (k) => window.oSvg?.transition().duration(300).call(window.oZoom.scaleBy,k);
+window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.85)); };
 
 // ── POC ──────────────────────────────────────────────
 window.V.poc = () => {
-  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addPoc()">+ PoC 추가</button>`;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addPoc()">+ PoC 추가</button>`;
   document.getElementById('content').innerHTML=`
     <div class="g4" style="margin-bottom:14px">
       ${['미착수','진행중','완료','이슈'].map(s=>`<div class="card"><div class="stat-l">${s}</div><div class="stat-n">${S.pocs.filter(p=>p.status===s).length}</div></div>`).join('')}
     </div>
     <div class="tw"><table><thead><tr><th>코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
     <tbody>${S.pocs.map(p=>`<tr>
-      <td><span class="code cp">${p.code}</span></td>
-      <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="upd(S.pocs,'${p.code}','tsk',this.value); stateChanged()"><button class="btn-sm btn-o" onclick="openMs('pocs','${p.code}','tsk','TSK')">선택</button></div></td>
-      <td><input type="text" value="${p.logic||''}" onchange="upd(S.pocs,'${p.code}','logic',this.value); stateChanged()"></td>
-      <td><input type="text" value="${p.result||''}" onchange="upd(S.pocs,'${p.code}','result',this.value); stateChanged()"></td>
-      <td><input type="text" value="${p.issue||''}" onchange="upd(S.pocs,'${p.code}','issue',this.value); stateChanged()"></td>
-      <td><span style="color:var(--color-text-secondary)">${p._owner||'—'}</span></td>
-      <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="upd(S.pocs,'${p.code}','date',this.value); stateChanged()" style="width:76px"></td>
-      <td><select onchange="upd(S.pocs,'${p.code}','status',this.value); stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
-      <td><button class="del-btn" onclick="del(S.pocs,'${p.code}'); stateChanged()">×</button></td>
-    </tr>`).join('')}</tbody></table></div>`;
+      <td>${window.badge(p.code)}</td>
+      <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" oninput="window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
+      <td><input type="text" value="${p.logic||''}" oninput="window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"></td>
+      <td><input type="text" value="${p.result||''}" oninput="window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"></td>
+      <td><input type="text" value="${p.issue||''}" oninput="window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"></td>
+      <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
+      <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" oninput="window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
+      <td><select onchange="window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
+      <td><button class="del-btn" onclick="window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
+    </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table></div>`;
 };
-window.addPoc = () => { S.pocs.push({code:nc('poc','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}); stateChanged(); };
+window.addPoc = () => { S.pocs.push({code:window.nc('poc','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}); window.stateChanged(); };
 
 // ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
-  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addMember()">+ 팀원 추가</button>`;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addMember()">+ 팀원 추가</button>`;
   document.getElementById('content').innerHTML=`
-    <div class="banner">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 담당자는 다중 선택이 가능합니다.</div>
+    <div class="banner">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 프로필 이모지를 직접 입력할 수 있으며 Tab 키로 자연스러운 입력칸 이동이 가능합니다.</div>
     <div class="team-grid">${S.team.map((m,i)=>`
       <div class="team-card">
         <div class="tc-top">
-          <div class="avatar">👤</div>
-          <button class="del-btn" onclick="S.team.splice(${i},1); stateChanged()">×</button>
+          <div class="avatar"><input class="avatar-input" value="${m.emoji||'👤'}" oninput="S.team[${i}].emoji=this.value; window.saveStateFn()"></div>
+          <button class="del-btn" onclick="S.team.splice(${i},1); window.stateChanged()">×</button>
         </div>
-        <input class="tci nm" placeholder="이름" value="${m.name||''}" onchange="S.team[${i}].name=this.value; stateChanged()">
-        <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" onchange="S.team[${i}].role=this.value; stateChanged()">
-        <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? m._tasks.map(c=>`<span class="code ct">${c}</span>`).join(''):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
-        <div class="tc-field"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" onchange="S.team[${i}].note=this.value; stateChanged()"></div>
+        <input class="tci nm" placeholder="이름" value="${m.name||''}" oninput="S.team[${i}].name=this.value; window.saveStateFn()">
+        <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" oninput="S.team[${i}].role=this.value; window.saveStateFn()">
+        <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
+        <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" oninput="S.team[${i}].note=this.value; window.saveStateFn()"></div>
       </div>`).join('')}</div>`;
 };
-window.addMember = () => { S.team.push({name:'',role:'',tasks:'',note:'',_tasks:[]}); stateChanged(); };
+window.addMember = () => { S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
 
 // ── EXCEL ────────────────────────────────────────────
 window.handleExcelUpload = (e) => {
@@ -697,7 +787,7 @@ window.handleExcelUpload = (e) => {
           if(row['코드']) {
             let existing = target.find(x => x.code === row['코드']);
             if(!existing) { existing = {code: row['코드']}; target.push(existing); }
-            Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[getKeyByHeader(nm, k)] = String(row[k]||''); });
+            Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
           } else if(row['이름']) {
             let existing = target.find(x => x.name === row['이름']);
             if(!existing) { existing = {name: row['이름']}; target.push(existing); }
@@ -706,13 +796,13 @@ window.handleExcelUpload = (e) => {
         });
       }
     }
-    stateChanged();
+    window.stateChanged();
     window.toast('Excel 업로드 병합 완료');
   };
   reader.readAsArrayBuffer(f);
 };
 
-function getKeyByHeader(sheet, hdr) {
+window.getKeyByHeader = (sheet, hdr) => {
   const m = {
     '과제명':'name', '담당자':'assignee', '팀/직무':'team', '과제목적':'purpose', '현황':'status', '비고':'note',
     '구분':'dtype', '문서명/조항':'name', '핵심내용':'summary', '관련TSK':'tskRef', '관리부서':'dept', '현행화':'cur', '위치':'loc',
@@ -722,11 +812,11 @@ function getKeyByHeader(sheet, hdr) {
     '연관과제':'tsk', '검증 로직·규칙':'logic', '검증결과':'result', '이슈내용':'issue', '예정일':'date', '상태':'status'
   };
   return m[hdr] || hdr;
-}
+};
 
 window.dlXlsx = () => {
   const wb = XLSX.utils.book_new();
-  [['TSK_과제',['코드','과제명','담당자','팀/직무','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.team,r.purpose,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),r.status,r.note])],
+  [['TSK_과제',['코드','과제명','담당자','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.purpose,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),r.status,r.note])],
    ['DOC_기준문서',['코드','구분','문서명','핵심내용','관련TSK','관련EXP(자동)','관련TRM(자동)','관리부서','현행화','위치','비고'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.tskRef,window.mergeRef(r._exp),window.mergeRef(r._trm),r.dept,r.cur,r.loc,r.note])],
    ['EXP_예외기준',['코드','예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM(자동)','기준유무','AI처리','비고'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.tskRef,r.docRef,window.mergeRef(r._trm),r.rule,r.ai,r.note])],
    ['TRM_용어객체',['코드','용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.crit,r.tskRef,r.docRef,r.note])],
@@ -748,7 +838,7 @@ window.dlOnto = () => {
   XLSX.writeFile(wb,`AX_온톨로지_${S.ontoTask}.xlsx`); window.toast(`${S.ontoTask} 온톨로지 Excel 저장 완료`);
 };
 
-recomputeAll();
+window.recomputeAll();
 // Wait for auth to complete to render correct view if needed, but show home initially
 if (!Object.keys(firebaseConfig).length) { window.V.home(); }
 
