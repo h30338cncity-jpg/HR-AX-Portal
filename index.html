@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{display:flex;height:100vh;overflow:hidden;font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary)}
+.sb{width:212px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow-y:auto}
+.sb-top{padding:14px 14px 10px;border-bottom:1px solid var(--color-border-tertiary)}
+.sb-top h1{font-size:14px;font-weight:500}.sb-top p{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.sb-sec{padding:10px 14px 4px;font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;margin:1px 6px;cursor:pointer;font-size:12px;color:var(--color-text-secondary);transition:all .12s;user-select:none}
+.sb-item:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.sb-item.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+.sb-ic{width:16px;text-align:center;flex-shrink:0;font-size:14px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:50px;flex-shrink:0;background:var(--color-background-primary);border-bottom:1px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 18px;gap:10px}
+.topbar h2{font-size:14px;font-weight:500;flex:1}
+.topbar-r{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.content{flex:1;overflow-y:auto;padding:18px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:opacity .12s;white-space:nowrap}
+.btn:hover{opacity:.85}.btn-g{background:#1D9E75;color:#fff}
+.btn-o{background:transparent;border:1px solid var(--color-border-secondary);color:var(--color-text-primary)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.add-row{display:flex;align-items:center;gap:5px;margin-top:8px;padding:5px 11px;background:transparent;border:1px dashed var(--color-border-secondary);border-radius:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer}
+.add-row:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.del-btn{width:22px;height:22px;border:none;border-radius:4px;background:transparent;color:var(--color-text-secondary);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.del-btn:hover{background:var(--color-background-secondary);color:#E24B4A}
+/* Cards & Grid */
+.card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec h3{font-size:13px;font-weight:500}
+.gap{height:14px}
+.stat-n{font-size:26px;font-weight:500;margin:6px 0 3px}
+.stat-l{font-size:11px;color:var(--color-text-secondary)}
+.bar{height:4px;border-radius:2px;background:var(--color-border-tertiary);margin-top:10px;overflow:hidden}
+.bar-f{height:100%;border-radius:2px;transition:width .5s}
+.sys-card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:14px;cursor:pointer;transition:all .18s}
+.sys-card:hover{border-color:var(--color-border-secondary);transform:translateY(-1px)}
+.sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:500;margin-bottom:3px}
+.sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
+/* Table */
+.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--color-border-tertiary)}
+table{width:100%;border-collapse:collapse;background:var(--color-background-primary)}
+thead tr{background:var(--color-background-secondary)}
+th{padding:7px 9px;text-align:left;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:2px solid var(--color-border-secondary);white-space:nowrap}
+td{padding:4px 6px;border-bottom:1px solid var(--color-border-tertiary);font-size:12px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--color-background-secondary)}
+td input,td select{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 5px;font-size:12px;color:var(--color-text-primary);font-family:inherit;outline:none}
+td input:focus,td select:focus{border-color:var(--color-border-secondary);background:var(--color-background-primary)}
+td input:hover:not(:focus){border-color:var(--color-border-tertiary)}
+td select{cursor:pointer}
+/* Kanban */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start}
+.kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px}
+.kcol-hd{font-size:11px;font-weight:500;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.kcard{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:7px;padding:9px;margin-bottom:6px}
+.kcard-code{font-size:10px;font-family:var(--font-mono);margin-bottom:4px}
+.kcard input,.kcard select{width:100%;background:transparent;border:none;outline:none;color:var(--color-text-primary);font-size:12px;font-family:inherit;padding:1px 0}
+.kcard .knm{font-weight:500}.kcard .kas{font-size:11px;color:var(--color-text-secondary);cursor:pointer}
+.kcard-ft{margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.kcard-ft select{font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-primary);cursor:pointer}
+/* Subtabs */
+.stabs{display:flex;border-bottom:1px solid var(--color-border-tertiary);flex-shrink:0}
+.stab{padding:9px 13px;border-bottom:2px solid transparent;cursor:pointer;font-size:12px;font-weight:500;color:var(--color-text-secondary);white-space:nowrap}
+.stab.on{border-bottom-color:#1D9E75;color:var(--color-text-primary)}
+/* Code badges */
+.code{font-family:var(--font-mono);font-size:10px;font-weight:500;padding:2px 5px;border-radius:3px;display:inline-block}
+.ct{background:#EEEDFE;color:#3C3489}.cd{background:#E1F5EE;color:#085041}
+.ce{background:#FAEEDA;color:#633806}.cr{background:#E6F1FB;color:#0C447C}
+.ca{background:#FAECE7;color:#712B13}.cl{background:#FBEAF0;color:#72243E}
+.cp{background:#EAF3DE;color:#27500A}
+@media(prefers-color-scheme:dark){
+  .ct{background:#26215C;color:#CECBF6}.cd{background:#04342C;color:#9FE1CB}
+  .ce{background:#412402;color:#FAC775}.cr{background:#042C53;color:#B5D4F4}
+  .ca{background:#4A1B0C;color:#F5C4B3}.cl{background:#4B1528;color:#F4C0D1}
+  .cp{background:#173404;color:#C0DD97}
+}
+.pill{font-size:10px;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.pd{background:#EAF3DE;color:#27500A}.pp{background:#FAEEDA;color:#633806}
+.pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
+@media(prefers-color-scheme:dark){
+  .pd{background:#173404;color:#C0DD97}.pp{background:#412402;color:#FAC775}
+  .pt{background:#2C2C2A;color:#D3D1C7}.pw{background:#501313;color:#F7C1C1}
+}
+/* Team */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.team-card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:13px}
+.tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:15px}
+.tci{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--color-text-primary)}
+.tci.nm{font-size:13px;font-weight:500;border-bottom:1px solid transparent;padding:1px 0}
+.tci.nm:focus{border-bottom-color:var(--color-border-secondary)}
+.tci.rl{font-size:11px;color:var(--color-text-secondary)}
+.tc-field{margin-top:7px}
+.tc-label{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px}
+.tc-tag{width:100%;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:5px;padding:3px 6px;font-size:11px;font-family:var(--font-mono);color:var(--color-text-primary);outline:none}
+/* ONTO */
+.onto-wrap{display:flex;height:100%;overflow:hidden}
+.o-side{width:258px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden}
+.o-atabs{display:flex;border-bottom:1px solid var(--color-border-tertiary);flex-shrink:0}
+.o-atab{flex:1;padding:9px 0;text-align:center;font-size:11px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;transition:all .12s}
+.o-atab.on{color:var(--color-text-primary);border-bottom-color:#1D9E75}
+.o-abody{flex:1;overflow-y:auto;padding:12px}
+.o-graph{flex:1;position:relative}
+#o-svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+#o-svg:active{cursor:grabbing}
+.g-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.g-empty-msg{text-align:center;color:var(--color-text-secondary);font-size:12px;line-height:1.9;background:var(--color-background-primary);padding:20px 24px;border-radius:10px;border:1px solid var(--color-border-tertiary);max-width:260px}
+.g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px}
+.gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500}
+.gcb:hover{background:var(--color-background-secondary)}
+.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:190px;line-height:1.7;z-index:10}
+.g-tip.on{opacity:1}
+/* Onto side */
+.o-sec{font-size:12px;font-weight:500;margin-bottom:8px;color:var(--color-text-primary)}
+.o-div{height:1px;background:var(--color-border-tertiary);margin:10px 0}
+.o-fr{margin-bottom:8px}
+.o-fr label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.ofi{width:100%;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:6px;padding:5px 8px;font-size:12px;color:var(--color-text-primary);font-family:inherit;outline:none}
+.ofi:focus{border-color:#1D9E75}
+.imp-group{margin-bottom:10px}
+.imp-glbl{font-size:10px;font-weight:500;color:var(--color-text-secondary);padding:3px 0;border-bottom:1px solid var(--color-border-tertiary);margin-bottom:5px}
+.imp-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;cursor:pointer}
+.imp-item input[type=checkbox]{flex-shrink:0;accent-color:#1D9E75;cursor:pointer}
+.imp-item label{cursor:pointer;line-height:1.4;flex:1}
+.imp-item.done label{opacity:.45;cursor:default}
+.imp-code{font-family:var(--font-mono);font-size:9px;background:var(--color-background-secondary);padding:1px 4px;border-radius:3px;margin-right:3px;display:inline-block}
+.nl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:11px;transition:background .12s}
+.nl-item:hover{background:var(--color-background-secondary)}
+.nl-item.on{background:var(--color-background-secondary);font-weight:500}
+.nl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.nl-meta{font-size:10px;color:var(--color-text-secondary);margin-top:1px}
+.o-leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.o-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.o-leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.hint{text-align:center;padding:20px 10px;color:var(--color-text-secondary);font-size:11px;line-height:1.9}
+.note{font-size:11px;color:var(--color-text-secondary);margin-top:6px}
+.banner{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px}
+.topbar-sel{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:7px;padding:5px 10px;font-size:12px;color:var(--color-text-primary);outline:none;cursor:pointer;min-width:160px;max-width:220px}
+.topbar-sel:focus{border-color:#1D9E75}
+.toast{position:fixed;bottom:18px;right:18px;background:#1D9E75;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="sb">
+  <div class="sb-top"><h1>AX 포털</h1><p>AI Transformation 통합 관리</p></div>
+  <div class="sb-sec">메인</div>
+  <div class="sb-item active" id="n-home" onclick="go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
+  <div class="sb-sec">AX 관리</div>
+  <div class="sb-item" id="n-tasks" onclick="go('tasks',this)"><span class="sb-ic">📋</span>과제 현황판</div>
+  <div class="sb-item" id="n-docs" onclick="go('docs',this)"><span class="sb-ic">📄</span>기준문서 관리</div>
+  <div class="sb-item" id="n-data" onclick="go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
+  <div class="sb-sec">분석 · 설계</div>
+  <div class="sb-item" id="n-onto" onclick="go('onto',this)"><span class="sb-ic">🔗</span>온톨로지 · 관계</div>
+  <div class="sb-item" id="n-poc" onclick="go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
+  <div class="sb-sec">팀</div>
+  <div class="sb-item" id="n-team" onclick="go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
+</div>
+<div class="main">
+  <div class="topbar"><h2 id="pg-title">홈 대시보드</h2><div class="topbar-r" id="pg-actions"></div></div>
+  <div class="content" id="content"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── STATE ────────────────────────────────────────────
+const S={
+  team:[
+    {name:'',role:'',email:'',tasks:'',note:''},
+    {name:'',role:'',email:'',tasks:'',note:''},
+    {name:'',role:'',email:'',tasks:'',note:''},
+  ],
+  tasks:[
+    {code:'TSK-001',name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''},
+    {code:'TSK-002',name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''},
+    {code:'TSK-003',name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''},
+  ],
+  docs:[
+    {code:'DOC-001',dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:''},
+    {code:'DOC-002',dtype:'사규',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:''},
+    {code:'DOC-003',dtype:'지침',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:''},
+  ],
+  exps:[
+    {code:'EXP-001',sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:''},
+    {code:'EXP-002',sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:''},
+  ],
+  terms:[
+    {code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},
+    {code:'TRM-002',term:'',def:'',otype:'속성',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},
+  ],
+  dats:[
+    {code:'DAT-001',name:'',src:'',own:'미확인',cycle:'',sens:'일반',qual:'',tskRef:'',trmRef:'',note:''},
+    {code:'DAT-002',name:'',src:'',own:'미확인',cycle:'',sens:'일반',qual:'',tskRef:'',trmRef:'',note:''},
+  ],
+  rels:[{code:'REL-001',from:'',rtype:'상위→하위(포함)',to:'',desc:'',dir:'단방향',cond:'',docRef:'',tskRef:'',note:''}],
+  pocs:[
+    {code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:''},
+    {code:'POC-002',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:''},
+  ],
+  cnt:{tsk:3,doc:3,exp:2,trm:2,dat:2,rel:1,poc:2},
+  ontoTask:'',
+  ontoNodes:{},  // taskCode → [{id,label,srcType,def,x,y}]
+  ontoEdges:{},  // taskCode → [{id,from,to,rtype,desc}]
+  ontoECnt:{},
+  ontoSel:null,
+  ontoATab:'import',
+};
+
+// ── CONSTANTS ────────────────────────────────────────
+const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517','custom':'#5F5E5A'};
+const RTYPES=['상위→하위(포함)','선행→후행(순서)','참조(영향)','판정기준','상호참조','사용(입력)','생성(출력)'];
+const DM=window.matchMedia('(prefers-color-scheme:dark)').matches;
+const TC=DM?'#D3D1C7':'#3d3d3a';
+const EC=DM?'rgba(255,255,255,0.28)':'rgba(0,0,0,0.2)';
+
+// ── UTILS ────────────────────────────────────────────
+function nc(k,p){S.cnt[k]++;return p+'-'+String(S.cnt[k]).padStart(3,'0')}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
+function upd(arr,code,f,v){const r=arr.find(r=>r.code===code);if(r)r[f]=v}
+function del(arr,code){const i=arr.findIndex(r=>r.code===code);if(i>-1)arr.splice(i,1)}
+function pct(n,d){return d?Math.round(n/d*100):0}
+function pill(v){const m={'완료':'pd','진행중':'pp','검증중':'pp','미착수':'pt','이슈':'pw','최신':'pd','갱신필요':'pw','미확인':'pt','보유':'pd','일부보유':'pp','미보유':'pw','명문화됨':'pd','담당자재량':'pp','기준없음':'pt','가능':'pd','조건부가능':'pp','불가':'pw','일반':'pt','개인정보':'pw','민감정보':'pw'};return`<span class="pill ${m[v]||'pt'}">${v}</span>`}
+
+function teamOpts(sel=''){
+  const m=S.team.filter(x=>x.name.trim());
+  return`<option value="">— 담당자 —</option>`+m.map(x=>`<option${x.name===sel?' selected':''}>${x.name}</option>`).join('');
+}
+function taskOpts(sel=''){
+  return`<option value="">— 과제 —</option>`+S.tasks.map(t=>`<option value="${t.code}"${t.code===sel?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('');
+}
+function isLinked(ref,code){if(!ref||!code)return false;return ref.split(',').map(s=>s.trim()).includes(code)}
+function getLinked(tsk){return{docs:S.docs.filter(d=>isLinked(d.tskRef,tsk)),dats:S.dats.filter(d=>isLinked(d.tskRef,tsk)),terms:S.terms.filter(d=>isLinked(d.tskRef,tsk)),exps:S.exps.filter(d=>isLinked(d.tskRef,tsk))}}
+
+// ── NAVIGATION ───────────────────────────────────────
+const titles={home:'홈 대시보드',tasks:'과제 현황판',docs:'기준문서 관리',data:'데이터셋 현황',onto:'온톨로지 · 관계',poc:'PoC 진행 현황',team:'팀원 R&R'};
+function go(v,el){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  (el||document.getElementById('n-'+v))?.classList.add('active');
+  document.getElementById('pg-title').textContent=titles[v]||'';
+  document.getElementById('pg-actions').innerHTML='';
+  const c=document.getElementById('content');
+  if(v==='onto'||v==='docs'){c.style.cssText='flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column'}
+  else{c.style.cssText='flex:1;overflow-y:auto;padding:18px'}
+  V[v]?.();
+}
+
+const V={};
+
+// ── HOME ─────────────────────────────────────────────
+V.home=()=>{
+  const t=S.tasks,done=t.filter(x=>x.status==='완료').length,prog=t.filter(x=>x.status==='진행중').length;
+  const dd=S.dats,own=dd.filter(x=>x.own==='보유').length;
+  const pd=S.pocs,pdone=pd.filter(x=>x.status==='완료').length;
+  const sys=[{id:'tasks',ic:'📋',nm:'과제 현황판',ds:'TSK 진행 상태를 칸반 보드로 관리'},{id:'docs',ic:'📄',nm:'기준문서 관리',ds:'법령·사규·지침·운영문서 코드 연결'},{id:'data',ic:'💾',nm:'데이터셋 현황',ds:'데이터 보유·품질 현황 추적'},{id:'onto',ic:'🔗',nm:'온톨로지·관계',ds:'과제별 객체 관계 그래프 시각화'},{id:'poc',ic:'🧪',nm:'PoC 현황',ds:'로직·규칙 검증 및 실패 추적'},{id:'team',ic:'👥',nm:'팀원 R&R',ds:'팀원 등록 → 담당자 드롭다운 연동'}];
+  document.getElementById('content').innerHTML=`
+    <div class="g4" style="margin-bottom:14px">
+      <div class="card"><div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div><div>${pill('완료')} ${done} · ${pill('진행중')} ${prog}</div><div class="bar"><div class="bar-f" style="width:${pct(done,t.length)}%;background:#1D9E75"></div></div></div>
+      <div class="card"><div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div><div>${pill('최신')} ${S.docs.filter(d=>d.cur==='최신').length}건</div><div class="bar"><div class="bar-f" style="width:${pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#0F6E56"></div></div></div>
+      <div class="card"><div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${dd.length}</span></div><div class="bar"><div class="bar-f" style="width:${pct(own,dd.length)}%;background:#185FA5"></div></div></div>
+      <div class="card"><div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${pd.length}</span></div><div class="bar"><div class="bar-f" style="width:${pct(pdone,pd.length)}%;background:#639922"></div></div></div>
+    </div>
+    <div class="sec"><h3>시스템 바로가기</h3><span style="font-size:11px;color:var(--color-text-secondary)">팀원 R&R에서 팀원 등록 후 각 시스템에서 담당자 드롭다운 사용 가능</span></div>
+    <div class="g3">${sys.map(s=>`<div class="sys-card" onclick="go('${s.id}')"><div class="sys-ic">${s.ic}</div><div class="sys-nm">${s.nm}</div><div class="sys-ds">${s.ds}</div></div>`).join('')}</div>`;
+};
+
+// ── TASKS ────────────────────────────────────────────
+V.tasks=()=>{
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addTask()">+ 과제 추가</button>`;
+  const cols=['미착수','진행중','검증중','완료','이슈'];
+  const cc={'미착수':'pt','진행중':'pp','검증중':'pp','완료':'pd','이슈':'pw'};
+  document.getElementById('content').innerHTML=`<div class="kanban">${cols.map(col=>`
+    <div class="kcol">
+      <div class="kcol-hd"><span>${col}</span><span class="pill ${cc[col]}">${S.tasks.filter(t=>t.status===col).length}</span></div>
+      ${S.tasks.filter(t=>t.status===col).map(t=>`
+        <div class="kcard">
+          <div class="kcard-code">${t.code}</div>
+          <input class="knm" placeholder="과제명" value="${t.name||''}" oninput="upd(S.tasks,'${t.code}','name',this.value)">
+          <select class="kas" onchange="upd(S.tasks,'${t.code}','assignee',this.value)">${teamOpts(t.assignee)}</select>
+          <div class="kcard-ft">
+            <select onchange="upd(S.tasks,'${t.code}','status',this.value);V.tasks()">
+              ${['미착수','진행중','검증중','완료','이슈'].map(s=>`<option${s===t.status?' selected':''}>${s}</option>`).join('')}
+            </select>
+            <button class="del-btn" onclick="del(S.tasks,'${t.code}');V.tasks()">×</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('')}</div>`;
+};
+function addTask(){S.tasks.push({code:nc('tsk','TSK'),name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''});V.tasks()}
+
+// ── DOCS ─────────────────────────────────────────────
+let dtab='tsk';
+V.docs=(tab)=>{
+  dtab=tab||dtab;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-g" onclick="dlXlsx()">↓ Excel</button>`;
+  const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 관계 매핑','cl']];
+  const cfgs={
+    tsk:{k:'tasks',hd:['과제명','담당자','팀/직무','과제목적','관련DOC','관련TRM','관련DAT','현황','비고'],fl:['name','assignee','team','purpose','docRef','trmRef','datRef','status','note'],sl:{status:['미착수','진행중','검증중','완료','이슈']},tm:{assignee:true},cl:'ct',ck:'tsk',p:'TSK',df:{name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''}},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심내용','관련TSK','관련EXP','관련TRM','관리부서','현행화','위치','비고'],fl:['dtype','name','summary','tskRef','expRef','trmRef','dept','cur','loc','note'],sl:{dtype:['법령','사규','지침','운영문서','매뉴얼','SOP','평가기준','기타'],cur:['최신','갱신필요','미확인']},cl:'cd',ck:'doc',p:'DOC',df:{dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:''}},
+    exp:{k:'exps',hd:['예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM','기준유무','AI처리','비고'],fl:['sit','hand','owner','tskRef','docRef','trmRef','rule','ai','note'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},tm:{owner:true},cl:'ce',ck:'exp',p:'EXP',df:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:''}},
+    trm:{k:'terms',hd:['용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],fl:['term','def','otype','parent','child','sim','crit','tskRef','docRef','note'],sl:{otype:['객체','속성','기준값','이벤트','역할','프로세스']},cl:'cr',ck:'trm',p:'TRM',df:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''}},
+    dat:{k:'dats',hd:['항목명','출처','보유여부','수집주기','민감도','품질이슈','관련TSK','관련TRM','비고'],fl:['name','src','own','cycle','sens','qual','tskRef','trmRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},cl:'ca',ck:'dat',p:'DAT',df:{name:'',src:'',own:'미확인',cycle:'',sens:'일반',qual:'',tskRef:'',trmRef:'',note:''}},
+    rel:{k:'rels',hd:['주체(From)','관계유형','대상(To)','관계설명','방향','조건','관련DOC','관련TSK','비고'],fl:['from','rtype','to','desc','dir','cond','docRef','tskRef','note'],sl:{rtype:RTYPES.slice(0,5),dir:['단방향','양방향']},cl:'cl',ck:'rel',p:'REL',df:{from:'',rtype:'상위→하위(포함)',to:'',desc:'',dir:'단방향',cond:'',docRef:'',tskRef:'',note:''}},
+  };
+  const c=cfgs[dtab];
+  const stH=tabs.map(([id,lb])=>`<div class="stab${dtab===id?' on':''}" onclick="V.docs('${id}')">${lb}</div>`).join('');
+  const tbody=S[c.k].map(row=>{
+    const cells=c.fl.map(f=>{
+      if(c.tm?.[f])return`<td><select onchange="upd(S.${c.k},'${row.code}','${f}',this.value)">${teamOpts(row[f])}</select></td>`;
+      if(c.sl?.[f])return`<td><select onchange="upd(S.${c.k},'${row.code}','${f}',this.value)">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
+      return`<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" oninput="upd(S.${c.k},'${row.code}','${f}',this.value)"></td>`;
+    }).join('');
+    return`<tr><td><span class="code ${c.cl}">${row.code}</span></td>${cells}<td><button class="del-btn" onclick="del(S.${c.k},'${row.code}');V.docs('${dtab}')">×</button></td></tr>`;
+  }).join('');
+  document.getElementById('content').innerHTML=`
+    <div class="stabs">${stH}</div>
+    <div style="flex:1;overflow:auto;padding:14px">
+      <div class="tw"><table><thead><tr><th style="width:88px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody}</tbody></table></div>
+      <button class="add-row" onclick="addDocRow('${dtab}')">+ 행 추가</button>
+      <div class="note">※ 관련코드 쉼표 구분 (예: TSK-001, TSK-002) · 담당자는 팀원 R&R에서 먼저 등록하세요 · DOC·DAT·TRM에 관련TSK 입력 시 온톨로지에서 노드로 가져올 수 있습니다</div>
+    </div>`;
+};
+function addDocRow(tab){
+  const m={tsk:['tasks','tsk','TSK'],doc:['docs','doc','DOC'],exp:['exps','exp','EXP'],trm:['terms','trm','TRM'],dat:['dats','dat','DAT'],rel:['rels','rel','REL']};
+  const cfgDf={tsk:{name:'',assignee:'',team:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:''},doc:{dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:''},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:''},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',src:'',own:'미확인',cycle:'',sens:'일반',qual:'',tskRef:'',trmRef:'',note:''},rel:{from:'',rtype:'상위→하위(포함)',to:'',desc:'',dir:'단방향',cond:'',docRef:'',tskRef:'',note:''}};
+  const[arr,k,pfx]=m[tab];S[arr].push({...cfgDf[tab],code:nc(k,pfx)});V.docs(tab);
+}
+
+// ── DATASET ──────────────────────────────────────────
+V.data=()=>{
+  const dd=S.dats,o=dd.filter(d=>d.own==='보유').length,pa=dd.filter(d=>d.own==='일부보유').length,n=dd.filter(d=>d.own==='미보유').length;
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="go('docs',document.getElementById('n-docs'));V.docs('dat')">+ 추가</button>`;
+  document.getElementById('content').innerHTML=`
+    <div class="g4" style="margin-bottom:14px">
+      <div class="card"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
+      <div class="card"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
+      <div class="card"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
+      <div class="card"><div class="stat-l">민감데이터</div><div class="stat-n">${dd.filter(d=>d.sens!=='일반').length}</div></div>
+    </div>
+    <div class="tw"><table><thead><tr><th>코드</th><th>항목명</th><th>출처</th><th>보유여부</th><th>민감도</th><th>수집주기</th><th>품질이슈</th><th>관련TSK</th></tr></thead>
+    <tbody>${dd.map(d=>`<tr><td><span class="code ca">${d.code}</span></td><td>${d.name||'—'}</td><td>${d.src||'—'}</td><td>${pill(d.own)}</td><td>${pill(d.sens)}</td><td>${d.cycle||'—'}</td><td>${d.qual||'—'}</td><td>${d.tskRef?`<span class="code ct">${d.tskRef.split(',')[0].trim()}</span>`:'-'}</td></tr>`).join('')}</tbody></table></div>`;
+};
+
+// ── ONTO ─────────────────────────────────────────────
+let oSvg,oGMain,oSim,oZoom;
+V.onto=()=>{
+  document.getElementById('pg-actions').innerHTML=`
+    <select class="topbar-sel" onchange="switchOntoTask(this.value)">
+      <option value="">— 과제 선택 —</option>
+      ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
+    </select>
+    <button class="btn btn-o btn-sm" onclick="resetOLayout()">레이아웃 재설정</button>
+    <button class="btn btn-g btn-sm" onclick="dlOnto()">↓ Excel</button>`;
+  document.getElementById('content').innerHTML=`
+    <div class="onto-wrap">
+      <div class="o-side">
+        <div class="o-atabs">
+          <div class="o-atab${S.ontoATab==='import'?' on':''}" onclick="oTab('import')">가져오기</div>
+          <div class="o-atab${S.ontoATab==='rel'?' on':''}" onclick="oTab('rel')">관계 추가</div>
+          <div class="o-atab${S.ontoATab==='detail'?' on':''}" onclick="oTab('detail')">상세</div>
+        </div>
+        <div class="o-abody" id="o-abody"></div>
+      </div>
+      <div class="o-graph" id="o-gwrap">
+        <svg id="o-svg"></svg>
+        <div class="g-tip" id="o-tip"></div>
+        <div class="g-ctrls">
+          <button class="gcb" onclick="oZS(1.3)">+</button>
+          <button class="gcb" onclick="oZS(0.77)">−</button>
+          <button class="gcb" onclick="oZF()" style="font-size:11px">⊙</button>
+        </div>
+        ${!S.ontoTask?`<div class="g-empty"><div class="g-empty-msg">상단에서 <strong>과제를 선택</strong>하면<br>관련 문서·데이터·용어를<br>노드로 가져올 수 있습니다<br><br>기준문서 관리에서<br>DOC·DAT·TRM에 관련TSK를<br>입력해두면 자동으로 연결됩니다</div></div>`:''}
+      </div>
+    </div>`;
+  renderOAb();
+  if(S.ontoTask) setTimeout(initOG,60);
+};
+
+function switchOntoTask(code){S.ontoTask=code;S.ontoSel=null;V.onto()}
+function oTab(t){S.ontoATab=t;document.querySelectorAll('.o-atab').forEach((e,i)=>e.classList.toggle('on',['import','rel','detail'][i]===t));renderOAb()}
+function renderOAb(){const b=document.getElementById('o-abody');if(b)b.innerHTML=S.ontoATab==='import'?renderOImport():S.ontoATab==='rel'?renderORel():renderODetail()}
+
+function renderOImport(){
+  if(!S.ontoTask)return`<div class="hint">과제를 선택해주세요</div>`;
+  const li=getLinked(S.ontoTask);
+  const nodes=S.ontoNodes[S.ontoTask]||[];
+  const aid=new Set(nodes.map(n=>n.id));
+  const any=li.docs.length||li.dats.length||li.terms.length||li.exps.length;
+  const grp=(lbl,arr,st)=>{
+    if(!arr.length)return'';
+    const nm=x=>x.name||x.term||x.sit||x.code;
+    return`<div class="imp-group"><div class="imp-glbl">${lbl}</div>${arr.map(x=>{const d=aid.has(x.code);return`<div class="imp-item${d?' done':''}"><input type="checkbox" id="ic-${x.code}"${d?' checked disabled':''}><label for="ic-${x.code}"><span class="imp-code">${x.code}</span>${nm(x)||'(미입력)'}</label></div>`}).join('')}</div>`;
+  };
+  return`
+    ${!any?`<div class="hint">이 과제에 연결된 항목이 없습니다<br><br>기준문서 관리에서<br>DOC·DAT·TRM·EXP의<br><strong>관련TSK</strong>에<br><strong>${S.ontoTask}</strong>를 입력해주세요</div>`:''}
+    ${grp('📄 기준문서',li.docs,'DOC')}${grp('💾 데이터셋',li.dats,'DAT')}${grp('🔤 용어·객체',li.terms,'TRM')}${grp('⚠ 예외기준',li.exps,'EXP')}
+    ${any?`<button class="btn btn-g" style="width:100%;margin-top:8px" onclick="importSel()">선택 항목 → 노드 추가</button>`:''}
+    <div class="o-div"></div>
+    <div class="o-sec">현재 노드 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${nodes.length}개</span></div>
+    ${nodes.map(n=>`<div class="nl-item${n.id===S.ontoSel?' on':''}" onclick="oSelN('${n.id}');oTab('detail')">
+      <div class="nl-dot" style="background:${NC[n.srcType]||'#888'}"></div>
+      <div style="flex:1"><div>${n.label}</div><div class="nl-meta">${n.srcType} · ${n.id}</div></div>
+      <button class="del-btn" onclick="event.stopPropagation();oDelN('${n.id}')">×</button>
+    </div>`).join('')}`;
+}
+
+function renderORel(){
+  if(!S.ontoTask)return`<div class="hint">과제를 선택해주세요</div>`;
+  const nodes=S.ontoNodes[S.ontoTask]||[];
+  if(!nodes.length)return`<div class="hint">먼저 가져오기 탭에서<br>노드를 추가해주세요</div>`;
+  const nOpts=`<option value="">선택...</option>`+nodes.map(n=>`<option value="${n.id}">${n.label} (${n.id})</option>`).join('');
+  const edges=S.ontoEdges[S.ontoTask]||[];
+  return`
+    <div class="o-sec">관계 추가</div>
+    <div class="o-fr"><label>주체 (From)</label><select class="ofi" id="of-from">${nOpts}</select></div>
+    <div class="o-fr"><label>관계 유형</label><select class="ofi" id="of-rtype">${RTYPES.map(r=>`<option>${r}</option>`).join('')}</select></div>
+    <div class="o-fr"><label>대상 (To)</label><select class="ofi" id="of-to">${nOpts}</select></div>
+    <div class="o-fr"><label>설명</label><input class="ofi" id="of-desc" placeholder="관계 설명 (선택)"></div>
+    <button class="btn btn-g" style="width:100%" onclick="oAddE()">관계 추가</button>
+    <div class="o-div"></div>
+    <div class="o-sec">현재 관계 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${edges.length}개</span></div>
+    ${edges.map(e=>{const fn=nodes.find(n=>n.id===e.from),tn=nodes.find(n=>n.id===e.to);return`<div style="display:flex;align-items:flex-start;gap:5px;padding:5px 0;border-bottom:1px solid var(--color-border-tertiary);font-size:11px">
+      <div style="flex:1"><strong>${fn?.label||e.from}</strong><span style="color:var(--color-text-secondary)"> → ${e.rtype} → </span><strong>${tn?.label||e.to}</strong>${e.desc?`<div style="color:var(--color-text-secondary);font-size:10px">${e.desc}</div>`:''}</div>
+      <button class="del-btn" onclick="oDelE('${e.id}')">×</button></div>`}).join('')}`;
+}
+
+function renderODetail(){
+  if(!S.ontoSel)return`<div class="hint">그래프에서 노드를<br>클릭하면 상세 정보가<br>표시됩니다</div>`;
+  const nodes=S.ontoNodes[S.ontoTask]||[];
+  const n=nodes.find(x=>x.id===S.ontoSel);
+  if(!n)return`<div class="hint">선택된 노드 없음</div>`;
+  const edges=S.ontoEdges[S.ontoTask]||[];
+  const rel=edges.filter(e=>e.from===n.id||e.to===n.id);
+  return`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:12px;height:12px;border-radius:50%;background:${NC[n.srcType]};flex-shrink:0"></div>
+      <div><div style="font-size:13px;font-weight:500">${n.label}</div><div style="font-size:10px;color:var(--color-text-secondary)">${n.srcType} · ${n.id}</div></div>
+    </div>
+    ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:8px;border-radius:6px;line-height:1.6;margin-bottom:8px">${n.def}</div>`:''}
+    <div class="o-div"></div>
+    <div class="o-sec">연결된 관계 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${rel.length}개</span></div>
+    ${rel.map(e=>{const isF=e.from===n.id,o=nodes.find(x=>x.id===(isF?e.to:e.from));return`<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--color-border-tertiary)">
+      <div style="width:7px;height:7px;border-radius:50%;background:${NC[o?.srcType]||'#888'};flex-shrink:0;margin-top:4px"></div>
+      <div><div style="font-size:11px">${isF?'→':''} <strong>${o?.label||'?'}</strong> ${!isF?'←':''}</div>
+      <div style="font-size:10px;color:var(--color-text-secondary)">${e.rtype}${e.desc?' · '+e.desc:''}</div></div></div>`}).join('')||`<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 관계 없음</div>`}
+    <div class="o-div"></div>
+    <button class="btn btn-o" style="width:100%;font-size:11px" onclick="oDelN('${n.id}')">이 노드 삭제</button>`;
+}
+
+function importSel(){
+  if(!S.ontoTask)return;
+  const cbs=document.querySelectorAll('[id^="ic-"]:checked:not(:disabled)');
+  if(!cbs.length){toast('가져올 항목을 선택해주세요');return}
+  const W=document.getElementById('o-gwrap').clientWidth;
+  const H=document.getElementById('o-gwrap').clientHeight;
+  if(!S.ontoNodes[S.ontoTask])S.ontoNodes[S.ontoTask]=[];
+  const nodes=S.ontoNodes[S.ontoTask];
+  const eIds=new Set(nodes.map(n=>n.id));
+  let added=0;
+  cbs.forEach(cb=>{
+    const code=cb.id.replace('ic-','');
+    if(eIds.has(code))return;
+    const doc=S.docs.find(d=>d.code===code),dat=S.dats.find(d=>d.code===code),trm=S.terms.find(d=>d.code===code),exp=S.exps.find(d=>d.code===code);
+    let srcType,label,def;
+    if(doc){srcType='DOC';label=doc.name||code;def=doc.summary}
+    else if(dat){srcType='DAT';label=dat.name||code;def=dat.src}
+    else if(trm){srcType='TRM';label=trm.term||code;def=trm.def}
+    else if(exp){srcType='EXP';label=exp.sit||code;def=exp.hand}
+    else return;
+    nodes.push({id:code,label:label||code,srcType,def:def||'',x:W/2+(Math.random()-.5)*300,y:H/2+(Math.random()-.5)*200});
+    added++;
+  });
+  if(!added){toast('이미 추가된 항목입니다');return}
+  refreshOG();renderOAb();toast(`${added}개 노드가 추가되었습니다`);
+}
+
+function oAddE(){
+  const from=document.getElementById('of-from')?.value,to=document.getElementById('of-to')?.value,rtype=document.getElementById('of-rtype')?.value,desc=document.getElementById('of-desc')?.value?.trim()||'';
+  if(!from||!to){toast('주체와 대상을 선택해주세요');return}
+  if(from===to){toast('같은 노드는 연결할 수 없습니다');return}
+  if(!S.ontoEdges[S.ontoTask])S.ontoEdges[S.ontoTask]=[];
+  if(!S.ontoECnt[S.ontoTask])S.ontoECnt[S.ontoTask]=0;
+  S.ontoECnt[S.ontoTask]++;
+  S.ontoEdges[S.ontoTask].push({id:`E-${S.ontoTask}-${S.ontoECnt[S.ontoTask]}`,from,to,rtype,desc});
+  refreshOG();renderOAb();toast('관계가 추가되었습니다');
+}
+function oDelN(id){if(!S.ontoTask)return;S.ontoNodes[S.ontoTask]=(S.ontoNodes[S.ontoTask]||[]).filter(n=>n.id!==id);S.ontoEdges[S.ontoTask]=(S.ontoEdges[S.ontoTask]||[]).filter(e=>e.from!==id&&e.to!==id);if(S.ontoSel===id)S.ontoSel=null;refreshOG();renderOAb();toast('노드가 삭제되었습니다')}
+function oDelE(id){if(!S.ontoTask)return;S.ontoEdges[S.ontoTask]=(S.ontoEdges[S.ontoTask]||[]).filter(e=>e.id!==id);refreshOG();renderOAb();toast('관계가 삭제되었습니다')}
+function oSelN(id){S.ontoSel=id;if(oGMain)oGMain.selectAll('.ong').select('circle').attr('stroke',d=>d.id===id?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===id?3.5:2.5)}
+
+// D3 Graph
+function initOG(){
+  if(oSim)oSim.stop();
+  const wrap=document.getElementById('o-gwrap');if(!wrap)return;
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  d3.select('#o-svg').selectAll('*').remove();
+  oSvg=d3.select('#o-svg');
+  const df=oSvg.append('defs');
+  df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke',EC).attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  oGMain=oSvg.append('g');
+  oZoom=d3.zoom().scaleExtent([0.1,4]).on('zoom',e=>oGMain.attr('transform',e.transform));
+  oSvg.call(oZoom);
+  const nodes=S.ontoNodes[S.ontoTask]||[];
+  nodes.forEach((n,i)=>{if(!n.x||!n.y){n.x=W/2+Math.cos(i*2*Math.PI/nodes.length)*180;n.y=H/2+Math.sin(i*2*Math.PI/nodes.length)*180}});
+  const links=(S.ontoEdges[S.ontoTask]||[]).map(e=>({source:e.from,target:e.to,...e}));
+  oSim=d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(160)).force('charge',d3.forceManyBody().strength(-600)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(52));
+  drawOG(links);
+  oSvg.on('click',()=>{S.ontoSel=null;if(S.ontoATab==='detail')renderOAb();if(oGMain)oGMain.selectAll('.ong').select('circle').attr('stroke','var(--color-background-primary)').attr('stroke-width',2.5)});
+}
+
+function drawOG(links){
+  if(!oGMain||!S.ontoTask)return;
+  oGMain.selectAll('*').remove();
+  const nodes=S.ontoNodes[S.ontoTask]||[];
+  const fl=links||(S.ontoEdges[S.ontoTask]||[]).map(e=>({source:e.from,target:e.to,...e}));
+  const eG=oGMain.append('g');
+  const eS=eG.selectAll('.oeg').data(fl,d=>d.id).join('g').attr('class','oeg');
+  eS.append('line').attr('stroke',EC).attr('stroke-width',1.5).attr('marker-end','url(#oarr)');
+  eS.append('text').attr('text-anchor','middle').attr('font-size','9px').attr('fill',TC).attr('opacity',.7).attr('pointer-events','none').text(d=>d.rtype);
+  const nG=oGMain.append('g');
+  const nS=nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
+    .call(d3.drag().on('start',ods).on('drag',odm).on('end',ode))
+    .on('click',(e,d)=>{e.stopPropagation();oSelN(d.id);oTab('detail')})
+    .on('mouseenter',(e,d)=>{
+      const tip=document.getElementById('o-tip');if(!tip)return;
+      tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType} · ${d.id}</span>${d.def?'<br>'+d.def:''}`;
+      tip.classList.add('on');
+      const wr=document.getElementById('o-gwrap').getBoundingClientRect();
+      tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
+      tip.style.top=Math.max(e.clientY-wr.top-8,8)+'px';
+    }).on('mouseleave',()=>document.getElementById('o-tip')?.classList.remove('on'));
+  nS.append('circle').attr('r',26).attr('fill',d=>NC[d.srcType]||'#888').attr('stroke',d=>d.id===S.ontoSel?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===S.ontoSel?3.5:2.5);
+  nS.append('text').attr('text-anchor','middle').attr('dy','4px').attr('font-size','11px').attr('fill','#fff').attr('font-weight','500').attr('pointer-events','none').text(d=>d.label.substring(0,3));
+  nS.append('text').attr('text-anchor','middle').attr('dy','42px').attr('font-size','11px').attr('fill',TC).attr('pointer-events','none').text(d=>d.label);
+  nS.append('text').attr('text-anchor','middle').attr('dy','55px').attr('font-size','9px').attr('fill',TC).attr('opacity',.55).attr('pointer-events','none').text(d=>d.id);
+  oSim.nodes(nodes);oSim.force('link').links(fl);
+  oSim.on('tick',()=>{
+    eS.select('line').attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x-dx/l*30})
+      .attr('y2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y-dy/l*30});
+    eS.select('text').attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2-8);
+    nS.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+}
+
+function refreshOG(){if(!S.ontoTask||!oGMain)return;const fl=(S.ontoEdges[S.ontoTask]||[]).map(e=>({source:e.from,target:e.to,...e}));oSim?.nodes(S.ontoNodes[S.ontoTask]||[]);drawOG(fl)}
+function ods(e,d){if(!e.active)oSim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y}
+function odm(e,d){d.fx=e.x;d.fy=e.y}
+function ode(e,d){if(!e.active)oSim.alphaTarget(0);d.fx=null;d.fy=null}
+function resetOLayout(){if(!S.ontoTask)return;const W=document.getElementById('o-gwrap').clientWidth,H=document.getElementById('o-gwrap').clientHeight;(S.ontoNodes[S.ontoTask]||[]).forEach((n,i,a)=>{n.x=W/2+Math.cos(i*2*Math.PI/a.length)*200;n.y=H/2+Math.sin(i*2*Math.PI/a.length)*200;n.fx=null;n.fy=null});oSim?.alpha(1).restart()}
+function oZS(k){oSvg?.transition().duration(300).call(oZoom.scaleBy,k)}
+function oZF(){const W=document.getElementById('o-gwrap').clientWidth,H=document.getElementById('o-gwrap').clientHeight;oSvg?.transition().duration(400).call(oZoom.transform,d3.zoomIdentity.translate(W/2,H/2).scale(0.85))}
+
+// ── POC ──────────────────────────────────────────────
+V.poc=()=>{
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addPoc()">+ PoC 추가</button>`;
+  document.getElementById('content').innerHTML=`
+    <div class="g4" style="margin-bottom:14px">
+      ${['미착수','진행중','완료','이슈'].map(s=>`<div class="card"><div class="stat-l">${s}</div><div class="stat-n">${S.pocs.filter(p=>p.status===s).length}</div></div>`).join('')}
+    </div>
+    <div class="tw"><table><thead><tr><th>코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자</th><th>예정일</th><th>상태</th><th></th></tr></thead>
+    <tbody id="poc-body">${pocRows()}</tbody></table></div>`;
+};
+function pocRows(){return S.pocs.map(p=>`<tr>
+  <td><span class="code cp">${p.code}</span></td>
+  <td><select onchange="upd(S.pocs,'${p.code}','tsk',this.value)" style="font-size:11px;border:1px solid var(--color-border-tertiary);border-radius:4px;background:transparent;color:var(--color-text-primary);padding:2px 4px;cursor:pointer">${taskOpts(p.tsk)}</select></td>
+  <td><input type="text" value="${p.logic||''}" oninput="upd(S.pocs,'${p.code}','logic',this.value)"></td>
+  <td><input type="text" value="${p.result||''}" oninput="upd(S.pocs,'${p.code}','result',this.value)"></td>
+  <td><input type="text" value="${p.issue||''}" oninput="upd(S.pocs,'${p.code}','issue',this.value)"></td>
+  <td><select onchange="upd(S.pocs,'${p.code}','owner',this.value)">${teamOpts(p.owner)}</select></td>
+  <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" oninput="upd(S.pocs,'${p.code}','date',this.value)" style="width:76px"></td>
+  <td><select onchange="upd(S.pocs,'${p.code}','status',this.value);document.getElementById('poc-body').innerHTML=pocRows()" style="font-size:11px;border:1px solid var(--color-border-tertiary);border-radius:4px;background:transparent;color:var(--color-text-primary);padding:2px 4px;cursor:pointer">
+    ${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
+  <td><button class="del-btn" onclick="del(S.pocs,'${p.code}');document.getElementById('poc-body').innerHTML=pocRows()">×</button></td>
+</tr>`).join('')}
+function addPoc(){S.pocs.push({code:nc('poc','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:''});const b=document.getElementById('poc-body');if(b)b.innerHTML=pocRows();else V.poc()}
+
+// ── TEAM ─────────────────────────────────────────────
+V.team=()=>{
+  document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="addMember()">+ 팀원 추가</button>`;
+  document.getElementById('content').innerHTML=`
+    <div class="banner">팀원을 등록하면 <strong>과제 현황판(담당자)</strong> · <strong>기준문서 관리(담당자/판단주체)</strong> · <strong>PoC 현황(담당자)</strong>의 드롭다운에 자동 반영됩니다</div>
+    <div class="team-grid" id="tg">${teamCards()}</div>`;
+};
+const EMJS=['👤','👩‍💼','👨‍💼','👩‍🔬','👨‍🔬','👩‍💻','👨‍💻','🧑‍🎨','👩‍🏫','👨‍🏫'];
+function teamCards(){
+  return S.team.map((m,i)=>`
+    <div class="team-card">
+      <div class="tc-top">
+        <div class="avatar">${EMJS[i%EMJS.length]}</div>
+        <button class="del-btn" onclick="S.team.splice(${i},1);document.getElementById('tg').innerHTML=teamCards()">×</button>
+      </div>
+      <input class="tci nm" placeholder="이름" value="${m.name||''}" oninput="S.team[${i}].name=this.value">
+      <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" oninput="S.team[${i}].role=this.value">
+      <div class="tc-field"><div class="tc-label">이메일</div><input class="tci" style="font-size:11px;color:var(--color-text-secondary)" placeholder="email@company.com" value="${m.email||''}" oninput="S.team[${i}].email=this.value"></div>
+      <div class="tc-field"><div class="tc-label">담당 과제 코드</div><input class="tc-tag" placeholder="TSK-001, TSK-002" value="${m.tasks||''}" oninput="S.team[${i}].tasks=this.value"></div>
+      <div class="tc-field"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" oninput="S.team[${i}].note=this.value"></div>
+    </div>`).join('');
+}
+function addMember(){S.team.push({name:'',role:'',email:'',tasks:'',note:''});const g=document.getElementById('tg');if(g)g.innerHTML=teamCards();else V.team()}
+
+// ── EXCEL ────────────────────────────────────────────
+function dlXlsx(){
+  const wb=XLSX.utils.book_new();
+  [['TSK_과제',['코드','과제명','담당자','팀/직무','과제목적','관련DOC','관련TRM','관련DAT','현황','비고'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.team,r.purpose,r.docRef,r.trmRef,r.datRef,r.status,r.note])],
+   ['DOC_기준문서',['코드','구분','문서명','핵심내용','관련TSK','관련EXP','관련TRM','관리부서','현행화','위치','비고'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.tskRef,r.expRef,r.trmRef,r.dept,r.cur,r.loc,r.note])],
+   ['EXP_예외기준',['코드','예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM','기준유무','AI처리','비고'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.tskRef,r.docRef,r.trmRef,r.rule,r.ai,r.note])],
+   ['TRM_용어객체',['코드','용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.crit,r.tskRef,r.docRef,r.note])],
+   ['DAT_데이터셋',['코드','항목명','출처','보유여부','수집주기','민감도','품질이슈','관련TSK','관련TRM','비고'],S.dats.map(r=>[r.code,r.name,r.src,r.own,r.cycle,r.sens,r.qual,r.tskRef,r.trmRef,r.note])],
+   ['REL_관계정의',['코드','주체','관계유형','대상','설명','방향','조건','관련DOC','관련TSK','비고'],S.rels.map(r=>[r.code,r.from,r.rtype,r.to,r.desc,r.dir,r.cond,r.docRef,r.tskRef,r.note])],
+   ['POC_현황',['코드','연관TSK','로직규칙','검증결과','이슈','담당자','예정일','상태'],S.pocs.map(r=>[r.code,r.tsk,r.logic,r.result,r.issue,r.owner,r.date,r.status])],
+   ['TEAM_RR',['이름','역할','이메일','담당과제','비고'],S.team.map(r=>[r.name,r.role,r.email,r.tasks,r.note])],
+  ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]);ws['!cols']=hd.map(()=>({wch:16}));XLSX.utils.book_append_sheet(wb,ws,nm)});
+  XLSX.writeFile(wb,'AX_포털_전체데이터.xlsx');toast('Excel 다운로드 완료 — 8개 시트');
+}
+function dlOnto(){
+  if(!S.ontoTask){toast('과제를 선택해주세요');return}
+  const wb=XLSX.utils.book_new();
+  const n=S.ontoNodes[S.ontoTask]||[],e=S.ontoEdges[S.ontoTask]||[];
+  const ws1=XLSX.utils.aoa_to_sheet([['과제','ID','레이블','유형','정의'],...n.map(x=>[S.ontoTask,x.id,x.label,x.srcType,x.def])]);
+  const ws2=XLSX.utils.aoa_to_sheet([['과제','ID','주체','관계유형','대상','설명'],...e.map(x=>[S.ontoTask,x.id,x.from,x.rtype,x.to,x.desc])]);
+  [ws1,ws2].forEach(w=>{w['!cols']=[{wch:10},{wch:10},{wch:18},{wch:12},{wch:30}]});
+  XLSX.utils.book_append_sheet(wb,ws1,'노드');XLSX.utils.book_append_sheet(wb,ws2,'관계');
+  XLSX.writeFile(wb,`AX_온톨로지_${S.ontoTask}.xlsx`);toast(`${S.ontoTask} 온톨로지 Excel 저장 완료`);
+}
+
+go('home');
+</script>
+</body>
+</html>
