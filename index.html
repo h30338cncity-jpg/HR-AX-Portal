@@ -3,7 +3,14 @@
 <head><meta charset="UTF-8">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{display:flex;height:100vh;overflow:hidden;font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary)}
+body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary);margin:0;height:100vh;overflow:hidden}
+#login-screen{display:flex;width:100%;height:100vh;align-items:center;justify-content:center;background:#F1F3F5;position:absolute;inset:0;z-index:9999}
+.login-box{background:#fff;padding:32px 28px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.08);width:320px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--color-border-tertiary)}
+.login-input{padding:10px 12px;border:1px solid var(--color-border-secondary);border-radius:6px;font-size:13px;outline:none;transition:border-color 0.2s}
+.login-input:focus{border-color:#1D9E75}
+.login-btn{background:#1D9E75;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;transition:opacity 0.2s;margin-top:4px}
+.login-btn:hover{opacity:0.85}
+#app-container{display:none;width:100%;height:100%;flex-direction:row}
 .sb{width:212px;flex-shrink:0;background:#F1F3F5;border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow-y:auto;transition:width 0.2s, padding 0.2s;}
 .sb.collapsed{width:0;padding:0;border-right:none;overflow:hidden}
 .sb-top{padding:14px 14px 10px;border-bottom:1px solid var(--color-border-tertiary)}
@@ -94,7 +101,7 @@ td select{cursor:pointer}
 .team-card{background:var(--color-background-primary);border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.02)}
 .tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .avatar{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.avatar-input{width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:18px;outline:none}
+.avatar-input{width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:18px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;padding:0;margin:0}
 .tci{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--color-text-primary);padding:3px 2px}
 .tci.nm{font-size:14px;font-weight:700;border-bottom:1px solid transparent}
 .tci.nm:focus{border-bottom-color:#1D9E75}
@@ -142,28 +149,44 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 </style>
 </head>
 <body>
-<div class="sb">
-  <div class="sb-top"><h1>AX 포털</h1><p>AI Transformation 통합 관리</p></div>
-  <div class="sb-sec">메인</div>
-  <div class="sb-item active" id="n-home" onclick="go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
-  <div class="sb-sec">AX 관리</div>
-  <div class="sb-item" id="n-tasks" onclick="go('tasks',this)"><span class="sb-ic">📋</span>과제 현황판</div>
-  <div class="sb-item" id="n-docs" onclick="go('docs',this)"><span class="sb-ic">📄</span>기준문서 관리</div>
-  <div class="sb-item" id="n-data" onclick="go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
-  <div class="sb-sec">분석 · 설계</div>
-  <div class="sb-item" id="n-onto" onclick="go('onto',this)"><span class="sb-ic">🔗</span>온톨로지 · 관계</div>
-  <div class="sb-item" id="n-poc" onclick="go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
-  <div class="sb-sec">팀</div>
-  <div class="sb-item" id="n-team" onclick="go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
-</div>
-<div class="main">
-  <div class="topbar">
-    <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
-    <h2 id="pg-title">홈 대시보드</h2>
-    <div class="topbar-r" id="pg-actions"></div>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2 style="text-align:center;margin-bottom:10px">AX 포털 로그인</h2>
+    <input type="text" id="login-id" class="login-input" placeholder="아이디 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
+    <input type="password" id="login-pw" class="login-input" placeholder="비밀번호 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
+    <button class="login-btn" onclick="handleLogin()">로그인</button>
+    <div id="login-err" style="color:#E24B4A;font-size:11px;text-align:center;display:none">아이디 또는 비밀번호를 확인해주세요.</div>
   </div>
-  <div class="content" id="content"></div>
 </div>
+
+<!-- Main App -->
+<div id="app-container">
+  <div class="sb">
+    <div class="sb-top"><h1>AX 포털</h1><p>AI Transformation 통합 관리</p></div>
+    <div class="sb-sec">메인</div>
+    <div class="sb-item active" id="n-home" onclick="go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
+    <div class="sb-sec">AX 관리</div>
+    <div class="sb-item" id="n-tasks" onclick="go('tasks',this)"><span class="sb-ic">📋</span>과제 현황판</div>
+    <div class="sb-item" id="n-docs" onclick="go('docs',this)"><span class="sb-ic">📄</span>기준문서 관리</div>
+    <div class="sb-item" id="n-data" onclick="go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
+    <div class="sb-sec">분석 · 설계</div>
+    <div class="sb-item" id="n-onto" onclick="go('onto',this)"><span class="sb-ic">🔗</span>온톨로지 · 관계</div>
+    <div class="sb-item" id="n-poc" onclick="go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
+    <div class="sb-sec">팀</div>
+    <div class="sb-item" id="n-team" onclick="go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
+      <h2 id="pg-title">홈 대시보드</h2>
+      <div class="topbar-r" id="pg-actions"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Multi-select Modal -->
@@ -361,23 +384,43 @@ window.applyMs = () => {
   window.stateChanged();
 };
 
-// ── FIREBASE ─────────────────────────────────────────
+
+// ── LOGIN & FIREBASE ─────────────────────────────────
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'ax-portal';
 let db, auth, userDocRef;
 window.isSaving = false;
+let firstLoad = true;
+
+window.handleLogin = () => {
+  const id = document.getElementById('login-id').value;
+  const pw = document.getElementById('login-pw').value;
+  
+  if (id === 'admin' && pw === 'admin') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    initAuth();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+};
 
 const initAuth = async () => {
-  if (Object.keys(firebaseConfig).length === 0) { window.V.home(); return; }
+  if (Object.keys(firebaseConfig).length === 0) { 
+    if(firstLoad) { firstLoad=false; window.go('home'); }
+    return; 
+  }
   const app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
 
-  if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-    await signInWithCustomToken(auth, __initial_auth_token);
-  } else {
-    await signInAnonymously(auth);
-  }
+  try {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+  } catch(e) { console.error("Auth error", e); }
 
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -387,7 +430,15 @@ const initAuth = async () => {
           const data = snap.data();
           Object.keys(data).forEach(k => { if(S[k]) S[k] = data[k]; });
           window.recomputeAll();
-          if (window.currentView) window.go(window.currentView, document.getElementById('n-'+window.currentView));
+          if(firstLoad) {
+             firstLoad = false;
+             window.go('home');
+          } else if (window.currentView) {
+             window.go(window.currentView, document.getElementById('n-'+window.currentView));
+          }
+        } else if (!snap.exists()) {
+           window.saveStateFn();
+           if(firstLoad) { firstLoad=false; window.go('home'); }
         }
       }, err => console.error(err));
     }
@@ -465,7 +516,7 @@ window.V.tasks = () => {
         </div>`).join('')}
     </div>`).join('')}</div>`;
 };
-window.addTask = () => { S.tasks.push({code:window.nc('tsk','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
+window.addTask = () => { S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
 
 window.dtab = 'tsk';
 window.V.docs = (tab) => {
@@ -558,7 +609,7 @@ window.V.docs = (tab) => {
 window.addDocRow = (tab) => {
   const m={tsk:['tasks','tsk','TSK'],doc:['docs','doc','DOC'],exp:['exps','exp','EXP'],trm:['terms','trm','TRM'],dat:['dats','dat','DAT']};
   const d={tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},doc:{dtype:'법령',name:'',summary:'',tskRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}};
-  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][1], m[tab][2])});
+  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][2])});
   window.stateChanged();
 };
 
@@ -579,11 +630,11 @@ window.V.data = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>`;
   document.getElementById('content').innerHTML=`
     <div class="g4" style="margin-bottom:14px">
-      <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
-      <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
-      <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
-      <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
-      <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
+      <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')" style="cursor:pointer;border-bottom: ${window.datFilter==='all'?'3px solid var(--color-border-secondary)':''}"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
+      <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
+      <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
+      <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
+      <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="cursor:pointer;border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
     </div>
     <div class="tw"><table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
     <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table></div>`;
@@ -760,7 +811,11 @@ window.V.team = () => {
     <div class="team-grid">${S.team.map((m,i)=>`
       <div class="team-card">
         <div class="tc-top">
-          <div class="avatar"><input class="avatar-input" value="${m.emoji||'👤'}" oninput="S.team[${i}].emoji=this.value; window.saveStateFn()"></div>
+          <div class="avatar">
+            <select class="avatar-input" onchange="S.team[${i}].emoji=this.value; window.saveStateFn()">
+              ${['👤','👩‍💼','👨‍💼','👩‍🔬','👨‍🔬','👩‍💻','👨‍💻','🧑‍🎨','👩‍🏫','👨‍🏫','🤖','💡','📊','⚙️'].map(e=>`<option value="${e}" ${m.emoji===e?'selected':''}>${e}</option>`).join('')}
+            </select>
+          </div>
           <button class="del-btn" onclick="S.team.splice(${i},1); window.stateChanged()">×</button>
         </div>
         <input class="tci nm" placeholder="이름" value="${m.name||''}" oninput="S.team[${i}].name=this.value; window.saveStateFn()">
@@ -827,20 +882,8 @@ window.dlXlsx = () => {
   XLSX.writeFile(wb,'AX_포털_전체데이터.xlsx'); window.toast('Excel 다운로드 완료');
 };
 
-window.dlOnto = () => {
-  if(!S.ontoTask){window.toast('과제를 선택해주세요');return;}
-  const wb=XLSX.utils.book_new();
-  const n=S.ontoNodes[S.ontoTask]||[], e=S.ontoEdges[S.ontoTask]||[];
-  const ws1=XLSX.utils.aoa_to_sheet([['과제','ID','레이블','유형','정의'],...n.map(x=>[S.ontoTask,x.id,x.label,x.srcType,x.def])]);
-  const ws2=XLSX.utils.aoa_to_sheet([['과제','ID','주체','관계유형','대상'],...e.map(x=>[S.ontoTask,x.id,x.source,x.rtype,x.target])]);
-  [ws1,ws2].forEach(w=>{w['!cols']=[{wch:10},{wch:10},{wch:18},{wch:12},{wch:30}]});
-  XLSX.utils.book_append_sheet(wb,ws1,'노드'); XLSX.utils.book_append_sheet(wb,ws2,'관계');
-  XLSX.writeFile(wb,`AX_온톨로지_${S.ontoTask}.xlsx`); window.toast(`${S.ontoTask} 온톨로지 Excel 저장 완료`);
-};
-
-window.recomputeAll();
-// Wait for auth to complete to render correct view if needed, but show home initially
-if (!Object.keys(firebaseConfig).length) { window.V.home(); }
+// No auto-init if config empty here because handleLogin controls it
+// But if run locally without Canvas environment, allow direct access after manual login click
 
 </script>
 </body>
