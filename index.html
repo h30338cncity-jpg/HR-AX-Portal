@@ -49,7 +49,7 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
 /* Table */
 .tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
-table{width:100%;border-collapse:collapse;background:var(--color-background-primary)}
+table{width:max-content;min-width:100%;border-collapse:collapse;background:var(--color-background-primary)}
 thead tr{background:#f8fafc;}
 th{padding:8px 9px;text-align:left;font-size:11px;font-weight:700;color:var(--color-text-secondary);white-space:nowrap;position:sticky;top:0;z-index:10;background:#f8fafc;}
 th::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--color-border-secondary);}
@@ -65,10 +65,10 @@ td select{cursor:pointer}
 .doc-search-bar{padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;font-size:12px;outline:none;background:#fff;}
 .doc-search-bar:focus{border-color:#1D9E75}
 /* Kanban */
-.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;height:100%;}
-.kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px;display:flex;flex-direction:column;overflow:hidden;}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;height:100%;}
+.kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px;display:flex;flex-direction:column;overflow:hidden;max-height:100%;}
 .kcol-hd{font-size:11px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-.kcard{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);cursor:grab}
+.kcard{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);cursor:grab;flex-shrink:0;}
 .kcard:active{cursor:grabbing}
 .kcard-code{font-size:10px;font-family:var(--font-mono);margin-bottom:4px;font-weight:700}
 .kcard input,.kcard select{width:100%;background:transparent;border:1px solid transparent;outline:none;color:var(--color-text-primary);font-size:12px;font-family:inherit;padding:2px 4px;border-radius:4px}
@@ -96,6 +96,19 @@ td select{cursor:pointer}
 .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
 .pd{background:#EAF3DE;color:#27500A}.pp{background:#FAEEDA;color:#633806}
 .pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
+
+/* Editable Code Inputs */
+input.code-input {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 68px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
+}
+input.code-input:hover { border-color: rgba(0,0,0,0.3); opacity: 0.85; }
+input.code-input:focus { border-style: solid; border-color: #1D9E75; background: #fff !important; color: #000 !important; box-shadow: 0 0 0 2px rgba(29,158,117,0.2); }
+
+/* Resizer */
+.resizer { position:absolute; right:0; top:0; bottom:0; width:5px; cursor:col-resize; user-select:none; z-index:11; }
+.resizer:hover { background: rgba(29,158,117,0.3); }
+.resizer.active { background: rgba(29,158,117,0.6); }
+
 /* Team & Emoji Picker */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .team-card{background:var(--color-background-primary);border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.02)}
@@ -135,8 +148,8 @@ td select{cursor:pointer}
 .topbar-sel:focus{border-color:#1D9E75}
 .toast{position:fixed;bottom:18px;right:18px;background:#1D9E75;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
 .toast.show{opacity:1}
-/* Modal */
-#ms-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+/* Modals */
+#ms-modal, #text-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
 .ms-content{background:#fff;border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:500px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
 .ms-search{width:100%;padding:8px 10px;border:1px solid var(--color-border-secondary);border-radius:6px;margin-bottom:12px;font-size:12px;outline:none}
 .ms-search:focus{border-color:#1D9E75}
@@ -194,6 +207,7 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
+<!-- Multi Select Modal -->
 <div id="ms-modal">
   <div class="ms-content">
     <h3 style="font-weight:700;margin-bottom:8px">항목 선택</h3>
@@ -202,6 +216,18 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
       <button class="btn btn-o" onclick="closeMs()">취소</button>
       <button class="btn btn-g" onclick="applyMs()">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- Textarea Popup Modal -->
+<div id="text-modal">
+  <div class="ms-content" style="width:600px; max-width:95%;">
+    <h3 id="tm-title" style="font-weight:700;margin-bottom:8px">텍스트 입력</h3>
+    <textarea id="tm-input" style="flex:1; width:100%; min-height:200px; padding:10px; border:1px solid var(--color-border-secondary); border-radius:6px; resize:vertical; font-family:inherit; outline:none; font-size:13px; line-height:1.6;"></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button class="btn btn-o" onclick="document.getElementById('text-modal').style.display='none'">취소</button>
+      <button class="btn btn-g" onclick="window.applyTm()">적용</button>
     </div>
   </div>
 </div>
@@ -283,6 +309,7 @@ window.redo = () => {
 
 // Keyboard Shortcuts (Ctrl+Z, Ctrl+Y)
 document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
   if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); window.redo(); }
 });
@@ -308,7 +335,6 @@ window.nc = (arrKey, pfx) => {
 
 window.toast = m => { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300) };
 window.upd = (arrKey,code,f,v) => { const r=S[arrKey].find(r=>r.code===code); if(r) r[f]=v; };
-window.del = (arrKey,code) => { const arr=S[arrKey]; const i=arr.findIndex(r=>r.code===code); if(i>-1) arr.splice(i,1); };
 window.pct = (n,d) => d ? Math.round(n/d*100) : 0;
 window.pill = v => {
   const m={'완료':'pd','진행중':'pp','검증중':'pp','미착수':'pt','이슈':'pw','최신':'pd','갱신필요':'pw','미확인':'pt','보유':'pd','일부보유':'pp','미보유':'pw','명문화됨':'pd','담당자재량':'pp','기준없음':'pt','가능':'pd','조건부가능':'pp','불가':'pw','일반':'pt','개인정보':'pw','민감정보':'pw'};
@@ -332,12 +358,82 @@ window.badge = (c) => {
   }
   
   const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
-  const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${item[nm[pfx]]}` : c;
+  const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${item[nm[pfx]].replace(/"/g, '&quot;')}` : c;
   return `<span class="code ${cls}" title="${titleText}">${c}</span>`;
 };
 window.fmtCodeList = (strOrArr) => {
   const arr = Array.isArray(strOrArr) ? strOrArr : window.parseRef(strOrArr);
   return arr.map(window.badge).join('');
+};
+
+// 직접 수정할 수 있는 코드 인풋 생성
+window.editableCode = (arrKey, c) => {
+  const pfx = c.split('-')[0];
+  const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
+  return `<input type="text" class="code-input ${cls}" value="${c}" onchange="window.changeCode('${arrKey}', '${c}', this.value, this)" title="클릭하여 코드 번호 수기 변경">`;
+};
+
+// 코드 수기 변경 및 연쇄 업데이트 로직 (Cascade Update)
+window.changeCode = (arrKey, oldCode, newCode, el) => {
+  newCode = newCode.trim();
+  if(!newCode) { window.toast('코드는 비워둘 수 없습니다.'); el.value = oldCode; return; }
+  if(oldCode === newCode) return;
+  
+  let isDup = false;
+  Object.values(window.S).forEach(arr => {
+    if(Array.isArray(arr) && arr.find(x => x.code === newCode)) isDup = true;
+  });
+  if(isDup) { window.toast('이미 존재하는 코드입니다.'); el.value = oldCode; return; }
+
+  window.pushHistory();
+  const row = window.S[arrKey].find(x => x.code === oldCode);
+  if(row) row.code = newCode;
+  window.replaceReferences(oldCode, newCode);
+  window.stateChanged();
+  window.toast(`코드가 ${newCode}로 변경되었습니다.`);
+};
+
+// 참조 전체 교체
+window.replaceReferences = (oldCode, newCode) => {
+  const replaceRef = (str) => {
+     if(!str) return str;
+     let arr = str.split(',').map(s=>s.trim());
+     arr = arr.map(s => s === oldCode ? newCode : s);
+     return [...new Set(arr)].join(', ');
+  };
+  window.S.docs.forEach(r => { r.tskRef = replaceRef(r.tskRef); });
+  window.S.exps.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); });
+  window.S.terms.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.parent = replaceRef(r.parent); r.child = replaceRef(r.child); });
+  window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
+  window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); });
+  if(window.S.ontoTask === oldCode) window.S.ontoTask = newCode;
+  if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
+};
+
+// 삭제 시 연쇄 번호 앞당김 (Auto-renumbering)
+window.del = (arrKey, code) => {
+  const arr = S[arrKey];
+  const i = arr.findIndex(r => r.code === code);
+  if (i > -1) {
+    arr.splice(i, 1);
+    const pfx = code.split('-')[0];
+    window.renumberCodes(arrKey, pfx);
+  }
+};
+window.renumberCodes = (arrKey, pfx) => {
+  const arr = S[arrKey];
+  arr.sort((a,b) => {
+    const na = parseInt(a.code.split('-')[1] || 0, 10);
+    const nb = parseInt(b.code.split('-')[1] || 0, 10);
+    return na - nb;
+  });
+  arr.forEach((item, index) => {
+    const expectedCode = pfx + '-' + String(index + 1).padStart(3, '0');
+    if(item.code !== expectedCode) {
+      window.replaceReferences(item.code, expectedCode);
+      item.code = expectedCode;
+    }
+  });
 };
 
 window.recomputeAll = () => {
@@ -376,6 +472,36 @@ window.stateChanged = () => {
   if (window.currentView === 'tasks') window.V.tasks();
   if (window.currentView === 'onto') window.V.onto();
   if (window.currentView === 'data') window.V.data();
+};
+
+// ── 컬럼 리사이징 ─────────────────────────────────────
+window.initResizers = () => {
+  document.querySelectorAll('th').forEach(th => {
+    th.style.position = 'relative';
+    if(!th.querySelector('.resizer')) {
+      const r = document.createElement('div');
+      r.className = 'resizer';
+      th.appendChild(r);
+      let startX, startW;
+      r.addEventListener('mousedown', e => {
+        startX = e.pageX;
+        startW = th.offsetWidth;
+        r.classList.add('active');
+        const onMove = e => {
+          th.style.minWidth = (startW + e.pageX - startX) + 'px';
+          th.style.width = th.style.minWidth;
+        };
+        const onUp = () => {
+          r.classList.remove('active');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        e.preventDefault(); e.stopPropagation();
+      });
+    }
+  });
 };
 
 // ── MULTI-SELECT MODAL ───────────────────────────────
@@ -446,6 +572,27 @@ window.applyMs = () => {
   if(row) row[msState.field] = vals.join(', ');
   window.closeMs();
   window.stateChanged();
+};
+
+// ── TEXT POPUP MODAL ─────────────────────────────────
+let tmState = { arrKey:'', rowCode:'', field:'' };
+window.openTm = (arrKey, rowCode, field, title) => {
+  const row = S[arrKey].find(x=>x.code===rowCode);
+  tmState = { arrKey, rowCode, field };
+  document.getElementById('tm-title').innerText = title + ' (팝업 작성)';
+  document.getElementById('tm-input').value = row[field] || '';
+  document.getElementById('text-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('tm-input').focus(), 50);
+};
+window.applyTm = () => {
+  const val = document.getElementById('tm-input').value;
+  const row = S[tmState.arrKey].find(x=>x.code===tmState.rowCode);
+  if(row && row[tmState.field] !== val) {
+    window.pushHistory();
+    row[tmState.field] = val;
+    window.stateChanged();
+  }
+  document.getElementById('text-modal').style.display = 'none';
 };
 
 // ── EMOJI PICKER ─────────────────────────────────────
@@ -578,8 +725,11 @@ window.V.tasks = () => {
             <div style="flex:1; overflow-y:auto; padding-right:4px;">
               ${S.tasks.filter(t=>t.status===col).map(t=>`
                 <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')">
-                  <div class="kcard-code">${window.badge(t.code)}</div>
-                  <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()">
+                  <div class="kcard-code">${window.editableCode('tasks', t.code)}</div>
+                  <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
+                    <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()">
+                    <button class="btn-sm btn-o" onclick="window.openTm('tasks','${t.code}','name','과제명')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>
+                  </div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
                     <input type="text" value="${t.assignee||''}" readonly style="flex:1;background:transparent;border:1px solid transparent;font-size:11px;color:var(--color-text-secondary);cursor:pointer;outline:none;padding:2px;" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" placeholder="담당자">
                     <button class="btn-sm btn-o" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" title="선택">🔍</button>
@@ -601,14 +751,8 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 window.V.docs = (tab) => {
-  // 탭 이동 시 검색/필터 초기화
-  if (tab && window.dtab !== tab) {
-    window.docFilterVal = '';
-    window.docSearchQuery = '';
-    window.dtab = tab;
-  } else {
-    window.dtab = tab || window.dtab;
-  }
+  if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
+  else { window.dtab = tab || window.dtab; }
   
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button><button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>`;
   
@@ -668,7 +812,6 @@ window.V.docs = (tab) => {
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
 
-  // 드롭다운 필터 UI 생성
   let filterHtml = '';
   let primaryFilterKey = '';
   if (c.sl) {
@@ -682,7 +825,6 @@ window.V.docs = (tab) => {
     window.docFilterVal = '';
   }
 
-  // 필터 및 검색 적용
   if (window.docFilterVal && primaryFilterKey) {
      currentRows = currentRows.filter(r => r[primaryFilterKey] === window.docFilterVal);
   }
@@ -692,14 +834,15 @@ window.V.docs = (tab) => {
   }
 
   const tbody=currentRows.map(row=>{
-    const cells=c.fl.map(f=>{
+    const cells=c.fl.map((f,i)=>{
+      const h = c.hd[i];
       if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
       if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
       if(c.sl?.[f]) return `<td><select onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
-      if(c.dl?.[f]) return `<td><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"></td>`;
-      return `<td><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"></td>`;
+      if(c.dl?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
+      return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
     }).join('');
-    return `<tr><td>${window.badge(row.code)}</td>${cells}<td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td></tr>`;
+    return `<tr><td>${window.editableCode(c.k, row.code)}</td>${cells}<td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td></tr>`;
   }).join('');
   
   document.getElementById('content').innerHTML=`
@@ -711,14 +854,15 @@ window.V.docs = (tab) => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
+          <table><thead><tr><th style="width:80px; min-width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
         </div>
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
         <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
-        <div class="note" style="margin:0;">※ 돋보기(🔍) 클릭 시 다중 항목 선택이 가능합니다. Tab키로 다음 칸 이동이 가능합니다.</div>
+        <div class="note" style="margin:0;">※ 돋보기(🔍) 클릭 시 다중 항목 선택, 확장(⤢) 클릭 시 팝업 텍스트 입력이 가능합니다.</div>
       </div>
     </div>`;
+    setTimeout(window.initResizers, 50);
 };
 
 window.addDocRow = (tab) => {
@@ -761,11 +905,12 @@ window.V.data = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유 여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
-          <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
+          <table><thead><tr><th style="width:80px;min-width:80px">코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유 여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
+          <tbody>${fdd.map(d=>`<tr><td>${window.editableCode('dats', d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
     </div>`;
+    setTimeout(window.initResizers, 50);
 };
 
 // ── ONTO ─────────────────────────────────────────────
@@ -813,7 +958,6 @@ window.buildOntoGraphData = () => {
   window.parseRef(t._trm).forEach(c => { const d=S.terms.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.term||c, srcType:'TRM', def:d.def}); edges.push({source:t.code, target:c, rtype:'용어/객체', id:`E-${t.code}-${c}`}); } });
   window.parseRef(t._exp).forEach(c => { const d=S.exps.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.sit||c, srcType:'EXP', def:d.hand}); edges.push({source:t.code, target:c, rtype:'예외조건', id:`E-${t.code}-${c}`}); } });
 
-  // Add interconnections
   nodes.forEach(n => {
     if(n.srcType === 'DOC') {
       const d = S.docs.find(x=>x.code===n.id);
@@ -919,13 +1063,13 @@ window.V.poc = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th>코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
+          <table><thead><tr><th style="width:80px;min-width:80px">코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
           <tbody>${S.pocs.map(p=>`<tr>
-            <td>${window.badge(p.code)}</td>
+            <td>${window.editableCode('pocs', p.code)}</td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
-            <td><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"></td>
-            <td><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"></td>
-            <td><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
             <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
             <td><select onchange="window.pushHistory(); window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
@@ -934,6 +1078,7 @@ window.V.poc = () => {
         </div>
       </div>
     </div>`;
+    setTimeout(window.initResizers, 50);
 };
 window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}); window.stateChanged(); };
 
