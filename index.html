@@ -208,10 +208,10 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <input type="file" id="excel-upload" accept=".xlsx" style="display:none" onchange="handleExcelUpload(event)">
 <datalist id="dl-dtype">
-  <option value="정형 (RDB/Excel)"></option>
-  <option value="반정형 (JSON/XML/Log)"></option>
-  <option value="비정형 (텍스트/이미지/음성)"></option>
-  <option value="외부 API"></option>
+  <option value="정형"></option>
+  <option value="반정형"></option>
+  <option value="비정형"></option>
+  <option value="외부API"></option>
 </datalist>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -222,7 +222,7 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyAv4SD_lsng3eYiOkH5pzS1Va2qF_V4Tjw",
+  apiKey: "AIzaSyAv4SD_lsng3eYiOkH5pzS1Va2qF_V4Tjw",
   authDomain: "hr-ax-portal.firebaseapp.com",
   projectId: "hr-ax-portal",
   storageBucket: "hr-ax-portal.firebasestorage.app",
@@ -234,11 +234,11 @@ const firebaseConfig = {
 // ── STATE ────────────────────────────────────────────
 window.S = {
   team:[{name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}],
-  tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',docRef:'',trmRef:'',datRef:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
-  docs:[{code:'DOC-001',dtype:'법령',name:'',summary:'',tskRef:'',expRef:'',trmRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]}],
-  exps:[{code:'EXP-001',sit:'',hand:'',owner:'',tskRef:'',docRef:'',trmRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]}],
-  terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:'',_parent:[],_child:[]}],
-  dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}],
+  tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
+  docs:[{code:'DOC-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]}],
+  exps:[{code:'EXP-001',sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]}],
+  terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
+  dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
   pocs:[{code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}],
   ontoTask:'', ontoNodes:{}, ontoEdges:{}
 };
@@ -519,7 +519,6 @@ window.go = (v, el) => {
   (el||document.getElementById('n-'+v))?.classList.add('active');
   document.getElementById('pg-title').textContent = titles[v] || '';
   document.getElementById('pg-actions').innerHTML = '';
-  // 핵심: 컨텐츠 래퍼 자체가 스크롤되지 않고 꽉 찬 상태(flex:1) 유지하도록 공통 적용
   document.getElementById('content').style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--color-background-tertiary);';
   if(window.V[v]) window.V[v]();
 };
@@ -636,12 +635,13 @@ window.V.docs = (tab) => {
     return;
   }
 
+  // 신규 엑셀 템플릿(v2)에 맞춰 구조 전면 수정
   const cfgs={
-    tsk:{k:'tasks',hd:['과제명','담당자','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],fl:['name','assignee','purpose','_doc','_trm','_dat','status','note'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat']},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심내용','관련TSK','관련EXP(자동)','관련TRM(자동)','관리부서','현행화','위치','비고'],fl:['dtype','name','summary','tskRef','_exp','_trm','dept','cur','loc','note'],sl:{dtype:['법령','사규','지침','운영문서','매뉴얼','SOP','평가기준','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
-    exp:{k:'exps',hd:['예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM(자동)','기준유무','AI처리','비고'],fl:['sit','hand','owner','tskRef','docRef','_trm','rule','ai','note'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
-    trm:{k:'terms',hd:['용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],fl:['term','def','otype','parent','child','sim','crit','tskRef','docRef','note'],sl:{otype:['객체','속성','기준값','이벤트','역할','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
-    dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유여부','수집주기','민감도','관련TSK','관련DOC','관련TRM','비고(품질 이슈 등)'],fl:['name','dtype','src','own','cycle','sens','tskRef','docRef','trmRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
+    tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
+    trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
+    dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
   
   const c=cfgs[window.dtab];
@@ -682,7 +682,14 @@ window.V.docs = (tab) => {
 window.addDocRow = (tab) => {
   window.pushHistory();
   const m={tsk:['tasks','TSK'],doc:['docs','DOC'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
-  const d={tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},doc:{dtype:'법령',name:'',summary:'',tskRef:'',dept:'',cur:'미확인',loc:'',note:'',_exp:[],_trm:[]},exp:{sit:'',hand:'',owner:'',tskRef:'',docRef:'',rule:'기준없음',ai:'불가',note:'',_trm:[]},trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',crit:'',tskRef:'',docRef:'',note:''},dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',tskRef:'',docRef:'',trmRef:'',note:''}};
+  // 기본 뼈대 업데이트
+  const d={
+    tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},
+    doc:{dtype:'사규',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]},
+    exp:{sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]},
+    trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:''},
+    dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}
+  };
   S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][1])});
   window.stateChanged();
 };
@@ -713,7 +720,7 @@ window.V.data = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
+          <table><thead><tr><th>코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유 여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
           <tbody>${fdd.map(d=>`<tr><td>${window.badge(d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
@@ -925,7 +932,7 @@ window.handleExcelUpload = (e) => {
     window.pushHistory();
     const data = new Uint8Array(evt.target.result);
     const wb = XLSX.read(data, {type: 'array'});
-    const sm = {'TSK_과제':'tasks','DOC_기준문서':'docs','EXP_예외기준':'exps','TRM_용어객체':'terms','DAT_데이터셋':'dats','POC_현황':'pocs','TEAM_RR':'team'};
+    const sm = {'1_TSK_과제':'tasks','2_DOC_기준문서':'docs','3_EXP_예외기준':'exps','4_TRM_용어객체':'terms','5_DAT_데이터셋':'dats'};
     for (let nm in sm) {
       if(wb.Sheets[nm]) {
         let arr = XLSX.utils.sheet_to_json(wb.Sheets[nm]);
@@ -935,10 +942,6 @@ window.handleExcelUpload = (e) => {
             let existing = target.find(x => x.code === row['코드']);
             if(!existing) { existing = {code: row['코드']}; target.push(existing); }
             Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
-          } else if(row['이름']) {
-            let existing = target.find(x => x.name === row['이름']);
-            if(!existing) { existing = {name: row['이름']}; target.push(existing); }
-            existing.role = String(row['역할']||''); existing.note = String(row['비고']||'');
           }
         });
       }
@@ -951,27 +954,24 @@ window.handleExcelUpload = (e) => {
 
 window.getKeyByHeader = (sheet, hdr) => {
   const m = {
-    '과제명':'name', '담당자':'assignee', '과제목적':'purpose', '현황':'status', '비고':'note',
-    '구분':'dtype', '문서명/조항':'name', '핵심내용':'summary', '관련TSK':'tskRef', '관리부서':'dept', '현행화':'cur', '위치':'loc',
-    '예외상황':'sit', '처리방법':'hand', '판단주체':'owner', '관련DOC':'docRef', '기준유무':'rule', 'AI처리':'ai',
-    '용어명':'term', '정의':'def', '객체유형':'otype', '상위객체':'parent', '하위객체':'child', '유사어':'sim', '구분기준':'crit',
-    '항목명':'name', '데이터 형태':'dtype', '출처':'src', '보유여부':'own', '수집주기':'cycle', '민감도':'sens', '관련TRM':'trmRef', '비고(품질 이슈 등)':'note',
-    '연관과제':'tsk', '검증 로직·규칙':'logic', '검증결과':'result', '이슈내용':'issue', '예정일':'date', '상태':'status'
+    '과제명':'name', '담당자':'assignee', '과제 목적':'purpose', '진행상황':'status', '비고':'note',
+    '구분':'dtype', '문서명/조항':'name', '핵심 내용':'summary', '소관 부서':'dept', '현행화':'cur', '위치':'loc', '관련 TSK':'tskRef', '문제유형':'issueType', '보완 방향':'action',
+    '예외상황/기준명':'sit', '처리 방법':'hand', '판단 주체':'owner', '기준 유무':'rule', 'AI 처리':'ai', '관련 DOC':'docRef',
+    '용어명':'term', '정의':'def', '객체 유형':'otype', '상위 객체':'parent', '하위 객체':'child', '유사어':'sim',
+    '항목명':'name', '데이터 형태':'dtype', '출처':'src', '보유 여부':'own', '수집 주기':'cycle', '민감도':'sens', '관련 TRM':'trmRef', '비고(품질이슈 등)':'note'
   };
   return m[hdr] || hdr;
 };
 
 window.dlXlsx = () => {
   const wb = XLSX.utils.book_new();
-  [['TSK_과제',['코드','과제명','담당자','과제목적','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','현황','비고'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.purpose,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),r.status,r.note])],
-   ['DOC_기준문서',['코드','구분','문서명','핵심내용','관련TSK','관련EXP(자동)','관련TRM(자동)','관리부서','현행화','위치','비고'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.tskRef,window.mergeRef(r._exp),window.mergeRef(r._trm),r.dept,r.cur,r.loc,r.note])],
-   ['EXP_예외기준',['코드','예외상황','처리방법','판단주체','관련TSK','관련DOC','관련TRM(자동)','기준유무','AI처리','비고'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.tskRef,r.docRef,window.mergeRef(r._trm),r.rule,r.ai,r.note])],
-   ['TRM_용어객체',['코드','용어명','정의','객체유형','상위객체','하위객체','유사어','구분기준','관련TSK','관련DOC','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.crit,r.tskRef,r.docRef,r.note])],
-   ['DAT_데이터셋',['코드','항목명','데이터 형태','출처','보유여부','수집주기','민감도','관련TSK','관련DOC','관련TRM','비고(품질 이슈 등)'],S.dats.map(r=>[r.code,r.name,r.dtype,r.src,r.own,r.cycle,r.sens,r.tskRef,r.docRef,r.trmRef,r.note])],
-   ['POC_현황',['코드','연관과제','검증 로직·규칙','검증결과','이슈내용','담당자(자동)','예정일','상태'],S.pocs.map(r=>[r.code,r.tsk,r.logic,r.result,r.issue,r._owner,r.date,r.status])],
-   ['TEAM_RR',['이름','역할','담당과제(자동)','비고'],S.team.map(r=>[r.name,r.role,window.mergeRef(r._tasks),r.note])],
+  [['1_TSK_과제',['코드','과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.purpose,r.status,r.note,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),window.mergeRef(r._exp)])],
+   ['2_DOC_기준문서',['코드','구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.dept,r.cur,r.loc,r.tskRef,r.issueType,r.action,r.note,window.mergeRef(r._exp),window.mergeRef(r._trm)])],
+   ['3_EXP_예외기준',['코드','예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.rule,r.ai,r.docRef,r.tskRef,r.note,window.mergeRef(r._trm)])],
+   ['4_TRM_용어객체',['코드','용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.docRef,r.tskRef,r.note])],
+   ['5_DAT_데이터셋',['코드','항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],S.dats.map(r=>[r.code,r.name,r.dtype,r.src,r.own,r.cycle,r.sens,r.trmRef,r.docRef,r.tskRef,r.note])]
   ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]); ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
-  XLSX.writeFile(wb,'AX_포털_전체데이터.xlsx'); window.toast('Excel 다운로드 완료');
+  XLSX.writeFile(wb,'AX_portal_template_v2_export.xlsx'); window.toast('Excel 다운로드 완료');
 };
 
 </script>
