@@ -62,7 +62,7 @@ td input[type="text"]:focus,td select:focus{border-color:#1D9E75;background:var(
 td input[type="text"]:hover:not(:focus){border-color:var(--color-border-tertiary)}
 td select{cursor:pointer}
 .code-list{display:flex;flex-wrap:wrap;gap:4px}
-.doc-search-bar{width:100%;padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;font-size:12px;outline:none}
+.doc-search-bar{padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;font-size:12px;outline:none;background:#fff;}
 .doc-search-bar:focus{border-color:#1D9E75}
 /* Kanban */
 .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;height:100%;}
@@ -88,7 +88,7 @@ td select{cursor:pointer}
 .stab.on-dat{border-bottom-color:#712B13;color:#712B13;background:#FAECE7}
 .stab.on-rel{border-bottom-color:#72243E;color:#72243E;background:#FBEAF0}
 /* Code badges */
-.code{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px;display:inline-block}
+.code{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px;display:inline-block;cursor:default;}
 .ct{background:#EEEDFE;color:#3C3489}.cd{background:#E1F5EE;color:#085041}
 .ce{background:#FAEEDA;color:#633806}.cr{background:#E6F1FB;color:#0C447C}
 .ca{background:#FAECE7;color:#712B13}.cl{background:#FBEAF0;color:#72243E}
@@ -183,8 +183,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
       <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
       <h2 id="pg-title">홈 대시보드</h2>
       <div class="topbar-r">
-        <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소">↩️</button>
-        <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행">↪️</button>
+        <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소 (Ctrl+Z)">↩️ 취소</button>
+        <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행 (Ctrl+Y)">↪️ 복구</button>
         <div id="pg-actions" style="display:flex;gap:6px;margin-left:6px;"></div>
       </div>
     </div>
@@ -245,6 +245,7 @@ window.S = {
 
 window.currentView = 'home';
 window.docSearchQuery = '';
+window.docFilterVal = '';
 window.datFilter = 'all';
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 
@@ -261,22 +262,30 @@ window.pushHistory = () => {
 };
 
 window.undo = () => {
-  if (window.undoStack.length === 0) return;
+  if (window.undoStack.length === 0) { window.toast('취소할 작업이 없습니다.'); return; }
   window.isHistoryAction = true;
   window.redoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.undoStack.pop()));
   window.stateChanged();
   window.isHistoryAction = false;
+  window.toast('실행 취소했습니다.');
 };
 
 window.redo = () => {
-  if (window.redoStack.length === 0) return;
+  if (window.redoStack.length === 0) { window.toast('다시 실행할 작업이 없습니다.'); return; }
   window.isHistoryAction = true;
   window.undoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.redoStack.pop()));
   window.stateChanged();
   window.isHistoryAction = false;
+  window.toast('다시 실행했습니다.');
 };
+
+// Keyboard Shortcuts (Ctrl+Z, Ctrl+Y)
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
+  if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); window.redo(); }
+});
 
 // ── UTILS & CORE ─────────────────────────────────────
 const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
@@ -308,18 +317,23 @@ window.pill = v => {
 window.parseRef = str => (str||'').split(',').map(s=>s.trim()).filter(s=>s);
 window.mergeRef = arr => [...new Set(arr)].join(', ');
 
-// 삭제된 항목은 빨간 취소선 뱃지로 표시
+// 삭제된 항목은 빨간 취소선 뱃지로 표시, 정상 항목은 마우스 오버 시 이름 툴팁 표시
 window.badge = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
   const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
+  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', DAT:'name', POC:'tsk'};
+  
   const arr = S[m[pfx]];
-  const exists = arr ? arr.find(x => x.code === c) : false;
-  if (!exists && m[pfx]) {
+  const item = arr ? arr.find(x => x.code === c) : null;
+  
+  if (!item && m[pfx]) {
     return `<span class="code" style="color:#E24B4A; text-decoration:line-through; background:#FCEBEB; border:1px solid #F7C1C1" title="삭제된 항목">${c}</span>`;
   }
+  
   const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
-  return `<span class="code ${cls}">${c}</span>`;
+  const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${item[nm[pfx]]}` : c;
+  return `<span class="code ${cls}" title="${titleText}">${c}</span>`;
 };
 window.fmtCodeList = (strOrArr) => {
   const arr = Array.isArray(strOrArr) ? strOrArr : window.parseRef(strOrArr);
@@ -587,7 +601,15 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 window.V.docs = (tab) => {
-  window.dtab = tab || window.dtab;
+  // 탭 이동 시 검색/필터 초기화
+  if (tab && window.dtab !== tab) {
+    window.docFilterVal = '';
+    window.docSearchQuery = '';
+    window.dtab = tab;
+  } else {
+    window.dtab = tab || window.dtab;
+  }
+  
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button><button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>`;
   
   const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
@@ -635,7 +657,6 @@ window.V.docs = (tab) => {
     return;
   }
 
-  // 신규 엑셀 템플릿(v2)에 맞춰 구조 전면 수정
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
     doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
@@ -646,7 +667,25 @@ window.V.docs = (tab) => {
   
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
-  
+
+  // 드롭다운 필터 UI 생성
+  let filterHtml = '';
+  let primaryFilterKey = '';
+  if (c.sl) {
+    primaryFilterKey = Object.keys(c.sl)[0];
+    const opts = c.sl[primaryFilterKey];
+    filterHtml = `<select class="doc-search-bar" style="width:130px; margin:0;" onchange="window.docFilterVal=this.value; window.V.docs()">
+      <option value="">전체 필터</option>
+      ${opts.map(o => `<option value="${o}" ${window.docFilterVal===o?'selected':''}>${o}</option>`).join('')}
+    </select>`;
+  } else {
+    window.docFilterVal = '';
+  }
+
+  // 필터 및 검색 적용
+  if (window.docFilterVal && primaryFilterKey) {
+     currentRows = currentRows.filter(r => r[primaryFilterKey] === window.docFilterVal);
+  }
   if(window.docSearchQuery) {
      const q = window.docSearchQuery.toLowerCase();
      currentRows = currentRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
@@ -666,7 +705,10 @@ window.V.docs = (tab) => {
   document.getElementById('content').innerHTML=`
     <div class="stabs">${stH}</div>
     <div style="flex:1; display:flex; flex-direction:column; padding:14px 18px 18px; overflow:hidden; gap:10px;">
-      <input type="text" class="doc-search-bar" style="flex-shrink:0; margin:0;" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
+      <div style="display:flex; gap:8px; flex-shrink:0;">
+        ${filterHtml}
+        <input type="text" class="doc-search-bar" style="flex:1; margin:0;" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
+      </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
         <div style="flex:1; overflow:auto;">
           <table><thead><tr><th style="width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
@@ -682,7 +724,6 @@ window.V.docs = (tab) => {
 window.addDocRow = (tab) => {
   window.pushHistory();
   const m={tsk:['tasks','TSK'],doc:['docs','DOC'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
-  // 기본 뼈대 업데이트
   const d={
     tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},
     doc:{dtype:'사규',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]},
