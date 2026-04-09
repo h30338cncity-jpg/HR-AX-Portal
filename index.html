@@ -211,8 +211,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // Firebase 설정값
 const firebaseConfig = {
@@ -273,7 +273,6 @@ window.pill = v => {
 window.parseRef = str => (str||'').split(',').map(s=>s.trim()).filter(s=>s);
 window.mergeRef = arr => [...new Set(arr)].join(', ');
 
-// Format codes with correct badge color based on prefix
 window.badge = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
@@ -394,8 +393,7 @@ window.applyMs = () => {
 
 // ── LOGIN & FIREBASE ─────────────────────────────────
 let db, auth, userDocRef;
-window.isSaving = false;
-let firstLoad = true;
+let saveTimeout;
 
 window.handleLogin = () => {
   const id = document.getElementById('login-id').value;
@@ -416,52 +414,42 @@ const initAuth = async () => {
     auth = getAuth(app);
     db = getFirestore(app);
 
-    await signInAnonymously(auth);
+    await signInAnonymously(auth).catch(e => {
+        alert("데이터베이스 인증에 실패했습니다.\nFirebase Console > Authentication에서 '익명' 로그인이 사용 설정되어 있는지 꼭 확인해 주세요.\n\n상세 내용: " + e.message);
+    });
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
-        
-        onSnapshot(userDocRef, snap => {
-          if (snap.exists() && !window.isSaving) {
+    userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
+    
+    try {
+        const snap = await getDoc(userDocRef);
+        if (snap.exists()) {
             const data = snap.data();
             Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
-            window.recomputeAll();
-            
-            if(firstLoad) {
-               firstLoad = false;
-               window.go('home');
-            } else if (window.currentView) {
-               window.go(window.currentView, document.getElementById('n-'+window.currentView));
-            }
-          } else if (!snap.exists()) {
-             window.saveStateFn();
-             if(firstLoad) { firstLoad=false; window.go('home'); }
-          }
-        }, err => console.error("Firebase 데이터 읽기 에러:", err));
-      }
-    });
+        } else {
+            await setDoc(userDocRef, window.buildDataToSave());
+        }
+        window.recomputeAll();
+        window.go('home');
+    } catch (err) {
+        alert("데이터베이스 연결이 거부되었습니다.\nFirebase Console > Firestore Database에서 데이터베이스를 만들었는지, 그리고 규칙(Rules)이 허용(테스트 모드)으로 되어 있는지 확인해 주세요.\n\n상세 내용: " + err.message);
+        window.go('home');
+    }
   } catch(e) { 
-    console.error("Firebase 연결 에러 (설정이나 권한을 확인해주세요):", e);
-    if(firstLoad) { firstLoad=false; window.go('home'); }
+    alert("Firebase 설정 정보가 잘못되었거나 초기화에 실패했습니다.\n\n상세 내용: " + e.message);
+    window.go('home');
   }
 };
 
-window.saveStateFn = () => {
-  if (!userDocRef) return;
-  window.isSaving = true;
-  window.recomputeAll();
-
-  // 순환 참조 및 임시 데이터(_)를 제외한 순수 데이터 추출
+window.buildDataToSave = () => {
   const cleanData = (arr) => arr.map(obj => {
     const cleanObj = {};
     Object.keys(obj).forEach(k => {
+      // 자동 계산되는 필드(_)는 제외하고 저장합니다.
       if (!k.startsWith('_')) cleanObj[k] = obj[k];
     });
     return cleanObj;
   });
-
-  const dataToSave = {
+  return {
     team: cleanData(S.team),
     tasks: cleanData(S.tasks),
     docs: cleanData(S.docs),
@@ -471,14 +459,19 @@ window.saveStateFn = () => {
     pocs: cleanData(S.pocs),
     cnt: S.cnt
   };
+};
 
-  setDoc(userDocRef, dataToSave).then(() => { 
-    setTimeout(() => window.isSaving = false, 600); 
-  }).catch(e => { 
-    console.error("저장 실패:", e); 
-    window.isSaving = false;
-    window.toast("저장 오류: 콘솔을 확인하세요.");
-  });
+window.saveStateFn = () => {
+  if (!userDocRef) return;
+  window.recomputeAll();
+  
+  clearTimeout(saveTimeout);
+  // 입력이 끝난 뒤에 모아서 한 번에 저장합니다. (Firebase 한도 초과 방지)
+  saveTimeout = setTimeout(() => {
+     setDoc(userDocRef, window.buildDataToSave()).catch(e => { 
+       console.error("데이터 저장 실패:", e);
+     });
+  }, 800);
 };
 
 // ── NAVIGATION ───────────────────────────────────────
@@ -608,7 +601,6 @@ window.V.docs = (tab) => {
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
   
-  // Search filtering
   if(window.docSearchQuery) {
      const q = window.docSearchQuery.toLowerCase();
      currentRows = currentRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
