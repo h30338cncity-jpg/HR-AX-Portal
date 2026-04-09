@@ -99,7 +99,7 @@ td select{cursor:pointer}
 
 /* Editable Code Inputs */
 input.code-input {
-  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 68px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 85px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
 }
 input.code-input:hover { border-color: rgba(0,0,0,0.3); opacity: 0.85; }
 input.code-input:focus { border-style: solid; border-color: #1D9E75; background: #fff !important; color: #000 !important; box-shadow: 0 0 0 2px rgba(29,158,117,0.2); }
@@ -261,7 +261,7 @@ const firebaseConfig = {
 window.S = {
   team:[{name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}],
   tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
-  docs:[{code:'DOC-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]}],
+  docs:[{code:'DOC-C-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]}],
   exps:[{code:'EXP-001',sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]}],
   terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
@@ -272,6 +272,7 @@ window.S = {
 window.currentView = 'home';
 window.docSearchQuery = '';
 window.docFilterVal = '';
+window.docSubTab = '법령'; // 기준문서 내부 서브 탭
 window.datFilter = 'all';
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 
@@ -317,20 +318,16 @@ document.addEventListener('keydown', (e) => {
 // ── UTILS & CORE ─────────────────────────────────────
 const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
 
-// 중간에 비어있는 코드를 채워넣는 스마트 ID 생성기
+// 기존 번호 당기기를 없애고, Max + 1 방식으로 채번
 window.nc = (arrKey, pfx) => {
   const arr = window.S[arrKey] || [];
   const usedIds = arr.map(x => {
     const match = x.code.match(new RegExp(`^${pfx}-(\\d+)$`));
     return match ? parseInt(match[1], 10) : 0;
-  }).filter(id => id > 0).sort((a, b) => a - b);
+  }).filter(id => id > 0);
   
-  let nextId = 1;
-  for (let i = 0; i < usedIds.length; i++) {
-    if (usedIds[i] === nextId) nextId++;
-    else if (usedIds[i] > nextId) break;
-  }
-  return pfx + '-' + String(nextId).padStart(3, '0');
+  const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
+  return pfx + '-' + String(maxId + 1).padStart(3, '0');
 };
 
 window.toast = m => { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300) };
@@ -366,7 +363,7 @@ window.fmtCodeList = (strOrArr) => {
   return arr.map(window.badge).join('');
 };
 
-// 직접 수정할 수 있는 코드 인풋 생성
+// 직접 수정할 수 있는 코드 인풋 생성 (고유 색상 적용)
 window.editableCode = (arrKey, c) => {
   const pfx = c.split('-')[0];
   const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
@@ -410,30 +407,11 @@ window.replaceReferences = (oldCode, newCode) => {
   if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
 };
 
-// 삭제 시 연쇄 번호 앞당김 (Auto-renumbering)
+// 항목 삭제 (이제 자동으로 번호를 앞당기지 않음 - Max+1 채번 유지)
 window.del = (arrKey, code) => {
   const arr = S[arrKey];
   const i = arr.findIndex(r => r.code === code);
-  if (i > -1) {
-    arr.splice(i, 1);
-    const pfx = code.split('-')[0];
-    window.renumberCodes(arrKey, pfx);
-  }
-};
-window.renumberCodes = (arrKey, pfx) => {
-  const arr = S[arrKey];
-  arr.sort((a,b) => {
-    const na = parseInt(a.code.split('-')[1] || 0, 10);
-    const nb = parseInt(b.code.split('-')[1] || 0, 10);
-    return na - nb;
-  });
-  arr.forEach((item, index) => {
-    const expectedCode = pfx + '-' + String(index + 1).padStart(3, '0');
-    if(item.code !== expectedCode) {
-      window.replaceReferences(item.code, expectedCode);
-      item.code = expectedCode;
-    }
-  });
+  if (i > -1) arr.splice(i, 1);
 };
 
 window.recomputeAll = () => {
@@ -472,6 +450,31 @@ window.stateChanged = () => {
   if (window.currentView === 'tasks') window.V.tasks();
   if (window.currentView === 'onto') window.V.onto();
   if (window.currentView === 'data') window.V.data();
+};
+
+// ── 드롭다운 변경 핸들러 (코드 자동 변환 및 탭 이동) ────────────────────
+window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
+  window.pushHistory();
+  window.upd(arrKey, code, field, val);
+  if (arrKey === 'docs' && field === 'dtype' && val !== oldVal) {
+    const map = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
+    const newPfx = map[val] || 'DOC';
+    
+    // 코드가 DOC 류일 경우 새 구분에 맞춰 재발급
+    if (/^DOC(-[A-Z])?-\d+$/.test(code)) {
+      const newCode = window.nc('docs', newPfx);
+      const row = window.S.docs.find(x => x.code === code);
+      if(row) row.code = newCode;
+      window.replaceReferences(code, newCode);
+      window.toast(`[${val}] 구분에 맞춰 코드가 ${newCode}(으)로 자동 변경되었습니다.`);
+      
+      // 방금 변경한 문서의 서브 탭으로 화면 자동 전환
+      let newSubTab = val;
+      if (val === '관행' || val === '기타') newSubTab = '관행/기타';
+      window.docSubTab = newSubTab;
+    }
+  }
+  window.stateChanged();
 };
 
 // ── 컬럼 리사이징 ─────────────────────────────────────
@@ -803,7 +806,7 @@ window.V.docs = (tab) => {
 
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
     trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
@@ -814,20 +817,38 @@ window.V.docs = (tab) => {
 
   let filterHtml = '';
   let primaryFilterKey = '';
-  if (c.sl) {
-    primaryFilterKey = Object.keys(c.sl)[0];
-    const opts = c.sl[primaryFilterKey];
-    filterHtml = `<select class="doc-search-bar" style="width:130px; margin:0;" onchange="window.docFilterVal=this.value; window.V.docs()">
-      <option value="">전체 필터</option>
-      ${opts.map(o => `<option value="${o}" ${window.docFilterVal===o?'selected':''}>${o}</option>`).join('')}
-    </select>`;
-  } else {
-    window.docFilterVal = '';
+  let subTabsHtml = '';
+
+  // 기준문서(doc) 시트일 경우, 자체 서브 탭 렌더링
+  if (window.dtab === 'doc') {
+    window.docSubTab = window.docSubTab || '법령';
+    const subs = ['법령', '사규', '지침', '프로세스(운영)', '관행/기타'];
+    subTabsHtml = `<div style="display:flex; gap:6px; margin-bottom:4px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+      ${subs.map(s => `<button class="btn ${window.docSubTab === s ? 'btn-g' : 'btn-o'}" style="border-radius:20px; padding:4px 14px; font-weight:700;" onclick="window.docSubTab='${s}'; window.V.docs()">${s}</button>`).join('')}
+    </div>`;
+    
+    if (window.docSubTab === '관행/기타') {
+       currentRows = currentRows.filter(r => r.dtype === '관행' || r.dtype === '기타');
+    } else {
+       currentRows = currentRows.filter(r => r.dtype === window.docSubTab);
+    }
+  } 
+  // 다른 시트일 경우, 기존 드롭다운 필터 유지
+  else {
+    if (c.sl) {
+      primaryFilterKey = Object.keys(c.sl)[0];
+      const opts = c.sl[primaryFilterKey];
+      filterHtml = `<select class="doc-search-bar" style="width:130px; margin:0;" onchange="window.docFilterVal=this.value; window.V.docs()">
+        <option value="">전체 필터</option>
+        ${opts.map(o => `<option value="${o}" ${window.docFilterVal===o?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    }
+    if (window.docFilterVal && primaryFilterKey) {
+       currentRows = currentRows.filter(r => r[primaryFilterKey] === window.docFilterVal);
+    }
   }
 
-  if (window.docFilterVal && primaryFilterKey) {
-     currentRows = currentRows.filter(r => r[primaryFilterKey] === window.docFilterVal);
-  }
+  // 검색어 필터링
   if(window.docSearchQuery) {
      const q = window.docSearchQuery.toLowerCase();
      currentRows = currentRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
@@ -838,7 +859,7 @@ window.V.docs = (tab) => {
       const h = c.hd[i];
       if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
       if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
-      if(c.sl?.[f]) return `<td><select onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
+      if(c.sl?.[f]) return `<td><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
       if(c.dl?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
       return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
     }).join('');
@@ -848,6 +869,7 @@ window.V.docs = (tab) => {
   document.getElementById('content').innerHTML=`
     <div class="stabs">${stH}</div>
     <div style="flex:1; display:flex; flex-direction:column; padding:14px 18px 18px; overflow:hidden; gap:10px; min-width:0; min-height:0;">
+      ${subTabsHtml}
       <div style="display:flex; gap:8px; flex-shrink:0;">
         ${filterHtml}
         <input type="text" class="doc-search-bar" style="flex:1; margin:0;" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
@@ -859,7 +881,7 @@ window.V.docs = (tab) => {
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
         <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
-        <div class="note" style="margin:0;">※ 돋보기(🔍) 클릭 시 다중 항목 선택, 확장(⤢) 클릭 시 팝업 텍스트 입력이 가능합니다.</div>
+        <div class="note" style="margin:0;">※ 표의 제목열 구분선(우측 끝)을 드래그하여 열 너비를 조절할 수 있습니다. 확장(⤢) 버튼 클릭 시 팝업 작성이 가능합니다.</div>
       </div>
     </div>`;
     setTimeout(window.initResizers, 50);
@@ -867,15 +889,25 @@ window.V.docs = (tab) => {
 
 window.addDocRow = (tab) => {
   window.pushHistory();
-  const m={tsk:['tasks','TSK'],doc:['docs','DOC'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
-  const d={
-    tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},
-    doc:{dtype:'사규',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]},
-    exp:{sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]},
-    trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:''},
-    dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}
-  };
-  S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][1])});
+  if (tab === 'doc') {
+    let dt = window.docSubTab || '법령';
+    if (dt === '관행/기타') dt = '관행';
+    const pfxMap = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
+    const pfx = pfxMap[dt] || 'DOC';
+    S.docs.push({
+      code: window.nc('docs', pfx),
+      dtype: dt, name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', _exp:[], _trm:[]
+    });
+  } else {
+    const m={tsk:['tasks','TSK'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
+    const d={
+      tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},
+      exp:{sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]},
+      trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:''},
+      dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}
+    };
+    S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][1])});
+  }
   window.stateChanged();
 };
 
