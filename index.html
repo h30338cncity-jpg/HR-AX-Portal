@@ -274,6 +274,7 @@ window.docSearchQuery = '';
 window.docFilterVal = '';
 window.docSubTab = '법령'; // 기준문서 내부 서브 탭
 window.datFilter = 'all';
+window.colWidths = window.colWidths || {}; // 컬럼 너비 상태 저장 객체
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 
 // Undo & Redo History
@@ -370,6 +371,14 @@ window.editableCode = (arrKey, c) => {
   return `<input type="text" class="code-input ${cls}" value="${c}" onchange="window.changeCode('${arrKey}', '${c}', this.value, this)" title="클릭하여 코드 번호 수기 변경">`;
 };
 
+// 동적 테이블 헤더 생성기 (너비 상태 반영)
+window.th = (arrKey, label, defStyle='') => {
+  const wKey = `${arrKey}_${label}`;
+  const w = window.colWidths[wKey];
+  const s = w ? `width:${w}px; min-width:${w}px;` : defStyle;
+  return `<th data-wkey="${wKey}" style="${s}">${label}</th>`;
+};
+
 // 코드 수기 변경 및 연쇄 업데이트 로직 (Cascade Update)
 window.changeCode = (arrKey, oldCode, newCode, el) => {
   newCode = newCode.trim();
@@ -460,7 +469,7 @@ window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
     const map = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
     const newPfx = map[val] || 'DOC';
     
-    // 코드가 DOC 류일 경우 새 구분에 맞춰 재발급
+    // 코드가 DOC 류일 경우 새 구분에 맞춰 재발급 (가장 큰 번호 + 1로 자동 부여됨)
     if (/^DOC(-[A-Z])?-\d+$/.test(code)) {
       const newCode = window.nc('docs', newPfx);
       const row = window.S.docs.find(x => x.code === code);
@@ -479,7 +488,7 @@ window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
 
 // ── 컬럼 리사이징 ─────────────────────────────────────
 window.initResizers = () => {
-  document.querySelectorAll('th').forEach(th => {
+  document.querySelectorAll('th[data-wkey]').forEach(th => {
     th.style.position = 'relative';
     if(!th.querySelector('.resizer')) {
       const r = document.createElement('div');
@@ -491,13 +500,18 @@ window.initResizers = () => {
         startW = th.offsetWidth;
         r.classList.add('active');
         const onMove = e => {
-          th.style.minWidth = (startW + e.pageX - startX) + 'px';
-          th.style.width = th.style.minWidth;
+          const newW = startW + e.pageX - startX;
+          th.style.minWidth = newW + 'px';
+          th.style.width = newW + 'px';
         };
         const onUp = () => {
           r.classList.remove('active');
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
+          
+          // 조절이 끝난 후 너비 상태를 window.colWidths 에 저장
+          const wkey = th.getAttribute('data-wkey');
+          if(wkey) window.colWidths[wkey] = th.offsetWidth;
         };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
@@ -876,7 +890,7 @@ window.V.docs = (tab) => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th style="width:80px; min-width:80px">코드</th>${c.hd.map(h=>`<th>${h}</th>`).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
+          <table><thead><tr>${window.th(c.k, '코드', 'width:80px; min-width:80px')}${c.hd.map(h=>window.th(c.k, h)).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
         </div>
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
@@ -937,7 +951,7 @@ window.V.data = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th style="width:80px;min-width:80px">코드</th><th>항목명</th><th>데이터 형태</th><th>출처</th><th>보유 여부</th><th>민감도</th><th>자동연결 TSK</th></tr></thead>
+          <table><thead><tr>${window.th('dats', '코드', 'width:80px;min-width:80px')}${['항목명','데이터 형태','출처','보유 여부','민감도','자동연결 TSK'].map(h=>window.th('dats', h)).join('')}</tr></thead>
           <tbody>${fdd.map(d=>`<tr><td>${window.editableCode('dats', d.code)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td></tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
@@ -1095,7 +1109,7 @@ window.V.poc = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr><th style="width:80px;min-width:80px">코드</th><th>연관과제</th><th>검증 로직·규칙</th><th>검증결과</th><th>이슈내용</th><th>담당자(자동)</th><th>예정일</th><th>상태</th><th></th></tr></thead>
+          <table><thead><tr>${window.th('pocs', '코드', 'width:80px;min-width:80px')}${['연관과제','검증 로직·규칙','검증결과','이슈내용','담당자(자동)','예정일','상태'].map(h=>window.th('pocs', h)).join('')}<th style="width:30px"></th></tr></thead>
           <tbody>${S.pocs.map(p=>`<tr>
             <td>${window.editableCode('pocs', p.code)}</td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
