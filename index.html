@@ -63,6 +63,14 @@ mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
 .sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:700;margin-bottom:3px}
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
 
+/* New Home Cards */
+.h-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer; }
+.h-card:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.05); }
+.hc-tsk { border-left:4px solid #3C3489; }
+.hc-doc { border-left:4px solid #085041; }
+.hc-dat { border-left:4px solid #185FA5; }
+.hc-poc { border-left:4px solid #639922; }
+
 /* Table */
 .tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 table{width:max-content;min-width:100%;border-collapse:collapse;background:var(--color-background-primary)}
@@ -168,7 +176,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:5;}
 .gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
 .gcb:hover{background:var(--color-background-secondary)}
-.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:220px;line-height:1.7;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:260px;line-height:1.7;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .g-tip.on{opacity:1}
 .o-sec{font-size:12px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)}
 .o-div{height:1px;background:var(--color-border-tertiary);margin:14px 0}
@@ -1196,38 +1204,86 @@ window.V.home = () => {
   const oCnt = window.orphanRefs.length;
   const rCnt = window.missingRequired.length;
 
+  const totalItems = S.tasks.length + S.docs.length + S.exps.length + S.terms.length + S.dats.length;
+  const compItems = totalItems > 0 ? totalItems - window.missingRequired.length : 0;
+  const compRate = window.pct(compItems, totalItems);
+
   document.getElementById('content').innerHTML=`
-    <div style="flex:1; overflow-y:auto; padding:18px; min-width:0; min-height:0;">
-      <div class="g4" style="margin-bottom:14px">
-        <div class="card"><div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div><div>${window.pill('완료')} ${done} · ${window.pill('진행중')} ${prog}</div><div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#1D9E75"></div></div></div>
-        <div class="card"><div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div><div>${window.pill('최신')} ${S.docs.filter(d=>d.cur==='최신').length}건</div><div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#0F6E56"></div></div></div>
-        <div class="card"><div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${dd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div></div>
-        <div class="card"><div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${pd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div></div>
+    <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
+      <!-- 상단 배너 -->
+      <div style="background:linear-gradient(135deg, #085041 0%, #1D9E75 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div>
+          <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 포털 대시보드</div>
+          <div style="font-size:13px; opacity:0.9;">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <div style="text-align:right;">
+            <div style="font-size:12px; opacity:0.9; margin-bottom:4px;">필수 데이터 완성도</div>
+            <div style="font-size:28px; font-weight:800;">${compRate}%</div>
+          </div>
+          <div style="width:54px; height:54px; border-radius:50%; background:conic-gradient(#fff ${compRate}%, rgba(255,255,255,0.2) 0); display:flex; align-items:center; justify-content:center;">
+             <div style="width:42px; height:42px; background:#16805b; border-radius:50%;"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="sec" style="margin-top:20px;"><h3>데이터 무결성 검증</h3></div>
-      <div class="g4">
-          <div class="sys-card" style="border-color:${oCnt === 0 ? '#1D9E75' : '#E24B4A'}" onclick="window.openOrphanModal()">
-              <div class="stat-l">깨진 참조 (고아 참조)</div>
-              <div class="stat-n" style="color:${oCnt === 0 ? '#1D9E75' : '#E24B4A'}">
-                  ${oCnt === 0 ? '✅ 0' : `🔴 ${oCnt}`}
-              </div>
-              <div class="sys-ds">존재하지 않는 코드 참조 확인</div>
+      <!-- 핵심 지표 카드 -->
+      <div class="g4" style="margin-bottom:24px">
+        <div class="h-card hc-tsk" onclick="window.go('tasks')">
+           <div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div>
+           <div style="font-size:11px; color:gray; margin-top:8px;">완료 ${done} · 진행중 ${prog}</div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#3C3489"></div></div>
+        </div>
+        <div class="h-card hc-doc" onclick="window.go('docs')">
+           <div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div>
+           <div style="font-size:11px; color:gray; margin-top:8px;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건</div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#085041"></div></div>
+        </div>
+        <div class="h-card hc-dat" onclick="window.go('data')">
+           <div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:#94a3b8"> / ${dd.length}</span></div>
+           <div style="font-size:11px; color:gray; margin-top:8px;">수집 완료 비율</div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div>
+        </div>
+        <div class="h-card hc-poc" onclick="window.go('poc')">
+           <div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:#94a3b8"> / ${pd.length}</span></div>
+           <div style="font-size:11px; color:gray; margin-top:8px;">검증 달성률</div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div>
+        </div>
+      </div>
+
+      <!-- 데이터 무결성 검증 -->
+      <div style="background:#1E293B; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">데이터 무결성 검증</div>
+      <div class="g4" style="margin-bottom:24px">
+          <div class="h-card" style="border-left:4px solid ${oCnt === 0 ? '#10B981' : '#EF4444'}; background:${oCnt === 0 ? '#F0FDF4' : '#FEF2F2'};" onclick="window.openOrphanModal()">
+              <div class="stat-l" style="color:${oCnt === 0 ? '#047857' : '#991B1B'};">깨진 참조 (고아 참조)</div>
+              <div class="stat-n" style="color:${oCnt === 0 ? '#10B981' : '#EF4444'}; margin-top:4px;">${oCnt === 0 ? '✅ 정상' : `🔴 ${oCnt}건`}</div>
+              <div style="font-size:11px; color:${oCnt === 0 ? '#047857' : '#991B1B'}; opacity:0.8; margin-top:8px;">존재하지 않는 코드 참조 확인</div>
           </div>
-          <div class="sys-card" style="border-color:${rCnt === 0 ? '#1D9E75' : '#BA7517'}" onclick="window.openReqModal()">
-              <div class="stat-l">필수 필드 미입력</div>
-              <div class="stat-n" style="color:${rCnt === 0 ? '#1D9E75' : '#BA7517'}">
-                  ${rCnt === 0 ? '✅ 0' : `⚠️ ${rCnt}`}
-              </div>
-              <div class="sys-ds">RAG 품질을 위한 필수 데이터 확인</div>
+          <div class="h-card" style="border-left:4px solid ${rCnt === 0 ? '#10B981' : '#F59E0B'}; background:${rCnt === 0 ? '#F0FDF4' : '#FFFBEB'};" onclick="window.openReqModal()">
+              <div class="stat-l" style="color:${rCnt === 0 ? '#047857' : '#B45309'};">필수 필드 미입력</div>
+              <div class="stat-n" style="color:${rCnt === 0 ? '#10B981' : '#F59E0B'}; margin-top:4px;">${rCnt === 0 ? '✅ 정상' : `⚠️ ${rCnt}건`}</div>
+              <div style="font-size:11px; color:${rCnt === 0 ? '#047857' : '#B45309'}; opacity:0.8; margin-top:8px;">RAG 품질을 위한 필수 데이터 확인</div>
           </div>
       </div>
 
-      <div class="sec" style="margin-top:24px;"><h3>시스템 바로가기</h3></div>
+      <!-- 시스템 바로가기 -->
+      <div style="background:#1E293B; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
       <div class="g3">
-        <div class="sys-card" onclick="window.go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
-        <div class="sys-card" onclick="window.go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
-        <div class="sys-card" onclick="window.go('onto')"><div class="sys-ic">🔗</div><div class="sys-nm">온톨로지·관계</div><div class="sys-ds">연결 데이터를 기반으로 관계망 자동 시각화</div></div>
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3C3489'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('tasks')">
+           <div style="font-size:28px; margin-bottom:12px;">📋</div>
+           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">과제 현황판</div>
+           <div style="font-size:11px; color:#64748b;">진행중 ${prog}건 · 완료 ${done}건</div>
+        </div>
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#085041'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('docs')">
+           <div style="font-size:28px; margin-bottom:12px;">📄</div>
+           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">기준문서 관리</div>
+           <div style="font-size:11px; color:#64748b;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건 · 갱신필요 ${S.docs.filter(d=>d.cur==='갱신필요').length}건</div>
+        </div>
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#72243E'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('onto')">
+           <div style="font-size:28px; margin-bottom:12px;">🔗</div>
+           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">온톨로지·관계</div>
+           <div style="font-size:11px; color:#64748b;">전체 연결 엣지 ${window.getAllEdges().length}건</div>
+        </div>
       </div>
     </div>`;
 };
@@ -1493,8 +1549,7 @@ window.V.docs = (tab) => {
         } else {
             col2Html = nodeEdges.map(e => {
                 const isSource = e.source === window.relSelectedNode; 
-                // isSource means the selected node is the Child. So Target is Parent.
-                // Direction: Target(상위) ← Source(하위, 나).
+                // Target(상위) ← Source(하위)
                 const otherCode = isSource ? e.target : e.source;
                 const dirIcon = isSource 
                     ? '<span style="color:#3B82F6;font-weight:bold;display:inline-block;width:55px;" title="선택 노드가 참조함">← (상위)</span>' 
@@ -1530,8 +1585,8 @@ window.V.docs = (tab) => {
          if (e) {
              col3Html = `
                 <div style="background:#fff; padding:12px; border-radius:6px; border:1px solid #e2e8f0; font-size:11px; margin-bottom:14px;">
-                    <div style="display:flex; align-items:center; gap:6px;"><span style="color:gray; width:45px;">Source:</span> ${window.badge(e.source)}</div>
-                    <div style="display:flex; align-items:center; gap:6px; margin-top:8px;"><span style="color:gray; width:45px;">Target:</span> ${window.badge(e.target)}</div>
+                    <div style="display:flex; align-items:center; gap:6px;"><span style="color:gray; width:45px;">Source:</span> ${window.badge(e.source)} <span style="font-weight:600; color:#334155; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${window.getItemName(e.source).replace(/"/g,'&quot;')}</span></div>
+                    <div style="display:flex; align-items:center; gap:6px; margin-top:8px;"><span style="color:gray; width:45px;">Target:</span> ${window.badge(e.target)} <span style="font-weight:600; color:#334155; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${window.getItemName(e.target).replace(/"/g,'&quot;')}</span></div>
                     <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1; color:gray;">유형: <strong style="color:#334155">${e.detail.type}</strong></div>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; flex:1;">
@@ -1894,7 +1949,7 @@ window.addOntoRelation = (srcCode) => {
     const relType = document.getElementById('new-rel-type').value || '단순 참조';
     if(!tgtCode || srcCode === tgtCode) return;
 
-    let success = window.createLinkCore(tgtCode, srcCode, relType); // dir based on modal logic
+    let success = window.createLinkCore(tgtCode, srcCode, relType); 
 
     if(success) {
         window.pushHistory();
@@ -1916,7 +1971,7 @@ window.buildOntoGraphData = () => {
       const id = `E__${src}__${tgt}`; 
       if(!edgeSet.has(id)) {
           const det = S.edgeDetails[id] || { type: defaultType, clause:'', relevance:'참고', verbatim:'' };
-          edges.push({source: src, target: tgt, rtype: det.type, id: id});
+          edges.push({source: src, target: tgt, rtype: det.type, id: id, detail: det});
           edgeSet.add(id);
       }
   };
@@ -1985,7 +2040,7 @@ window.renderOAb = () => {
     b.innerHTML = `
       <div class="hint" style="margin-top:40px;">
         <span style="font-size:24px;display:block;margin-bottom:10px;">📊</span>
-        노드에 <strong>마우스를 올리면</strong><br>연결된 선만 밝게 하이라이트됩니다.<br><br>
+        노드 또는 연결선(엣지)에 <strong>마우스를 올리면</strong><br>상세 정보가 툴팁으로 표시됩니다.<br><br>
         노드를 <strong>클릭</strong>하여 상세 관계(상/하위)를 조회하고<br>직접 <strong>연결 속성</strong>을 수정하세요.
       </div>`;
     return;
@@ -2075,7 +2130,7 @@ window.renderOAb = () => {
   b.innerHTML = html;
 };
 
-// D3 Logic (고정형 스윔레인)
+// D3 Logic (고정형 스윔레인 + 엣지 툴팁 적용)
 window.initOG = () => {
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
@@ -2100,8 +2155,10 @@ window.initOG = () => {
   });
 
   const df = window.oSvg.append('defs');
-  df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
-    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#94a3b8').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  // 세 가지 상태의 화살표 마커 생성 (기본, 필수, 충돌가능)
+  df.append('marker').attr('id','oarr-gray').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#cbd5e1').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  df.append('marker').attr('id','oarr-blue').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#3B82F6').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  df.append('marker').attr('id','oarr-red').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#EF4444').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   
   window.oGMain = window.oSvg.append('g');
   window.oZoom = d3.zoom().scaleExtent([0.2, 3]).on('zoom', e => window.oGMain.attr('transform', e.transform));
@@ -2132,12 +2189,35 @@ window.initOG = () => {
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
   
+  // 가시적 패스 (Visible Path)
   eS.append('path')
+    .attr('class', 'visible-edge')
     .attr('fill','none')
-    .attr('stroke', d => d.rtype === '예외 처리' ? '#F472B6' : (d.rtype === '필수 준수' ? '#3B82F6' : '#cbd5e1'))
-    .attr('stroke-width', d => d.rtype === '필수 준수' ? 2.5 : 1.5)
-    .attr('stroke-dasharray', d => d.rtype === '단순 참조' || d.rtype === '예외 처리' || (d.rtype && d.rtype.includes('추론')) ? '5,5' : 'none')
-    .attr('marker-end','url(#oarr)')
+    .attr('stroke', d => {
+        const rel = d.detail ? d.detail.relevance : '참고';
+        if (rel === '필수') return '#3B82F6';
+        if (rel === '충돌가능') return '#EF4444';
+        return '#cbd5e1';
+    })
+    .attr('stroke-width', d => {
+        const rel = d.detail ? d.detail.relevance : '참고';
+        if (rel === '필수') return 2.5;
+        if (rel === '충돌가능') return 2;
+        return 1.5;
+    })
+    .attr('stroke-dasharray', d => {
+        const rel = d.detail ? d.detail.relevance : '참고';
+        if (rel === '필수') return 'none';
+        if (rel === '충돌가능') return '4,4';
+        return (d.rtype === '단순 참조' || d.rtype === '예외 처리' || (d.rtype && d.rtype.includes('추론'))) ? '5,5' : 'none';
+    })
+    .attr('marker-end', d => {
+        const rel = d.detail ? d.detail.relevance : '참고';
+        if (rel === '필수') return 'url(#oarr-blue)';
+        if (rel === '충돌가능') return 'url(#oarr-red)';
+        return 'url(#oarr-gray)';
+    })
+    .attr('pointer-events', 'none')
     .attr('d', d => {
         const sx = d.source.x + 12; 
         const sy = d.source.y;
@@ -2146,6 +2226,7 @@ window.initOG = () => {
         return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
     });
   
+  // 텍스트 라벨
   eS.append('text')
     .attr('text-anchor','middle')
     .attr('font-size','9px')
@@ -2155,6 +2236,49 @@ window.initOG = () => {
     .attr('x', d => (d.source.x + d.target.x) / 2)
     .attr('y', d => (d.source.y + d.target.y) / 2 - 6)
     .text(d => d.rtype);
+
+  // 이벤트 수신용 투명 두꺼운 패스 (Hit Path)
+  eS.append('path')
+    .attr('class', 'hit-edge')
+    .attr('fill', 'none')
+    .attr('stroke', 'transparent')
+    .attr('stroke-width', 12)
+    .style('cursor', 'pointer')
+    .attr('d', d => {
+        const sx = d.source.x + 12; 
+        const sy = d.source.y;
+        const tx = d.target.x - 16; 
+        const ty = d.target.y;
+        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
+    })
+    .on('mouseenter', (e, d) => {
+        const tip = document.getElementById('o-tip'); if(!tip) return;
+        const clause = d.detail && d.detail.clause ? d.detail.clause : '미입력';
+        const relevance = d.detail && d.detail.relevance ? d.detail.relevance : '참고';
+        let verbatim = d.detail && d.detail.verbatim ? d.detail.verbatim : '미입력';
+        if (verbatim !== '미입력' && verbatim.length > 60) verbatim = verbatim.substring(0, 60) + '...';
+        
+        tip.innerHTML = `
+          <div style="margin-bottom:8px;"><span class="pill pt" style="background:#e2e8f0;color:#475569">${d.rtype}</span></div>
+          <div style="margin-bottom:4px;">📌 <strong>참조위치:</strong> ${clause}</div>
+          <div style="margin-bottom:4px;">⚡ <strong>중요도:</strong> ${relevance}</div>
+          <div style="color:gray;">📄 <strong>원문:</strong> "${verbatim}"</div>
+        `;
+        tip.classList.add('on');
+        const wr = document.getElementById('o-gwrap').getBoundingClientRect();
+        tip.style.left = Math.min(e.clientX - wr.left + 12, wr.width - 240) + 'px';
+        tip.style.top = Math.max(e.clientY - wr.top - 8, 8) + 'px';
+    })
+    .on('mouseleave', () => {
+        document.getElementById('o-tip')?.classList.remove('on');
+    })
+    .on('click', (e, d) => {
+        e.stopPropagation();
+        window.selectedEdgeId = d.id;
+        window.relSelectedEdgeId = d.id;
+        window.go('docs');
+        window.V.docs('rel');
+    });
   
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
