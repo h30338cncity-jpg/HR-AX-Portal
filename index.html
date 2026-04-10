@@ -99,7 +99,7 @@ td select{cursor:pointer}
 
 /* Editable Code Inputs */
 input.code-input {
-  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 75px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 85px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
 }
 input.code-input:hover { border-color: rgba(0,0,0,0.3); opacity: 0.85; }
 input.code-input:focus { border-style: solid; border-color: #1D9E75; background: #fff !important; color: #000 !important; box-shadow: 0 0 0 2px rgba(29,158,117,0.2); }
@@ -108,6 +108,23 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .resizer { position:absolute; right:0; top:0; bottom:0; width:5px; cursor:col-resize; user-select:none; z-index:11; }
 .resizer:hover { background: rgba(29,158,117,0.3); }
 .resizer.active { background: rgba(29,158,117,0.6); }
+
+/* Tree Styles for REL Dashboard */
+.tree-node { display: flex; align-items: center; padding: 6px; cursor: grab; border-radius: 4px; border: 1px solid transparent; transition: background 0.1s; }
+.tree-node:hover { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); }
+.tree-toggle { width: 24px; text-align: center; cursor: pointer; font-size: 11px; color: #666; user-select: none; }
+.tree-toggle:hover { color: #000; }
+.tree-content { display: flex; align-items: center; gap: 8px; flex: 1; }
+.tree-children { margin-left: 20px; border-left: 1px dashed #cbd5e1; padding-left: 8px; margin-top: 2px; }
+.drag-over { background: #e2e8f0 !important; border: 1px dashed #3b82f6 !important; }
+
+/* Flat Draggable items in the right panel */
+.flat-node {
+    display: flex; align-items: center; padding: 5px 8px; margin-bottom: 6px;
+    background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
+    cursor: grab; transition: all 0.15s;
+}
+.flat-node:hover { border-color: var(--color-border-secondary); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
 /* Team & Emoji Picker */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -149,7 +166,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .toast{position:fixed;bottom:18px;right:18px;background:#1D9E75;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
 .toast.show{opacity:1}
 /* Modals */
-#ms-modal, #text-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+#ms-modal, #text-modal, #upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
 .ms-content{background:#fff;border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:500px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
 .ms-search{width:100%;padding:8px 10px;border:1px solid var(--color-border-secondary);border-radius:6px;margin-bottom:12px;font-size:12px;outline:none}
 .ms-search:focus{border-color:#1D9E75}
@@ -207,6 +224,23 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
+<!-- Upload Option Modal -->
+<div id="upload-modal">
+  <div class="ms-content" style="width:380px;">
+    <h3 style="font-weight:700;margin-bottom:12px">Excel 업로드 방식 선택</h3>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">
+      업로드할 데이터를 어떻게 처리할까요?<br><br>
+      • <strong style="color:#E24B4A">덮어쓰기:</strong> 포털의 기존 데이터를 지우고 엑셀 파일의 내용으로 완전히 교체합니다.<br><br>
+      • <strong style="color:#1D9E75">추가하기:</strong> 기존 데이터를 유지한 상태에서 엑셀 파일의 내용을 하단에 추가(병합)합니다.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-o" onclick="window.closeUploadModal()">취소</button>
+      <button class="btn btn-g" style="background:#E24B4A" onclick="window.applyUpload('overwrite')">덮어쓰기</button>
+      <button class="btn btn-g" onclick="window.applyUpload('append')">추가하기</button>
+    </div>
+  </div>
+</div>
+
 <!-- Multi Select Modal -->
 <div id="ms-modal">
   <div class="ms-content">
@@ -261,7 +295,7 @@ const firebaseConfig = {
 window.S = {
   team:[{name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}],
   tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
-  docs:[{code:'DOC-C-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',_exp:[],_trm:[]}],
+  docs:[{code:'DOC-C-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',parentDoc:'',_exp:[],_trm:[]}],
   exps:[{code:'EXP-001',sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]}],
   terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
@@ -276,6 +310,7 @@ window.docSubTab = '법령';
 window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
+let pendingUploadData = null; 
 
 // Undo & Redo History
 window.undoStack = [];
@@ -319,14 +354,12 @@ document.addEventListener('keydown', (e) => {
 // ── UTILS & CORE ─────────────────────────────────────
 const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
 
-// 기존 번호 당기기를 없애고, Max + 1 방식으로 채번
 window.nc = (arrKey, pfx) => {
   const arr = window.S[arrKey] || [];
   const usedIds = arr.map(x => {
     const match = x.code.match(new RegExp(`^${pfx}-(\\d+)$`));
     return match ? parseInt(match[1], 10) : 0;
   }).filter(id => id > 0);
-  
   const maxId = usedIds.length > 0 ? Math.max(...usedIds) : 0;
   return pfx + '-' + String(maxId + 1).padStart(3, '0');
 };
@@ -338,25 +371,23 @@ window.pill = v => {
   const m={'완료':'pd','진행중':'pp','검증중':'pp','미착수':'pt','이슈':'pw','최신':'pd','갱신필요':'pw','미확인':'pt','보유':'pd','일부보유':'pp','미보유':'pw','명문화됨':'pd','담당자재량':'pp','기준없음':'pt','가능':'pd','조건부가능':'pp','불가':'pw','일반':'pt','개인정보':'pw','민감정보':'pw'};
   return `<span class="pill ${m[v]||'pt'}">${v}</span>`;
 };
-window.parseRef = str => (str||'').split(',').map(s=>s.trim()).filter(s=>s);
+window.parseRef = str => {
+  if (Array.isArray(str)) return str;
+  if (!str || typeof str !== 'string') return [];
+  return str.split(',').map(s=>s.trim()).filter(s=>s);
+};
 window.mergeRef = arr => [...new Set(arr)].join(', ');
 
-// 삭제된 항목은 빨간 취소선 뱃지로 표시, 정상 항목은 마우스 오버 시 이름 툴팁 표시
 window.badge = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
   const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
   const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', DAT:'name', POC:'tsk'};
-  
   const arr = S[m[pfx]];
   const item = arr ? arr.find(x => x.code === c) : null;
-  
-  if (!item && m[pfx]) {
-    return `<span class="code" style="color:#E24B4A; text-decoration:line-through; background:#FCEBEB; border:1px solid #F7C1C1" title="삭제된 항목">${c}</span>`;
-  }
-  
+  if (!item && m[pfx]) return `<span class="code" style="color:#E24B4A; text-decoration:line-through; background:#FCEBEB; border:1px solid #F7C1C1" title="삭제된 항목">${c}</span>`;
   const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
-  const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${item[nm[pfx]].replace(/"/g, '&quot;')}` : c;
+  const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${String(item[nm[pfx]]).replace(/"/g, '&quot;')}` : c;
   return `<span class="code ${cls}" title="${titleText}">${c}</span>`;
 };
 window.fmtCodeList = (strOrArr) => {
@@ -364,7 +395,6 @@ window.fmtCodeList = (strOrArr) => {
   return arr.map(window.badge).join('');
 };
 
-// 직접 수정할 수 있는 코드 인풋 생성 (고유 색상 적용 및 확정 자물쇠 포함)
 window.editableCode = (arrKey, row) => {
   const code = row.code;
   const isLocked = row._locked;
@@ -373,14 +403,12 @@ window.editableCode = (arrKey, row) => {
   const lockIcon = isLocked ? '🔒' : '🔓';
   const readonly = isLocked ? 'readonly' : '';
   const style = isLocked ? 'opacity:0.7;cursor:not-allowed;background:transparent!important;border:none;' : '';
-  
   return `<div style="display:flex;align-items:center;justify-content:center;gap:4px;">
             <button class="btn-sm" style="padding:0;background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" onclick="window.toggleLock('${arrKey}', '${code}')" title="${isLocked ? '코드 잠금 해제' : '코드 확정(잠금)'}">${lockIcon}</button>
             <input type="text" class="code-input ${cls}" value="${code}" onchange="window.changeCode('${arrKey}', '${code}', this.value, this)" title="클릭하여 코드 번호 수기 변경" ${readonly} style="${style}">
           </div>`;
 };
 
-// 코드 확정 잠금 토글
 window.toggleLock = (arrKey, code) => {
   window.pushHistory();
   const row = window.S[arrKey].find(x => x.code === code);
@@ -389,7 +417,6 @@ window.toggleLock = (arrKey, code) => {
   window.toast(row._locked ? '코드가 확정되었습니다.' : '코드 확정이 해제되었습니다.');
 };
 
-// 동적 테이블 헤더 생성기 (너비 상태 반영)
 window.th = (arrKey, label, defStyle='') => {
   const wKey = `${arrKey}_${label}`;
   const w = window.colWidths[wKey];
@@ -397,21 +424,17 @@ window.th = (arrKey, label, defStyle='') => {
   return `<th data-wkey="${wKey}" style="${s}">${label}</th>`;
 };
 
-// 코드 수기 변경 및 연쇄 업데이트 로직 (Cascade Update)
 window.changeCode = (arrKey, oldCode, newCode, el) => {
   newCode = newCode.trim();
   if(!newCode) { window.toast('코드는 비워둘 수 없습니다.'); el.value = oldCode; return; }
   if(oldCode === newCode) return;
-  
   const row = window.S[arrKey].find(x => x.code === oldCode);
   if(row && row._locked) { window.toast('확정된 코드는 변경할 수 없습니다.'); el.value = oldCode; return; }
-
   let isDup = false;
   Object.values(window.S).forEach(arr => {
     if(Array.isArray(arr) && arr.find(x => x.code === newCode)) isDup = true;
   });
   if(isDup) { window.toast('이미 존재하는 코드입니다.'); el.value = oldCode; return; }
-
   window.pushHistory();
   if(row) row.code = newCode;
   window.replaceReferences(oldCode, newCode);
@@ -419,7 +442,6 @@ window.changeCode = (arrKey, oldCode, newCode, el) => {
   window.toast(`코드가 ${newCode}로 변경되었습니다.`);
 };
 
-// 참조 전체 교체
 window.replaceReferences = (oldCode, newCode) => {
   const replaceRef = (str) => {
      if(!str) return str;
@@ -427,7 +449,7 @@ window.replaceReferences = (oldCode, newCode) => {
      arr = arr.map(s => s === oldCode ? newCode : s);
      return [...new Set(arr)].join(', ');
   };
-  window.S.docs.forEach(r => { r.tskRef = replaceRef(r.tskRef); });
+  window.S.docs.forEach(r => { r.tskRef = replaceRef(r.tskRef); if(r.parentDoc === oldCode) r.parentDoc = newCode; });
   window.S.exps.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); });
   window.S.terms.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.parent = replaceRef(r.parent); r.child = replaceRef(r.child); });
   window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
@@ -436,7 +458,7 @@ window.replaceReferences = (oldCode, newCode) => {
   if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
 };
 
-// 행 드래그 앤 드롭 함수
+// 행 드래그 앤 드롭 (순서 변경)
 window.draggedRow = { arrKey: null, code: null };
 window.rowDragStart = (e, arrKey, code) => {
     if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
@@ -446,11 +468,9 @@ window.rowDragStart = (e, arrKey, code) => {
 window.rowDrop = (e, arrKey, targetCode) => {
     e.preventDefault();
     if(!window.draggedRow.code || window.draggedRow.arrKey !== arrKey || window.draggedRow.code === targetCode) return;
-    
     const arr = S[arrKey];
     const fromIdx = arr.findIndex(x => x.code === window.draggedRow.code);
     const toIdx = arr.findIndex(x => x.code === targetCode);
-    
     if(fromIdx > -1 && toIdx > -1) {
         window.pushHistory();
         const [item] = arr.splice(fromIdx, 1);
@@ -464,8 +484,6 @@ window.rowDrop = (e, arrKey, targetCode) => {
 window.reorderCodes = (arrKey) => {
     window.pushHistory();
     const arr = S[arrKey];
-    
-    // 현재 잠겨있는 항목들의 번호 대역 수집
     const lockedByPrefix = {};
     arr.filter(x => x._locked).forEach(item => {
         const match = item.code.match(/^(.*)-(\d+)$/);
@@ -486,12 +504,7 @@ window.reorderCodes = (arrKey) => {
             if(match) {
                 const pfx = match[1];
                 if(!currentCounter[pfx]) currentCounter[pfx] = 1;
-
-                // 잠긴 번호가 있으면 건너뜀
-                while(lockedByPrefix[pfx] && lockedByPrefix[pfx].has(currentCounter[pfx])) {
-                    currentCounter[pfx]++;
-                }
-
+                while(lockedByPrefix[pfx] && lockedByPrefix[pfx].has(currentCounter[pfx])) currentCounter[pfx]++;
                 const newCode = pfx + '-' + String(currentCounter[pfx]).padStart(3, '0');
                 if (item.code !== newCode) {
                     window.replaceReferences(item.code, newCode);
@@ -502,12 +515,10 @@ window.reorderCodes = (arrKey) => {
             }
         }
     });
-
     window.stateChanged();
     window.toast(`순차 정렬 완료 (${changedCount}건이 변경되었습니다.)`);
 };
 
-// 항목 삭제
 window.del = (arrKey, code) => {
   const arr = S[arrKey];
   const i = arr.findIndex(r => r.code === code);
@@ -552,26 +563,22 @@ window.stateChanged = () => {
   if (window.currentView === 'data') window.V.data();
 };
 
-// ── 드롭다운 변경 핸들러 (코드 자동 변환 및 탭 이동) ────────────────────
 window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
   window.pushHistory();
   window.upd(arrKey, code, field, val);
   if (arrKey === 'docs' && field === 'dtype' && val !== oldVal) {
     const map = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
     const newPfx = map[val] || 'DOC';
-    
-    // 코드가 DOC 류일 경우 새 구분에 맞춰 재발급 (가장 큰 번호 + 1로 자동 부여됨)
     if (/^DOC(-[A-Z])?-\d+$/.test(code)) {
       const row = window.S.docs.find(x => x.code === code);
       if(row && row._locked) {
           window.toast('확정된 코드의 구분은 변경할 수 없습니다.');
-          row.dtype = oldVal; // 롤백
+          row.dtype = oldVal;
       } else {
           const newCode = window.nc('docs', newPfx);
           if(row) row.code = newCode;
           window.replaceReferences(code, newCode);
           window.toast(`[${val}] 구분에 맞춰 코드가 ${newCode}(으)로 자동 변경되었습니다.`);
-          
           let newSubTab = val;
           if (val === '관행' || val === '기타') newSubTab = '관행/기타';
           window.docSubTab = newSubTab;
@@ -581,7 +588,6 @@ window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
   window.stateChanged();
 };
 
-// ── 컬럼 리사이징 ─────────────────────────────────────
 window.initResizers = () => {
   document.querySelectorAll('th[data-wkey]').forEach(th => {
     th.style.position = 'relative';
@@ -603,7 +609,6 @@ window.initResizers = () => {
           r.classList.remove('active');
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
-          
           const wkey = th.getAttribute('data-wkey');
           if(wkey) window.colWidths[wkey] = th.offsetWidth;
         };
@@ -615,7 +620,6 @@ window.initResizers = () => {
   });
 };
 
-// ── MULTI-SELECT MODAL ───────────────────────────────
 window.openMs = (arrKey, rowCode, field, type) => {
   const valArr = window.parseRef(S[arrKey].find(x=>x.code===rowCode)?.[field] || '');
   let opts = [];
@@ -654,23 +658,13 @@ window.renderMsList = () => {
         <td><label for="ms-${o.v}" style="cursor:pointer;font-weight:700;${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${o.l}</label></td>
       </tr>
     `).join('');
-    listEl.innerHTML = `
-      <div class="ms-tbl-wrap">
-        <table class="ms-tbl">
-          <thead><tr><th>선택</th><th>문서코드</th><th>구분</th><th>문서/조항명</th></tr></thead>
-          <tbody>${rows || `<tr><td colspan="4" style="text-align:center;color:gray;padding:15px">항목이 없습니다</td></tr>`}</tbody>
-        </table>
-      </div>`;
+    listEl.innerHTML = `<div class="ms-tbl-wrap"><table class="ms-tbl"><thead><tr><th>선택</th><th>문서코드</th><th>구분</th><th>문서/조항명</th></tr></thead><tbody>${rows || `<tr><td colspan="4" style="text-align:center;color:gray;padding:15px">항목이 없습니다</td></tr>`}</tbody></table></div>`;
   } else {
-    listEl.innerHTML = `
-      <div class="ms-tbl-wrap" style="border:none;background:var(--color-background-primary)">
-        ${filtered.map(o => `
+    listEl.innerHTML = `<div class="ms-tbl-wrap" style="border:none;background:var(--color-background-primary)">${filtered.map(o => `
           <div class="ms-item">
             <input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}>
             <label for="ms-${o.v}" style="${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${msState.type!=='TEAM'?window.badge(o.v):''} <strong>${o.l}</strong> <span style="color:gray;font-size:11px">(${o.sub||''})</span></label>
-          </div>
-        `).join('') || '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}
-      </div>`;
+          </div>`).join('') || '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}</div>`;
   }
 };
 
@@ -685,7 +679,6 @@ window.applyMs = () => {
   window.stateChanged();
 };
 
-// ── TEXT POPUP MODAL ─────────────────────────────────
 let tmState = { arrKey:'', rowCode:'', field:'' };
 window.openTm = (arrKey, rowCode, field, title) => {
   const row = S[arrKey].find(x=>x.code===rowCode);
@@ -698,15 +691,10 @@ window.openTm = (arrKey, rowCode, field, title) => {
 window.applyTm = () => {
   const val = document.getElementById('tm-input').value;
   const row = S[tmState.arrKey].find(x=>x.code===tmState.rowCode);
-  if(row && row[tmState.field] !== val) {
-    window.pushHistory();
-    row[tmState.field] = val;
-    window.stateChanged();
-  }
+  if(row && row[tmState.field] !== val) { window.pushHistory(); row[tmState.field] = val; window.stateChanged(); }
   document.getElementById('text-modal').style.display = 'none';
 };
 
-// ── EMOJI PICKER ─────────────────────────────────────
 const EMJ_LIST = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'];
 window.toggleEmoji = (idx, e) => {
   e.stopPropagation();
@@ -714,14 +702,8 @@ window.toggleEmoji = (idx, e) => {
   const eg = document.getElementById(`eg-${idx}`);
   eg.style.display = eg.style.display === 'none' ? 'grid' : 'none';
 };
-window.setEmoji = (idx, emoji) => {
-  window.pushHistory();
-  S.team[idx].emoji = emoji;
-  window.stateChanged();
-};
-document.addEventListener('click', (e) => {
-  if(!e.target.closest('.emoji-picker')) { document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); }
-});
+window.setEmoji = (idx, emoji) => { window.pushHistory(); S.team[idx].emoji = emoji; window.stateChanged(); };
+document.addEventListener('click', (e) => { if(!e.target.closest('.emoji-picker')) document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); });
 
 // ── LOGIN & FIREBASE ─────────────────────────────────
 let db, auth, userDocRef;
@@ -864,12 +846,71 @@ window.V.tasks = () => {
 window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
 
 window.dtab = 'tsk';
+
+// ── REL 트리형 (아코디언) 빌드 및 렌더링 로직 ───────────────────────────────
+window.relExpanded = window.relExpanded || {};
+window.toggleRel = (code) => {
+    window.relExpanded[code] = !window.relExpanded[code];
+    window.V.docs('rel');
+};
+
+window.relDragStart = (e, code, arrKey) => {
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('tree-toggle')) return;
+    window.draggedRel = { code, arrKey };
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
+};
+window.relDragOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('drag-over'); };
+window.relDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over'); };
+window.relDrop = (e, targetCode, targetArrKey) => {
+    e.preventDefault(); e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    
+    const src = window.draggedRel;
+    if (!src || src.code === targetCode) return;
+    if (src.arrKey === 'tasks') { window.toast('과제(TSK)는 하위 항목으로 이동할 수 없습니다.'); return; }
+    
+    if (src.arrKey === 'docs' && targetArrKey === 'docs') {
+         let cur = S.docs.find(d => d.code === targetCode);
+         let depth = 0;
+         while (cur && cur.parentDoc && depth < 20) {
+              if (cur.parentDoc === src.code) { window.toast('하위 항목을 상위로 지정할 수 없습니다 (순환 참조).'); return; }
+              cur = S.docs.find(d => d.code === cur.parentDoc);
+              depth++;
+         }
+    }
+
+    window.pushHistory();
+    const sRow = S[src.arrKey].find(x => x.code === src.code);
+    
+    const addRef = (existing, newRef) => {
+        let arr = window.parseRef(existing);
+        if (!arr.includes(newRef)) arr.push(newRef);
+        return arr.join(', ');
+    };
+
+    if (targetArrKey === 'root' || targetArrKey === 'orphan') {
+        sRow.tskRef = ''; sRow.docRef = ''; if(src.arrKey==='docs') sRow.parentDoc = '';
+    } else if (targetArrKey === 'tasks') {
+        sRow.tskRef = addRef(sRow.tskRef, targetCode);
+    } else if (targetArrKey === 'docs') {
+        if(src.arrKey==='docs') sRow.parentDoc = targetCode; 
+        else sRow.docRef = addRef(sRow.docRef, targetCode);
+    } else {
+        window.toast('해당 항목 하위로는 이동할 수 없습니다.');
+        window.undoStack.pop(); window.isHistoryAction = false; return;
+    }
+    
+    if (targetCode !== 'root' && targetCode !== 'orphan') window.relExpanded[targetCode] = true;
+    window.stateChanged();
+};
+
 window.V.docs = (tab) => {
   if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
   else { window.dtab = tab || window.dtab; }
   
   document.getElementById('pg-actions').innerHTML=`
-    <button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>
+    <button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : window.dtab === 'rel' ? '' : 'tasks'}')">🔢 코드 순번 정렬</button>
     <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
     <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
   `;
@@ -878,42 +919,148 @@ window.V.docs = (tab) => {
   const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
 
   if (window.dtab === 'rel') {
+    const root = { children: [] };
+    const nodeMap = {};
+    
+    S.tasks.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'tasks', children: [], _isOrphan: true });
+    S.docs.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'docs', children: [], _isOrphan: true });
+    S.terms.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'terms', children: [], _isOrphan: true });
+    S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [], _isOrphan: true });
+    S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [], _isOrphan: true });
+    
+    S.docs.forEach(d => {
+        const n = nodeMap[d.code];
+        if (d.parentDoc && nodeMap[d.parentDoc]) {
+            nodeMap[d.parentDoc].children.push(n);
+        } else if (d.tskRef && window.parseRef(d.tskRef).length > 0) {
+            window.parseRef(d.tskRef).forEach(pCode => {
+                if (nodeMap[pCode]) nodeMap[pCode].children.push(n);
+            });
+        } else {
+            root.children.push(n);
+        }
+    });
+    
+    const linkNode = (item, possibleParents) => {
+        const n = nodeMap[item.code];
+        let placedInTree = false;
+        for (let pField of possibleParents) {
+            if (item[pField]) {
+                const refs = window.parseRef(item[pField]);
+                refs.forEach(refCode => {
+                    if (nodeMap[refCode]) {
+                        nodeMap[refCode].children.push(n);
+                        placedInTree = true;
+                    }
+                });
+            }
+        }
+        if (!placedInTree) root.children.push(n);
+    };
+
+    S.terms.forEach(t => linkNode(t, ['docRef', 'tskRef']));
+    S.exps.forEach(e => linkNode(e, ['docRef', 'tskRef']));
+    S.dats.forEach(d => linkNode(d, ['docRef', 'tskRef']));
+    S.tasks.forEach(t => root.children.push(nodeMap[t.code]));
+
+    const renderTreeNode = (n, depth = 0) => {
+        if (depth > 15) return ''; 
+        const hasChild = n.children && n.children.length > 0;
+        const exp = window.relExpanded[n.code];
+        const toggleIcon = hasChild ? (exp ? '▼' : '▶') : '<span style="display:inline-block;width:10px"></span>';
+        const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
+        const title = n[nameField] || '미입력';
+        
+        return `
+            <div style="margin-top:2px;">
+                <div class="tree-node" 
+                     draggable="true" 
+                     ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')"
+                     ondragover="window.relDragOver(event)"
+                     ondragleave="window.relDragLeave(event)"
+                     ondrop="window.relDrop(event, '${n.code}', '${n.arrKey}')">
+                    <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();" draggable="false">${toggleIcon}</div>
+                    <div class="tree-content">
+                        ${window.badge(n.code)}
+                        <span style="font-size:12px;font-weight:500;">${String(title).replace(/"/g,'&quot;')}</span>
+                    </div>
+                </div>
+                ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, depth + 1)).join('')}</div>` : ''}
+            </div>
+        `;
+    };
+    
+    // 연결 / 미연결 상태 분리
     let orphans = [];
+    let connectedFlat = [];
     ['tasks','docs','exps','terms','dats'].forEach(k => {
       S[k].forEach(item => {
         let hasLink = false;
-        Object.keys(item).forEach(f => { if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk') && window.parseRef(item[f]).length > 0) hasLink = true; });
-        if (!hasLink && item.code) orphans.push(item);
+        Object.keys(item).forEach(f => { 
+          if (f === '_locked') return; 
+          if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk' || f==='parentDoc') && window.parseRef(item[f]).length > 0) hasLink = true; 
+        });
+        if (!hasLink && item.code && k !== 'tasks') orphans.push({ ...item, arrKey: k });
+        if (hasLink && item.code && k !== 'tasks') connectedFlat.push({ ...item, arrKey: k });
       });
     });
+
+    const renderFlatNode = (n) => {
+        const nameField = n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
+        const title = n[nameField] || '미입력';
+        return `
+            <div class="flat-node" draggable="true" ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')">
+                <div class="tree-content" style="gap:6px;">
+                    ${window.badge(n.code)}
+                    <span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${String(title).replace(/"/g,'&quot;')}</span>
+                </div>
+            </div>
+        `;
+    };
+
+    const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, 0)).join('');
+    const orphansHtml = orphans.map(renderFlatNode).join('');
+    const connectedHtml = connectedFlat.map(renderFlatNode).join('');
     
     document.getElementById('content').innerHTML=`
       <div class="stabs">${stH}</div>
-      <div style="flex:1;overflow:auto;padding:18px; min-width:0; min-height:0;">
-        <div class="sec"><h3>통합 연결 대시보드</h3></div>
-        <div class="card" style="margin-bottom:14px;background:#FCEBEB;border-color:#F7C1C1">
-          <div style="font-size:12px;font-weight:700;color:#791F1F;margin-bottom:6px">미연결 항목 (고립)</div>
-          <div class="code-list">${orphans.map(o=>`<span title="${o.name||o.term||o.sit||''}">${window.badge(o.code)}</span>`).join('') || '<span style="font-size:11px;color:gray">미연결 항목이 없습니다.</span>'}</div>
+      <div style="flex:1; padding:18px; min-width:0; min-height:0; display:flex; flex-direction:column;">
+        <div class="banner" style="margin-bottom:14px; flex-shrink:0;">
+          좌측 트리의 항목을 마우스로 드래그하여 다른 과제나 문서에 <strong>중복 종속</strong>시킬 수 있습니다. 연결을 완전히 끊으려면 가장 우측 상단의 <strong>미연결 고립 항목</strong> 영역으로 빼주세요.
         </div>
-        <div class="card">
-          <div style="font-size:12px;font-weight:700;margin-bottom:10px">데이터 연결 흐름</div>
-          <table style="width:100%;font-size:11px">
-            <thead><tr><th style="width:120px;border-bottom:2px solid #ccc;padding-bottom:8px;position:relative;">과제 (TSK)</th><th style="border-bottom:2px solid #ccc;padding-bottom:8px;position:relative;">자동 연결된 데이터 (문서, 용어, 데이터셋, 예외기준)</th></tr></thead>
-            <tbody>
-              ${S.tasks.map(t=>`<tr>
-                <td style="border-bottom:1px solid #eee;padding:10px 4px"><strong>${window.badge(t.code)}</strong><br><span style="color:gray;display:inline-block;margin-top:4px">${t.name||'미입력'}</span></td>
-                <td style="border-bottom:1px solid #eee;padding:10px 4px">
-                  <div class="code-list">
-                    ${window.fmtCodeList(t._doc)}
-                    ${window.fmtCodeList(t._dat)}
-                    ${window.fmtCodeList(t._trm)}
-                    ${window.fmtCodeList(t._exp)}
-                    ${(t._doc.length+t._dat.length+t._trm.length+t._exp.length)===0 ? '<span style="color:gray">연결된 항목 없음</span>':''}
-                  </div>
-                </td>
-              </tr>`).join('')}
-            </tbody>
-          </table>
+        <div style="display:flex; flex:1; gap:14px; overflow:hidden;">
+            
+            <!-- Left Tree -->
+            <div class="card" style="flex:1.4; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
+                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
+                     ondragover="window.relDragOver(event)"
+                     ondragleave="window.relDragLeave(event)"
+                     ondrop="window.relDrop(event, 'root', 'root')">
+                    ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
+                </div>
+            </div>
+            
+            <!-- Right Panels (Orphans & Connected) -->
+            <div style="width:340px; display:flex; flex-direction:column; gap:14px; overflow:hidden; flex-shrink:0;">
+                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#FCEBEB; border-color:#F7C1C1; padding:12px;">
+                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#791F1F; font-size:12px;">미연결 고립 항목</h3></div>
+                    <div style="flex:1; overflow-y:auto; padding-right:4px;"
+                         ondragover="window.relDragOver(event)"
+                         ondragleave="window.relDragLeave(event)"
+                         ondrop="window.relDrop(event, 'orphan', 'orphan')">
+                        ${orphansHtml || '<div style="color:gray;font-size:11px;">미연결 항목이 없습니다.</div>'}
+                    </div>
+                </div>
+                
+                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#EAF3DE; border-color:#C1E1C1; padding:12px;">
+                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#27500A; font-size:12px;">연결 항목 (중복 드래그용)</h3></div>
+                    <div style="flex:1; overflow-y:auto; padding-right:4px;">
+                        ${connectedHtml || '<div style="color:gray;font-size:11px;">연결된 항목이 없습니다.</div>'}
+                    </div>
+                </div>
+            </div>
+            
         </div>
       </div>`;
     return;
@@ -975,7 +1122,6 @@ window.V.docs = (tab) => {
       return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
     }).join('');
     
-    // Drag and drop event added to tr
     return `<tr draggable="true" 
                 ondragstart="window.rowDragStart(event, '${c.k}', '${row.code}')" 
                 ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" 
@@ -1003,7 +1149,7 @@ window.V.docs = (tab) => {
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
         <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
-        <div class="note" style="margin:0;">※ 표의 <strong>행을 드래그</strong>하여 순서를 변경하거나, <strong>자물쇠(🔓)</strong>를 눌러 코드를 확정(잠금)할 수 있습니다.</div>
+        <div class="note" style="margin:0;">※ 표의 <strong>행을 위아래로 드래그</strong>하여 목록 순서를 변경할 수 있습니다. <strong>자물쇠(🔓)</strong>를 눌러 코드를 잠그면 순번 정렬이나 수기 변환에서 보호됩니다.</div>
       </div>
     </div>`;
     setTimeout(window.initResizers, 50);
@@ -1018,7 +1164,7 @@ window.addDocRow = (tab) => {
     const pfx = pfxMap[dt] || 'DOC';
     S.docs.push({
       code: window.nc('docs', pfx), _locked: false,
-      dtype: dt, name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', _exp:[], _trm:[]
+      dtype: dt, name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', parentDoc:'', _exp:[], _trm:[]
     });
   } else {
     const m={tsk:['tasks','TSK'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
@@ -1275,29 +1421,49 @@ window.V.team = () => {
 window.addMember = () => { window.pushHistory(); S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
 
 // ── EXCEL ────────────────────────────────────────────
+window.closeUploadModal = () => {
+  document.getElementById('upload-modal').style.display = 'none';
+  pendingUploadData = null;
+};
+
+window.applyUpload = (mode) => {
+  if (!pendingUploadData) return;
+  window.pushHistory();
+  const wb = pendingUploadData;
+  const sm = {'1_TSK_과제':'tasks','2_DOC_기준문서':'docs','3_EXP_예외기준':'exps','4_TRM_용어객체':'terms','5_DAT_데이터셋':'dats'};
+  
+  if (mode === 'overwrite') {
+    for (let nm in sm) {
+      if (wb.Sheets[nm]) S[sm[nm]] = []; 
+    }
+  }
+
+  for (let nm in sm) {
+    if(wb.Sheets[nm]) {
+      let arr = XLSX.utils.sheet_to_json(wb.Sheets[nm]);
+      let target = S[sm[nm]];
+      arr.forEach(row => {
+        if(row['코드']) {
+          let existing = target.find(x => x.code === row['코드']);
+          if(!existing) { existing = {code: row['코드'], _locked: false}; target.push(existing); }
+          Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
+        }
+      });
+    }
+  }
+  window.stateChanged();
+  window.closeUploadModal();
+  window.toast(mode === 'overwrite' ? 'Excel 데이터 덮어쓰기 완료' : 'Excel 데이터 추가 완료');
+};
+
 window.handleExcelUpload = (e) => {
   const f = e.target.files[0]; if(!f) return;
   const reader = new FileReader();
   reader.onload = (evt) => {
-    window.pushHistory();
     const data = new Uint8Array(evt.target.result);
-    const wb = XLSX.read(data, {type: 'array'});
-    const sm = {'1_TSK_과제':'tasks','2_DOC_기준문서':'docs','3_EXP_예외기준':'exps','4_TRM_용어객체':'terms','5_DAT_데이터셋':'dats'};
-    for (let nm in sm) {
-      if(wb.Sheets[nm]) {
-        let arr = XLSX.utils.sheet_to_json(wb.Sheets[nm]);
-        let target = S[sm[nm]];
-        arr.forEach(row => {
-          if(row['코드']) {
-            let existing = target.find(x => x.code === row['코드']);
-            if(!existing) { existing = {code: row['코드'], _locked: false}; target.push(existing); }
-            Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
-          }
-        });
-      }
-    }
-    window.stateChanged();
-    window.toast('Excel 업로드 병합 완료');
+    pendingUploadData = XLSX.read(data, {type: 'array'});
+    document.getElementById('upload-modal').style.display = 'flex';
+    e.target.value = ''; 
   };
   reader.readAsArrayBuffer(f);
 };
