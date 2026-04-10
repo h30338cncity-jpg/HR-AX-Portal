@@ -110,6 +110,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 /* Tree Styles for REL Dashboard */
 .tree-node { display: flex; align-items: center; padding: 6px; cursor: grab; border-radius: 4px; border: 1px solid transparent; transition: background 0.1s; }
 .tree-node:hover { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); }
+.tree-node.edge-selected { background: #EEEDFE; border-color: #534AB7; }
 .tree-toggle { width: 24px; text-align: center; cursor: pointer; font-size: 11px; color: #666; user-select: none; }
 .tree-toggle:hover { color: #000; }
 .tree-content { display: flex; align-items: center; gap: 8px; flex: 1; }
@@ -121,9 +122,10 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .rel-btn:hover { background:#e2e8f0; color:#334155; }
 .rel-btn.unlink:hover { background:#fee2e2; color:#ef4444; }
 
-/* Flat Draggable items in the right panel */
-.flat-node { display: flex; align-items: center; padding: 5px 8px; margin-bottom: 6px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; cursor: grab; transition: all 0.15s; }
-.flat-node:hover { border-color: var(--color-border-secondary); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+/* REL Tab Edges */
+.edge-row { cursor: pointer; transition: background 0.1s; }
+.edge-row:hover { background: #f8fafc; }
+.edge-row.selected { background: #EEEDFE; }
 
 /* Team & Emoji Picker */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -144,7 +146,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 
 /* ONTO */
 .onto-wrap{display:flex;height:100%;overflow:hidden}
-.o-side{width:290px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;z-index:2;}
+.o-side{width:300px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;z-index:2;}
 .o-abody{flex:1;overflow-y:auto;padding:16px}
 .o-graph{flex:1;position:relative; background:#f8fafc; z-index:1;}
 #o-svg{position:absolute;inset:0;width:100%;height:100%;}
@@ -166,8 +168,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .toast.show{opacity:1}
 
 /* D3 Graph Hover Dimming */
-.dimmed { opacity: 0.15; transition: opacity 0.2s; }
-.highlight { opacity: 1; transition: opacity 0.2s; }
+.dimmed { opacity: 0.15 !important; transition: opacity 0.2s; }
 .ong { transition: opacity 0.2s; }
 .oeg { transition: opacity 0.2s; }
 
@@ -297,16 +298,27 @@ const firebaseConfig = {
   measurementId: "G-Z64P04D580"
 };
 
-// ── STATE ────────────────────────────────────────────
+// ── STATE (목표정합성 샘플 데이터 적용) ────────────────────────────────────────────
 window.S = {
-  team:[{name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}],
-  tasks:[{code:'TSK-001',name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}],
-  docs:[{code:'DOC-C-001',dtype:'관행',name:'',summary:'',dept:'',cur:'미확인',loc:'',tskRef:'',issueType:'',action:'',note:'',parentDoc:'',_exp:[],_trm:[]}],
-  exps:[{code:'EXP-001',sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]}],
-  terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
-  dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
-  pocs:[{code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}],
-  ontoTask:'ALL', ontoNodes:{}, ontoEdges:{}, edgeTypes:{}
+  team:[{name:'김철수',role:'HR기획',tasks:'TSK-001',note:'',emoji:'🧑‍💻',_tasks:['TSK-001']}],
+  tasks:[{code:'TSK-001',name:'조직 목표 정합성 검증',assignee:'김철수',purpose:'전사 전략과 부서 목표 간의 연결성 검증',status:'진행중',note:'',_doc:['DOC-R-001','DOC-P-001'],_trm:['TRM-001'],_dat:['DAT-001'],_exp:['EXP-001']}],
+  docs:[
+      {code:'DOC-R-001',dtype:'사규',name:'전사 목표관리 규정',summary:'전사 단위 목표 수립 기준',dept:'기획조정실',cur:'최신',loc:'',tskRef:'TSK-001',issueType:'',action:'',note:'',parentDoc:'',_exp:[],_trm:[]},
+      {code:'DOC-P-001',dtype:'지침',name:'부서별 MBO 가이드',summary:'부서 단위 세부 목표 할당 가이드',dept:'HR팀',cur:'최신',loc:'',tskRef:'',issueType:'',action:'',note:'',parentDoc:'DOC-R-001',_exp:[],_trm:[]}
+  ],
+  exps:[{code:'EXP-001',sit:'신설 조직 목표 설정 유예',hand:'HR팀장 전결',owner:'HR팀',rule:'명문화됨',ai:'조건부가능',docRef:'DOC-P-001',tskRef:'',note:'',_trm:[]}],
+  terms:[{code:'TRM-001',term:'핵심성과지표(KPI)',def:'목표 달성 여부를 측정하는 정량적 단위',otype:'기준값',parent:'',child:'',sim:'',docRef:'DOC-R-001',tskRef:'',note:'',_parent:[],_child:[]}],
+  dats:[{code:'DAT-001',name:'조직별 KPI 달성률 DB',dtype:'정형',src:'인사시스템',own:'보유',cycle:'월간',sens:'일반',trmRef:'TRM-001',docRef:'DOC-P-001',tskRef:'',note:''}],
+  pocs:[{code:'POC-001',tsk:'TSK-001',logic:'목표 키워드 시맨틱 유사도 비교',result:'',issue:'',owner:'',date:'2026-05',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:''}],
+  ontoTask:'ALL', ontoNodes:{}, ontoEdges:{}, 
+  edgeDetails:{
+      'E__TSK-001__DOC-R-001': {type:'필수 준수', clause:'', relevance:'필수', verbatim:''},
+      'E__DOC-R-001__DOC-P-001': {type:'상/하위 종속', clause:'', relevance:'참고', verbatim:''},
+      'E__DOC-R-001__TRM-001': {type:'기준 정의', clause:'', relevance:'참고', verbatim:''},
+      'E__DOC-P-001__DAT-001': {type:'데이터 활용', clause:'', relevance:'참고', verbatim:''},
+      'E__DOC-P-001__EXP-001': {type:'예외 처리', clause:'', relevance:'충돌가능', verbatim:''},
+      'E__TRM-001__DAT-001': {type:'키워드 매칭(추론)', clause:'', relevance:'참고', verbatim:''}
+  }
 };
 
 window.currentView = 'home';
@@ -315,6 +327,7 @@ window.docFilterVal = '';
 window.docSubTab = '법령';
 window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
+window.selectedEdgeId = null;
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
 
@@ -338,7 +351,7 @@ window.undo = () => {
   window.isHistoryAction = true;
   window.redoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.undoStack.pop()));
-  if(!window.S.edgeTypes) window.S.edgeTypes = {};
+  if(!window.S.edgeDetails) window.S.edgeDetails = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('실행 취소했습니다.');
@@ -349,32 +362,26 @@ window.redo = () => {
   window.isHistoryAction = true;
   window.undoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.redoStack.pop()));
-  if(!window.S.edgeTypes) window.S.edgeTypes = {};
+  if(!window.S.edgeDetails) window.S.edgeDetails = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('다시 실행했습니다.');
 };
 
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
-  if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); window.redo(); }
-});
-
 // ── UTILS & CORE ─────────────────────────────────────
 
 window.getNColor = (d) => {
     if (!d) return '#CBD5E1';
-    if (d.srcType === 'TSK') return '#60A5FA'; // 파랑
+    if (d.srcType === 'TSK') return '#60A5FA'; 
     if (d.srcType === 'DOC') {
-        if(d.dtype === '법령') return '#F87171'; // 빨강
-        if(d.dtype === '사규') return '#FB923C'; // 주황
-        if(d.dtype === '지침') return '#FBBF24'; // 노랑
-        return '#A78BFA'; // 보라
+        if(d.dtype === '법령') return '#F87171'; 
+        if(d.dtype === '사규') return '#FB923C'; 
+        if(d.dtype === '지침') return '#FBBF24'; 
+        return '#A78BFA'; 
     }
-    if (d.srcType === 'DAT') return '#34D399'; // 민트
-    if (d.srcType === 'TRM') return '#2DD4BF'; // 청록
-    if (d.srcType === 'EXP') return '#F472B6'; // 분홍
+    if (d.srcType === 'DAT') return '#34D399'; 
+    if (d.srcType === 'TRM') return '#2DD4BF'; 
+    if (d.srcType === 'EXP') return '#F472B6'; 
     return '#94A3B8';
 };
 
@@ -414,6 +421,17 @@ window.badge = (c) => {
   const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${String(item[nm[pfx]]).replace(/"/g, '&quot;')}` : c;
   return `<span class="code ${cls}" title="${titleText}">${c}</span>`;
 };
+
+window.getItemName = (c) => {
+  if(!c) return '';
+  const pfx = c.split('-')[0];
+  const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
+  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', DAT:'name', POC:'tsk'};
+  const arr = S[m[pfx]];
+  const item = arr ? arr.find(x => x.code === c) : null;
+  return item && nm[pfx] && item[nm[pfx]] ? String(item[nm[pfx]]) : '이름 없음';
+};
+
 window.fmtCodeList = (strOrArr) => {
   const arr = Array.isArray(strOrArr) ? strOrArr : window.parseRef(strOrArr);
   return arr.map(window.badge).join('');
@@ -479,14 +497,13 @@ window.replaceReferences = (oldCode, newCode) => {
   window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
   window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); });
   
-  if (S.edgeTypes) {
-      Object.keys(S.edgeTypes).forEach(key => {
-          if (key.includes(oldCode)) {
-              const newKey = key.replace(oldCode, newCode);
-              S.edgeTypes[newKey] = S.edgeTypes[key];
-              delete S.edgeTypes[key];
-          }
+  if (S.edgeDetails) {
+      const newEdgeDetails = {};
+      Object.keys(S.edgeDetails).forEach(key => {
+          const newKey = key.replace(oldCode, newCode);
+          newEdgeDetails[newKey] = S.edgeDetails[key];
       });
+      S.edgeDetails = newEdgeDetails;
   }
 
   if(window.S.ontoTask === oldCode) window.S.ontoTask = newCode;
@@ -594,6 +611,63 @@ window.stateChanged = () => {
   if (window.currentView === 'tasks') window.V.tasks();
   if (window.currentView === 'onto') window.V.onto();
   if (window.currentView === 'data') window.V.data();
+};
+
+// --- EDGE LOGIC FOR REL TAB & ONTO TAB ---
+window.getAllEdges = () => {
+    let edges = [];
+    const edgeSet = new Set();
+    const addEdge = (src, tgt, defaultType) => {
+        if(!src || !tgt) return;
+        const id = `E__${src}__${tgt}`;
+        if(!edgeSet.has(id)) {
+            edgeSet.add(id);
+            const det = S.edgeDetails[id] || { type: defaultType, clause: '', relevance: '참고', verbatim: '' };
+            edges.push({ id, source: src, target: tgt, detail: det });
+        }
+    };
+    S.docs.forEach(d => {
+        window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '단순 참조'));
+        if(d.parentDoc) addEdge(d.parentDoc, d.code, '상/하위 종속');
+    });
+    S.terms.forEach(t => {
+        window.parseRef(t.tskRef).forEach(c => addEdge(c, t.code, '단순 참조'));
+        window.parseRef(t.docRef).forEach(c => addEdge(c, t.code, '기준 정의'));
+    });
+    S.dats.forEach(d => {
+        window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '데이터 활용'));
+        window.parseRef(d.docRef).forEach(c => addEdge(c, d.code, '데이터 활용'));
+        window.parseRef(d.trmRef).forEach(c => addEdge(c, d.code, '단순 참조'));
+    });
+    S.exps.forEach(e => {
+        window.parseRef(e.tskRef).forEach(c => addEdge(c, e.code, '예외 처리'));
+        window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외 처리'));
+    });
+    return edges;
+};
+
+window.updateEdgeDetail = (id, field, val) => {
+    window.pushHistory();
+    if(!S.edgeDetails[id]) S.edgeDetails[id] = { type:'단순 참조', clause:'', relevance:'참고', verbatim:'' };
+    S.edgeDetails[id][field] = val;
+    window.stateChanged();
+};
+
+window.selectEdge = (id) => {
+    window.selectedEdgeId = id;
+    if (window.currentView === 'docs' && window.dtab === 'rel') window.V.docs('rel');
+};
+
+window.parseType = (code) => {
+    const pfx = code.split('-')[0];
+    return {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats'}[pfx];
+};
+
+window.deleteEdge = (id, src, tgt) => {
+    const srcArrKey = window.parseType(src);
+    const tgtArrKey = window.parseType(tgt);
+    // tgt holds the ref to src in our mapping
+    window.unlinkRel(tgt, tgtArrKey, src, srcArrKey);
 };
 
 window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
@@ -765,7 +839,15 @@ const initAuth = async () => {
         if (snap.exists()) {
             const data = snap.data();
             Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
-            if(!S.edgeTypes) S.edgeTypes = {};
+            
+            // Migration for Edge Details
+            S.edgeDetails = data.edgeDetails || {};
+            if(data.edgeTypes && Object.keys(data.edgeTypes).length > 0) {
+                Object.keys(data.edgeTypes).forEach(k => {
+                    if(!S.edgeDetails[k]) S.edgeDetails[k] = { type: data.edgeTypes[k], clause:'', relevance:'참고', verbatim:'' };
+                });
+                S.edgeTypes = {};
+            }
         } else {
             await setDoc(userDocRef, window.buildDataToSave());
         }
@@ -787,7 +869,7 @@ window.buildDataToSave = () => {
   return {
     team: cleanData(S.team), tasks: cleanData(S.tasks), docs: cleanData(S.docs),
     exps: cleanData(S.exps), terms: cleanData(S.terms), dats: cleanData(S.dats), pocs: cleanData(S.pocs),
-    edgeTypes: S.edgeTypes || {}
+    edgeDetails: S.edgeDetails || {}
   };
 };
 
@@ -998,6 +1080,11 @@ window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
         }
     }
     
+    const edgeId = `E__${parentCode}__${childCode}`;
+    if(S.edgeDetails && S.edgeDetails[edgeId]) delete S.edgeDetails[edgeId];
+    
+    if (window.selectedEdgeId === edgeId) window.selectedEdgeId = null;
+
     window.stateChanged();
     window.toast(`${parentCode} 와(과)의 연결이 해제되었습니다.`);
 };
@@ -1016,6 +1103,9 @@ window.V.docs = (tab) => {
   const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
 
   if (window.dtab === 'rel') {
+    const allEdges = window.getAllEdges();
+    const selEdge = window.selectedEdgeId ? allEdges.find(e => e.id === window.selectedEdgeId) : null;
+
     const root = { children: [] };
     const nodeMap = {};
     
@@ -1066,17 +1156,21 @@ window.V.docs = (tab) => {
         const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
         const title = n[nameField] || '미입력';
         
+        const edgeId = parentCode ? `E__${parentCode}__${n.code}` : null;
+        const isSel = window.selectedEdgeId === edgeId;
+        
         const promoteBtn = (parentCode && parentArrKey !== 'tasks') ? `<button class="rel-btn" title="상위 레벨로 이동" onclick="window.promoteRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">↰</button>` : '';
         const unlinkBtn = parentCode ? `<button class="rel-btn unlink" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
 
         return `
             <div style="margin-top:2px;">
-                <div class="tree-node" 
+                <div class="tree-node ${isSel ? 'edge-selected' : ''}" 
                      draggable="true" 
                      ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')"
                      ondragover="window.relDragOver(event)"
                      ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, '${n.code}', '${n.arrKey}')">
+                     ondrop="window.relDrop(event, '${n.code}', '${n.arrKey}')"
+                     onclick="if('${edgeId}' !== 'null') window.selectEdge('${edgeId}')">
                     <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();" draggable="false">${toggleIcon}</div>
                     <div class="tree-content">
                         ${window.badge(n.code)}
@@ -1088,76 +1182,88 @@ window.V.docs = (tab) => {
             </div>
         `;
     };
-    
-    let orphans = [];
-    let connectedFlat = [];
-    ['tasks','docs','exps','terms','dats'].forEach(k => {
-      S[k].forEach(item => {
-        let hasLink = false;
-        Object.keys(item).forEach(f => { 
-          if (f === '_locked') return; 
-          if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk' || f==='parentDoc') && window.parseRef(item[f]).length > 0) hasLink = true; 
-        });
-        if (!hasLink && item.code && k !== 'tasks') orphans.push({ ...item, arrKey: k });
-        if (hasLink && item.code && k !== 'tasks') connectedFlat.push({ ...item, arrKey: k });
-      });
-    });
-
-    const renderFlatNode = (n) => {
-        const nameField = n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
-        const title = n[nameField] || '미입력';
-        return `
-            <div class="flat-node" draggable="true" ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')">
-                <div class="tree-content" style="gap:6px;">
-                    ${window.badge(n.code)}
-                    <span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${String(title).replace(/"/g,'&quot;')}</span>
-                </div>
-            </div>
-        `;
-    };
 
     const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
-    const orphansHtml = orphans.map(renderFlatNode).join('');
-    const connectedHtml = connectedFlat.map(renderFlatNode).join('');
+    const orphansHtml = root.children.filter(c => c.arrKey !== 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
     
     document.getElementById('content').innerHTML=`
       <div class="stabs">${stH}</div>
-      <div style="flex:1; padding:18px; min-width:0; min-height:0; display:flex; flex-direction:column;">
-        <div class="banner" style="margin-bottom:14px; flex-shrink:0;">
-          좌측 트리의 항목을 마우스로 드래그하여 다른 과제나 문서에 <strong>중복 종속</strong>시킬 수 있습니다. 하위 항목 우측에 나타나는 <strong>✕ 버튼</strong>을 눌러 개별 연결만 끊거나, 우측 상단으로 드래그하여 모든 연결을 해제하세요.
-        </div>
-        <div style="display:flex; flex:1; gap:14px; overflow:hidden;">
-            
-            <div class="card" style="flex:1.4; display:flex; flex-direction:column; overflow:hidden;">
-                <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
-                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
-                     ondragover="window.relDragOver(event)"
-                     ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, 'root', 'root')">
-                    ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
-                </div>
-            </div>
-            
-            <div style="width:340px; display:flex; flex-direction:column; gap:14px; overflow:hidden; flex-shrink:0;">
-                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#FCEBEB; border-color:#F7C1C1; padding:12px;">
-                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#791F1F; font-size:12px;">미연결 고립 항목</h3></div>
-                    <div style="flex:1; overflow-y:auto; padding-right:4px;"
-                         ondragover="window.relDragOver(event)"
-                         ondragleave="window.relDragLeave(event)"
-                         ondrop="window.relDrop(event, 'orphan', 'orphan')">
-                        ${orphansHtml || '<div style="color:gray;font-size:11px;">미연결 항목이 없습니다.</div>'}
-                    </div>
-                </div>
-                
-                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#EAF3DE; border-color:#C1E1C1; padding:12px;">
-                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#27500A; font-size:12px;">연결 항목 (중복 드래그용)</h3></div>
-                    <div style="flex:1; overflow-y:auto; padding-right:4px;">
-                        ${connectedHtml || '<div style="color:gray;font-size:11px;">연결된 항목이 없습니다.</div>'}
-                    </div>
-                </div>
-            </div>
-            
-        </div>
+      <div style="display:flex; flex-direction:column; flex:1; gap:14px; padding:18px; overflow:hidden;">
+          <div style="display:flex; flex:1; gap:14px; overflow:hidden; min-height: 45%;">
+              <div class="card" style="flex:2; display:flex; flex-direction:column; overflow:hidden;">
+                  <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
+                  <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
+                       ondragover="window.relDragOver(event)"
+                       ondragleave="window.relDragLeave(event)"
+                       ondrop="window.relDrop(event, 'root', 'root')">
+                      ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
+                      ${orphansHtml ? `<div class="o-sec" style="margin-top:20px;">미연결 항목 (고립)</div>${orphansHtml}` : ''}
+                  </div>
+              </div>
+              <div class="card" style="width:360px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:#f8fafc;">
+                  <div class="sec" style="margin-bottom:10px;"><h3>엣지 상세 패널</h3></div>
+                  <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:4px;">
+                      ${selEdge ? `
+                          <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e2e8f0; font-size:11px;">
+                              <div style="display:flex; align-items:center; gap:6px;"><span style="color:gray; width:45px;">Source:</span> ${window.badge(selEdge.source)} <span style="font-weight:600; color:#334155;">${window.getItemName(selEdge.source).replace(/"/g,'&quot;')}</span></div>
+                              <div style="display:flex; align-items:center; gap:6px; margin-top:6px;"><span style="color:gray; width:45px;">Target:</span> ${window.badge(selEdge.target)} <span style="font-weight:600; color:#334155;">${window.getItemName(selEdge.target).replace(/"/g,'&quot;')}</span></div>
+                          </div>
+                          <div>
+                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">참조 위치 (Clause)</label>
+                              <input type="text" value="${selEdge.detail.clause.replace(/"/g,'&quot;')}" onblur="window.updateEdgeDetail('${selEdge.id}', 'clause', this.value)" placeholder="예: 제50조 1항, 3장 2절" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;">
+                          </div>
+                          <div>
+                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">중요도 (Relevance)</label>
+                              <select onchange="window.updateEdgeDetail('${selEdge.id}', 'relevance', this.value)" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;">
+                                  <option value="참고" ${selEdge.detail.relevance==='참고'?'selected':''}>참고 (기본값)</option>
+                                  <option value="필수" ${selEdge.detail.relevance==='필수'?'selected':''}>필수</option>
+                                  <option value="충돌가능" ${selEdge.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
+                              </select>
+                          </div>
+                          <div style="flex:1; display:flex; flex-direction:column; min-height:120px;">
+                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">원문/발췌 (Verbatim)</label>
+                              <textarea onblur="window.updateEdgeDetail('${selEdge.id}', 'verbatim', this.value)" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:none;">${selEdge.detail.verbatim}</textarea>
+                          </div>
+                      ` : `
+                          <div style="text-align:center; color:#94a3b8; margin-top:40px; font-size:12px; line-height:1.6;">
+                              왼쪽 트리나 하단 테이블에서<br><strong>연결선(엣지)</strong>을 클릭하면<br>상세 정보를 편집할 수 있습니다.
+                          </div>
+                      `}
+                  </div>
+              </div>
+          </div>
+          
+          <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+              <div class="sec" style="margin-bottom:8px;"><h3>엣지 전체 관리</h3></div>
+              <div style="flex:1; overflow:auto;" class="tw">
+                  <table style="width:100%;">
+                      <thead>
+                          <tr>
+                              <th style="width:100px;">Source</th>
+                              <th style="width:100px;">Target</th>
+                              <th style="width:100px;">유형</th>
+                              <th style="width:120px;">참조 위치</th>
+                              <th style="width:80px;">중요도</th>
+                              <th>발췌 (Verbatim)</th>
+                              <th style="width:30px; text-align:center;"></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${allEdges.map(e => `
+                              <tr class="edge-row ${window.selectedEdgeId === e.id ? 'selected' : ''}" onclick="window.selectEdge('${e.id}')">
+                                  <td>${window.badge(e.source)}</td>
+                                  <td>${window.badge(e.target)}</td>
+                                  <td><span style="font-size:10px;color:gray">${e.detail.type}</span></td>
+                                  <td>${e.detail.clause ? `<span style="font-weight:500;">${e.detail.clause}</span>` : '<span style="color:#cbd5e1">-</span>'}</td>
+                                  <td>${e.detail.relevance === '필수' ? '<span style="color:#E24B4A;font-weight:700">필수</span>' : (e.detail.relevance === '충돌가능' ? '<span style="color:#BA7517;font-weight:700">충돌가능</span>' : '<span style="color:gray">참고</span>')}</td>
+                                  <td><div style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; color:gray;" title="${e.detail.verbatim.replace(/"/g,'&quot;')}">${e.detail.verbatim || '-'}</div></td>
+                                  <td style="text-align:center;"><button class="del-btn" style="width:20px;height:20px;padding:0;" onclick="event.stopPropagation(); window.deleteEdge('${e.id}', '${e.source}', '${e.target}')" title="연결 해제">✕</button></td>
+                              </tr>
+                          `).join('') || `<tr><td colspan="7" style="text-align:center;color:gray;padding:20px;">생성된 연결선이 없습니다.</td></tr>`}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
       </div>`;
     return;
   }
@@ -1314,7 +1420,42 @@ window.V.data = () => {
     setTimeout(window.initResizers, 50);
 };
 
-// ── ONTO ─────────────────────────────────────────────
+// ── ONTO (완벽한 정렬/하이라이트/속성수정 적용) ──────────────────────────────────
+window.updateEdgeType = (edgeId, newType) => {
+    window.pushHistory();
+    if(!S.edgeDetails[edgeId]) S.edgeDetails[edgeId] = { type: newType, clause:'', relevance:'참고', verbatim:'' };
+    else S.edgeDetails[edgeId].type = newType;
+    window.stateChanged();
+    window.toast('연결 속성이 변경되었습니다.');
+};
+
+window.removeOntoRelation = (edgeId, e) => {
+    e.stopPropagation();
+    const parts = edgeId.split('__');
+    if(parts.length < 3) return;
+    const parentCode = parts[1];
+    const childCode = parts[2];
+    
+    const childType = childCode.split('-')[0];
+    const cArrKey = {DOC:'docs',TRM:'terms',DAT:'dats',EXP:'exps'}[childType];
+    if(!cArrKey) return;
+
+    window.pushHistory();
+    const cRow = S[cArrKey].find(x => x.code === childCode);
+    if(cRow) {
+        ['tskRef', 'docRef', 'trmRef'].forEach(refField => {
+            if (cRow[refField] && cRow[refField].includes(parentCode)) {
+                let arr = window.parseRef(cRow[refField]);
+                cRow[refField] = arr.filter(c => c !== parentCode).join(', ');
+            }
+        });
+        if(cRow.parentDoc === parentCode) cRow.parentDoc = '';
+    }
+    if(S.edgeDetails[edgeId]) delete S.edgeDetails[edgeId];
+    window.stateChanged();
+    window.toast('관계가 해제되었습니다.');
+};
+
 window.V.onto = () => {
   if(!S.ontoTask) {
       S.ontoTask = 'ALL';
@@ -1328,11 +1469,11 @@ window.V.onto = () => {
       ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
       </optgroup>
     </select>
-    <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 재설정</button>
+    <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 중앙정렬</button>
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
-      <div class="o-side" style="width:320px;">
+      <div class="o-side" style="width:310px;">
         <div class="o-abody" id="o-abody"></div>
       </div>
       <div class="o-graph" id="o-gwrap">
@@ -1380,8 +1521,8 @@ window.addOntoRelation = (srcCode) => {
             if(!arr.includes(parentCode)) arr.push(parentCode);
             row[refField] = arr.join(', ');
             
-            const edgeId = `E-${childCode}-${parentCode}`;
-            S.edgeTypes[edgeId] = relType;
+            const edgeId = `E__${parentCode}__${childCode}`;
+            S.edgeDetails[edgeId] = { type: relType, clause:'', relevance:'참고', verbatim:'' };
             return true;
         }
         return false;
@@ -1390,18 +1531,16 @@ window.addOntoRelation = (srcCode) => {
     const sType = srcCode.split('-')[0];
     const tType = tgtCode.split('-')[0];
 
-    // Source는 항상 Child, Target은 항상 Parent 여야 함. 
-    // 화면상의 논리: 과제(상위) <- 문서 <- 용어(하위)
-    const attemptLink = (c1, t1, c2, t2) => {
-        if(t1==='DOC' && t2==='TSK') return link(c2, c1, 'docs', 'tskRef');
-        if(t1==='TRM' && t2==='TSK') return link(c2, c1, 'terms', 'tskRef');
-        if(t1==='DAT' && t2==='TSK') return link(c2, c1, 'dats', 'tskRef');
-        if(t1==='EXP' && t2==='TSK') return link(c2, c1, 'exps', 'tskRef');
-        if(t1==='DOC' && t2==='DOC') return link(c2, c1, 'docs', 'parentDoc');
-        if(t1==='TRM' && t2==='DOC') return link(c2, c1, 'terms', 'docRef');
-        if(t1==='DAT' && t2==='DOC') return link(c2, c1, 'dats', 'docRef');
-        if(t1==='EXP' && t2==='DOC') return link(c2, c1, 'exps', 'docRef');
-        if(t1==='DAT' && t2==='TRM') return link(c2, c1, 'dats', 'trmRef');
+    const attemptLink = (pCode, pType, cCode, cType) => {
+        if(pType==='TSK' && cType==='DOC') return link(pCode, cCode, 'docs', 'tskRef');
+        if(pType==='TSK' && cType==='TRM') return link(pCode, cCode, 'terms', 'tskRef');
+        if(pType==='TSK' && cType==='DAT') return link(pCode, cCode, 'dats', 'tskRef');
+        if(pType==='TSK' && cType==='EXP') return link(pCode, cCode, 'exps', 'tskRef');
+        if(pType==='DOC' && cType==='DOC') return link(pCode, cCode, 'docs', 'parentDoc');
+        if(pType==='DOC' && cType==='TRM') return link(pCode, cCode, 'terms', 'docRef');
+        if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
+        if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
+        if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
         return false;
     };
 
@@ -1410,11 +1549,11 @@ window.addOntoRelation = (srcCode) => {
     if(success) {
         window.pushHistory();
         window.stateChanged();
-        window.toast('관계가 새롭게 연결되었습니다.');
+        window.toast('관계가 성공적으로 설정되었습니다.');
         window.ontoExpanded.add(tgtCode); 
         window.V.onto();
     } else {
-        window.toast('지원하지 않는 계층 방향입니다. (상/하위 기준을 확인하세요)');
+        window.toast('지원하지 않는 상하위 연결 방향입니다.');
     }
 };
 
@@ -1424,10 +1563,10 @@ window.buildOntoGraphData = () => {
 
   const addEdge = (src, tgt, defaultType) => {
       if(!src || !tgt) return;
-      const id = `E-${src}-${tgt}`;
+      const id = `E__${src}__${tgt}`; // E__Parent__Child
       if(!edgeSet.has(id)) {
-          const rtype = (S.edgeTypes && S.edgeTypes[id]) ? S.edgeTypes[id] : defaultType;
-          edges.push({source: src, target: tgt, rtype: rtype, id: id});
+          const det = S.edgeDetails[id] || { type: defaultType, clause:'', relevance:'참고', verbatim:'' };
+          edges.push({source: src, target: tgt, rtype: det.type, id: id});
           edgeSet.add(id);
       }
   };
@@ -1444,23 +1583,23 @@ window.buildOntoGraphData = () => {
   S.dats.forEach(d => addNode(d, 'DAT', d.name||d.code, d.dtype));
   S.exps.forEach(e => addNode(e, 'EXP', e.sit||e.code, e.hand));
 
-  // 방향: Child(Source) -> Parent(Target)
+  // 방향: Parent(Source/Left) -> Child(Target/Right)
   S.docs.forEach(d => {
-      window.parseRef(d.tskRef).forEach(c => addEdge(d.code, c, '상/하위 종속'));
-      if(d.parentDoc) addEdge(d.code, d.parentDoc, '상/하위 종속');
+      window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '단순 참조'));
+      if(d.parentDoc) addEdge(d.parentDoc, d.code, '상/하위 종속');
   });
   S.terms.forEach(t => {
-      window.parseRef(t.tskRef).forEach(c => addEdge(t.code, c, '기준 정의'));
-      window.parseRef(t.docRef).forEach(c => addEdge(t.code, c, '기준 정의'));
+      window.parseRef(t.tskRef).forEach(c => addEdge(c, t.code, '단순 참조'));
+      window.parseRef(t.docRef).forEach(c => addEdge(c, t.code, '기준 정의'));
   });
   S.dats.forEach(d => {
-      window.parseRef(d.tskRef).forEach(c => addEdge(d.code, c, '데이터 활용'));
-      window.parseRef(d.docRef).forEach(c => addEdge(d.code, c, '데이터 활용'));
-      window.parseRef(d.trmRef).forEach(c => addEdge(d.code, c, '기준 정의'));
+      window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '데이터 활용'));
+      window.parseRef(d.docRef).forEach(c => addEdge(c, d.code, '데이터 활용'));
+      window.parseRef(d.trmRef).forEach(c => addEdge(c, d.code, '단순 참조'));
   });
   S.exps.forEach(e => {
-      window.parseRef(e.tskRef).forEach(c => addEdge(e.code, c, '예외 처리'));
-      window.parseRef(e.docRef).forEach(c => addEdge(e.code, c, '예외 처리'));
+      window.parseRef(e.tskRef).forEach(c => addEdge(c, e.code, '예외 처리'));
+      window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외 처리'));
   });
 
   if (S.ontoTask !== 'ALL') {
@@ -1476,11 +1615,11 @@ window.buildOntoGraphData = () => {
       edges = edges.filter(e => visibleNodes.has(e.source) && visibleNodes.has(e.target));
   }
 
-  // 스윔레인 단계(Depth) 설정 (좌측부터 0)
+  // 스윔레인 단계(Depth) 명확하게 설정 (좌측부터 0)
   nodes.forEach(n => {
       if (n.srcType === 'TSK') n.depth = 0;
       else if (n.srcType === 'DOC' && (n.dtype === '법령' || n.dtype === '사규')) n.depth = 1;
-      else if (n.srcType === 'DOC') n.depth = 2; // 지침, 프로세스 등
+      else if (n.srcType === 'DOC') n.depth = 2; // 지침, 프로세스, 관행 등
       else n.depth = 3; // TRM, DAT, EXP
   });
 
@@ -1498,8 +1637,8 @@ window.renderOAb = () => {
     b.innerHTML = `
       <div class="hint" style="margin-top:40px;">
         <span style="font-size:24px;display:block;margin-bottom:10px;">📊</span>
-        노드를 클릭하면 해당 데이터를 참조하는 상위 항목과 파생된 하위 항목이 구분되어 표시됩니다.<br><br>
-        그래프의 빈 공간을 드래그하여 화면을 이동할 수 있습니다.
+        노드에 <strong>마우스를 올리면</strong><br>연결된 선만 밝게 하이라이트됩니다.<br><br>
+        노드를 <strong>클릭</strong>하여 상세 관계(상/하위)를 조회하고<br>직접 <strong>연결 속성</strong>을 수정하세요.
       </div>`;
     return;
   }
@@ -1509,21 +1648,19 @@ window.renderOAb = () => {
   if(!n) return;
   const edges = S.ontoEdges['CURRENT']||[];
   
-  // 방향: Child(Source) -> Parent(Target) 이므로
-  // 현재 노드의 '상위 항목'은 이 노드에서 나가는(Outgoing) 엣지의 Target
-  // 현재 노드의 '하위 항목'은 이 노드로 들어오는(Incoming) 엣지의 Source
-  const parents = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
-  const children = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
+  // Left-to-Right 방향 기준
+  const parents = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
+  const children = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
   
   const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
-  const allOpts = allItems.map(x => {
+  const allOpts = allItems.filter(x => x.code !== n.id).map(x => {
       const pfx = x.code.split('-')[0];
       const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
       return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
   }).join('');
 
   let html = `
-    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--color-border-tertiary);">
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--color-border-tertiary);box-shadow:0 2px 4px rgba(0,0,0,0.02)">
       <div style="width:16px;height:16px;border-radius:50%;background:${window.getNColor(n)};flex-shrink:0;margin-top:2px;"></div>
       <div>
         <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${String(n.label).replace(/"/g,'&quot;')}</div>
@@ -1532,65 +1669,66 @@ window.renderOAb = () => {
     </div>
     ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:10px;border-radius:6px;line-height:1.6;margin-bottom:14px">${String(n.def).replace(/"/g,'&quot;')}</div>`:''}
     
-    <div class="o-sec" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;">
-        새로운 관계 직접 연결
+    <div class="o-sec" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;color:var(--color-text-primary)">
+        새로운 하위 파생 연결
     </div>
-    <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:20px;">
-       <select id="new-rel-type" style="width:100%; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px;">
+    <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid #e2e8f0;">
+       <select id="new-rel-type" style="width:100%; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px; outline:none; cursor:pointer;">
           <option value="상/하위 종속">상/하위 종속</option>
           <option value="단순 참조">단순 참조</option>
           <option value="필수 준수">필수 준수</option>
           <option value="데이터 활용">데이터 활용</option>
           <option value="기준 정의">기준 정의</option>
           <option value="예외 처리">예외 처리</option>
-          <option value="키워드 매칭">키워드 매칭(추론)</option>
+          <option value="키워드 매칭(추론)">키워드 매칭 (추론)</option>
        </select>
        <div style="display:flex; gap:6px; align-items:center;">
-           <select id="new-rel-tgt" style="flex:1; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px;">
-              <option value="">대상 선택 (상/하위 제한됨)</option>
+           <select id="new-rel-tgt" style="flex:1; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px; outline:none; cursor:pointer;">
+              <option value="">연결 대상을 선택하세요</option>
               ${allOpts}
            </select>
-           <button class="btn btn-g btn-sm" style="padding:6px 10px;" onclick="window.addOntoRelation('${n.id}')">추가</button>
+           <button class="btn btn-g btn-sm" style="padding:6px 12px; border-radius:4px;" onclick="window.addOntoRelation('${n.id}')">추가</button>
        </div>
     </div>
-
-    <div class="o-div"></div>
   `;
 
+  const renderEdgeRow = (e, relatedNodeId) => {
+      const o = nodes.find(x=>x.id===relatedNodeId) || {label: relatedNodeId, srcType: relatedNodeId.split('-')[0]};
+      return `
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed #e2e8f0; cursor:pointer; transition:background 0.1s; border-radius:4px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="window.oSelN('${relatedNodeId}')">
+            <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-left:4px;"></div>
+            <div style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155">${String(o?.label).replace(/"/g,'&quot;')}</div>
+            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeType('${e.id}', this.value)" onclick="event.stopPropagation()">
+                <option value="상/하위 종속" ${e.rtype==='상/하위 종속'?'selected':''}>상/하위 종속</option>
+                <option value="단순 참조" ${e.rtype==='단순 참조'?'selected':''}>단순 참조</option>
+                <option value="필수 준수" ${e.rtype==='필수 준수'?'selected':''}>필수 준수</option>
+                <option value="데이터 활용" ${e.rtype==='데이터 활용'?'selected':''}>데이터 활용</option>
+                <option value="기준 정의" ${e.rtype==='기준 정의'?'selected':''}>기준 정의</option>
+                <option value="예외 처리" ${e.rtype==='예외 처리'?'selected':''}>예외 처리</option>
+                <option value="키워드 매칭(추론)" ${e.rtype==='키워드 매칭(추론)'?'selected':''}>키워드 매칭(추론)</option>
+            </select>
+            <button class="del-btn" style="width:20px;height:20px;font-size:12px;padding:0;margin-right:2px;" onclick="window.removeOntoRelation('${e.id}', event)" title="연결 해제">×</button>
+        </div>`;
+  };
+
   if(parents.length > 0) {
-      html += `<div class="o-sec" style="margin-top:16px; color:#3B82F6;">상위 항목 (참조 대상)</div>`;
-      html += parents.map(e => {
-          const pId = e.target.id || e.target;
-          const o = nodes.find(x=>x.id===pId) || {label: pId, srcType: pId.split('-')[0]};
-          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${pId}')">
-              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:55px;text-align:right;">${e.rtype}</div>
-              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
-              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
-              </div>`;
-      }).join('');
+      html += `<div class="o-sec" style="margin-top:10px; color:#3B82F6;">상위 항목 (참조 대상)</div>`;
+      html += parents.map(e => renderEdgeRow(e, e.source.id || e.source)).join('');
   }
 
   if(children.length > 0) {
       html += `<div class="o-sec" style="margin-top:20px; color:#10B981;">하위 항목 (파생 대상)</div>`;
-      html += children.map(e => {
-          const cId = e.source.id || e.source;
-          const o = nodes.find(x=>x.id===cId) || {label: cId, srcType: cId.split('-')[0]};
-          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${cId}')">
-              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:55px;text-align:right;">${e.rtype}</div>
-              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
-              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
-              </div>`;
-      }).join('');
+      html += children.map(e => renderEdgeRow(e, e.target.id || e.target)).join('');
   }
 
   if(parents.length === 0 && children.length === 0) {
-      html += `<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 항목 없음</div>`;
+      html += `<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0;text-align:center;">연결된 항목이 없습니다.</div>`;
   }
 
   b.innerHTML = html;
 };
 
-// D3 Logic (고정형 스윔레인)
+// D3 Logic (물리 엔진 완벽 제거 및 고정 좌표계 렌더링)
 window.initOG = () => {
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
@@ -1598,14 +1736,15 @@ window.initOG = () => {
   d3.select('#o-svg').selectAll('*').remove();
   window.oSvg = d3.select('#o-svg');
   
+  // 1. 스윔레인 배경 그리기
   const bgG = window.oSvg.append('g').attr('class', 'swimlanes');
-  const lanes = ['1. 과제/프로젝트', '2. 상위 문서 (법령/사규)', '3. 하위 문서 (지침/프로세스)', '4. 데이터/용어/예외'];
+  const lanes = ['1. 과제/프로젝트 (TSK)', '2. 상위 문서 (법령/사규)', '3. 하위 문서 (지침/프로세스)', '4. 파생 데이터 (용어/셋/예외)'];
   const colWidth = Math.max(220, W / 4);
   
   lanes.forEach((l, i) => {
       bgG.append('rect')
          .attr('x', i * colWidth).attr('y', 0)
-         .attr('width', colWidth).attr('height', H)
+         .attr('width', colWidth).attr('height', Math.max(H, 1000))
          .attr('fill', i % 2 === 0 ? '#f8fafc' : '#f1f5f9')
          .attr('opacity', 0.6);
       bgG.append('text')
@@ -1614,66 +1753,74 @@ window.initOG = () => {
          .text(l);
   });
 
+  // 화살표 마커 (우측 방향)
   const df = window.oSvg.append('defs');
   df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
-    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','rgba(0,0,0,0.3)').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#94a3b8').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   
   window.oGMain = window.oSvg.append('g');
-  window.oZoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', e => window.oGMain.attr('transform', e.transform));
+  window.oZoom = d3.zoom().scaleExtent([0.2, 3]).on('zoom', e => window.oGMain.attr('transform', e.transform));
   window.oSvg.call(window.oZoom);
   
   const nodes = S.ontoNodes['CURRENT']||[];
-  const links = S.ontoEdges['CURRENT']||[];
+  let links = S.ontoEdges['CURRENT']||[];
   
-  // Y축 고정 좌표 계산 로직
+  // 2. Y축 고정 좌표 수학적 할당 (정렬)
   const depthCounts = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => { depthCounts[n.depth] = (depthCounts[n.depth] || 0) + 1; });
   
   const depthCurrent = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => {
-      n.x = (n.depth + 0.5) * colWidth;
+      n.x = (n.depth + 0.5) * colWidth; // 중앙 정렬
       const count = depthCounts[n.depth];
       const idx = depthCurrent[n.depth]++;
-      n.y = (H / 2) + (idx - (count - 1) / 2) * 80;
+      n.y = (H / 2) + (idx - (count - 1) / 2) * 60; // 60px 간격 유지
   });
   
+  // 3. Link Source/Target 매핑
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+  links.forEach(l => {
+      if (typeof l.source === 'string') l.source = nodeById.get(l.source);
+      if (typeof l.target === 'string') l.target = nodeById.get(l.target);
+  });
+  
+  // 끊어진 링크 제외
+  links = links.filter(l => l.source && l.target);
+
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
   
-  // 연결 속성에 따른 선 스타일 적용
+  // 4. 선 속성(유형)별 스타일 차등 렌더링
   eS.append('path')
     .attr('fill','none')
-    .attr('stroke', d => d.rtype === '예외 처리' ? '#F87171' : 'rgba(0,0,0,0.25)')
-    .attr('stroke-width', d => d.rtype === '필수 준수' ? 3 : 1.5)
+    .attr('stroke', d => d.rtype === '예외 처리' ? '#F472B6' : (d.rtype === '필수 준수' ? '#3B82F6' : '#cbd5e1'))
+    .attr('stroke-width', d => d.rtype === '필수 준수' ? 2.5 : 1.5)
     .attr('stroke-dasharray', d => d.rtype === '단순 참조' || d.rtype === '예외 처리' || (d.rtype && d.rtype.includes('추론')) ? '5,5' : 'none')
     .attr('marker-end','url(#oarr)')
     .attr('d', d => {
-        // Child(Source, 오른쪽) -> Parent(Target, 왼쪽)
-        const sx = (d.source.x || 0) - 18;
-        const sy = (d.source.y || 0);
-        const tx = (d.target.x || 0) + 22;
-        const ty = (d.target.y || 0);
-        return `M ${sx} ${sy} C ${sx - 60} ${sy}, ${tx + 60} ${ty}, ${tx} ${ty}`;
+        const sx = d.source.x + 12; // 출발 노드(Parent) 우측 가장자리
+        const sy = d.source.y;
+        const tx = d.target.x - 16; // 도착 노드(Child) 좌측 가장자리 (화살표 여백)
+        const ty = d.target.y;
+        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; // 부드러운 S자 곡선
     });
   
   eS.append('text')
     .attr('text-anchor','middle')
     .attr('font-size','9px')
-    .attr('fill','#64748b')
+    .attr('font-weight','700')
+    .attr('fill','#94a3b8')
     .attr('pointer-events','none')
-    .attr('x', d => ((d.source.x || 0) + (d.target.x || 0)) / 2)
-    .attr('y', d => ((d.source.y || 0) + (d.target.y || 0)) / 2 - 8)
+    .attr('x', d => (d.source.x + d.target.x) / 2)
+    .attr('y', d => (d.source.y + d.target.y) / 2 - 6)
     .text(d => d.rtype);
   
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
     .attr('transform', d => `translate(${d.x},${d.y})`)
-    .on('click',(e,d)=>{
-        e.stopPropagation();
-        window.oSelN(d.id);
-    });
+    .on('click',(e,d)=>{ e.stopPropagation(); window.oSelN(d.id); });
     
-  // 마우스 호버 시 흐리게 처리 (Dim) 로직
+  // 5. 마우스 호버 시 강조 효과 (Dim)
   nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
       tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
@@ -1682,12 +1829,14 @@ window.initOG = () => {
       tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
       tip.style.top=Math.max(e.clientY-wr.top-8,8)+'px';
 
+      // 자신과 직접 연결된 노드 ID 추출
       const connectedIds = new Set([d.id]);
       links.forEach(l => {
           if (l.source.id === d.id) connectedIds.add(l.target.id);
           if (l.target.id === d.id) connectedIds.add(l.source.id);
       });
       
+      // 연결되지 않은 요소는 흐리게
       nG.selectAll('.ong').classed('dimmed', n => !connectedIds.has(n.id));
       eG.selectAll('.oeg').classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id);
   });
@@ -1698,31 +1847,33 @@ window.initOG = () => {
       eG.selectAll('.oeg').classed('dimmed', false);
   });
     
+  // 텍스트를 빼고 깔끔한 원형 노드로 변경
   nS.append('circle')
-    .attr('r', 16)
+    .attr('r', 12)
     .attr('fill', d => window.getNColor(d))
     .attr('stroke', d => d.id === S.ontoSel ? '#334155' : '#fff')
     .attr('stroke-width', d => d.id === S.ontoSel ? 4 : 2)
-    .style('filter', 'drop-shadow(0px 3px 4px rgba(0,0,0,0.1))');
+    .style('filter', 'drop-shadow(0px 3px 4px rgba(0,0,0,0.12))');
   
   nS.append('text')
     .attr('text-anchor', 'middle')
-    .attr('dy', '32px')
+    .attr('dy', '24px')
     .attr('font-size', '11px')
     .attr('font-weight', '700')
     .attr('fill', '#334155')
     .attr('pointer-events', 'none')
-    .style('text-shadow', '0px 1px 2px #fff, 0px -1px 2px #fff, 1px 0px 2px #fff, -1px 0px 2px #fff')
+    .style('text-shadow', '0px 1px 2px #f8fafc, 0px -1px 2px #f8fafc, 1px 0px 2px #f8fafc, -1px 0px 2px #f8fafc')
     .text(d => d.label.length > 12 ? d.label.substring(0, 12) + '...' : d.label);
   
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
+  
+  // 줌 포지션 초기화
+  window.oSvg.call(window.oZoom.transform, d3.zoomIdentity.translate(0,30).scale(0.9));
 };
 
-window.resetOLayout = () => { 
-  window.V.onto(); // Re-renders completely with fixed layout
-};
+window.resetOLayout = () => { window.V.onto(); };
 window.oZS = (k) => window.oSvg?.transition().duration(300).call(window.oZoom.scaleBy,k);
-window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2 + 30).scale(0.85)); };
+window.oZF = () => { window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(0,30).scale(0.9)); };
 
 // ── POC ──────────────────────────────────────────────
 window.V.poc = () => {
@@ -1737,11 +1888,18 @@ window.V.poc = () => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr>${window.th('pocs', '코드', 'width:100px;min-width:100px;text-align:center;')}${['연관과제','검증 로직·규칙','검증결과','이슈내용','담당자(자동)','예정일','상태'].map(h=>window.th('pocs', h)).join('')}<th style="width:30px"></th></tr></thead>
+          <table><thead><tr>
+            ${window.th('pocs', '코드', 'width:100px;min-width:100px;text-align:center;')}
+            ${['연관과제','입력 명세','출력 명세','참조 DOC','프롬프트 초안','검증 로직·규칙','검증결과','이슈내용','담당자(자동)','예정일','상태'].map(h=>window.th('pocs', h)).join('')}
+            <th style="width:30px"></th></tr></thead>
           <tbody>${S.pocs.map(p=>`
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'pocs', '${p.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'pocs', '${p.code}')" style="cursor:grab;">
             <td>${window.editableCode('pocs', p)}</td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.inputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','inputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','inputSpec','입력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.outputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','outputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','outputSpec','출력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><div class="code-list">${window.fmtCodeList(p.contextDocs)}</div><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','contextDocs','DOC')" title="선택">🔍</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.promptDraft||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','promptDraft',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','promptDraft','프롬프트 초안')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
@@ -1749,13 +1907,13 @@ window.V.poc = () => {
             <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
             <td><select onchange="window.pushHistory(); window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
             <td><button class="del-btn" onclick="window.pushHistory(); window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
-          </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
+          </tr>`).join('') || `<tr><td colspan="13" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
     </div>`;
     setTimeout(window.initResizers, 50);
 };
-window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:'',_locked:false}); window.stateChanged(); };
+window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:'',_locked:false}); window.stateChanged(); };
 
 // ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
