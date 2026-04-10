@@ -147,20 +147,20 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .tc-label{font-size:10px;font-weight:700;color:var(--color-text-secondary);margin-bottom:4px}
 /* ONTO */
 .onto-wrap{display:flex;height:100%;overflow:hidden}
-.o-side{width:258px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden}
-.o-abody{flex:1;overflow-y:auto;padding:12px}
-.o-graph{flex:1;position:relative}
+.o-side{width:290px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden}
+.o-abody{flex:1;overflow-y:auto;padding:16px}
+.o-graph{flex:1;position:relative; background:#f8fafc;}
 #o-svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
 #o-svg:active{cursor:grabbing}
 .g-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .g-empty-msg{text-align:center;color:var(--color-text-secondary);font-size:12px;line-height:1.9;background:var(--color-background-primary);padding:20px 24px;border-radius:10px;border:1px solid var(--color-border-tertiary);max-width:260px}
 .g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px}
-.gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
 .gcb:hover{background:var(--color-background-secondary)}
-.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:190px;line-height:1.7;z-index:10;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:220px;line-height:1.7;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .g-tip.on{opacity:1}
 .o-sec{font-size:12px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)}
-.o-div{height:1px;background:var(--color-border-tertiary);margin:10px 0}
+.o-div{height:1px;background:var(--color-border-tertiary);margin:14px 0}
 .hint{text-align:center;padding:20px 10px;color:var(--color-text-secondary);font-size:11px;line-height:1.9}
 .note{font-size:11px;color:var(--color-text-secondary);margin-top:8px}
 .banner{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px}
@@ -303,7 +303,7 @@ window.S = {
   terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
   pocs:[{code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}],
-  ontoTask:'', ontoNodes:{}, ontoEdges:{}
+  ontoTask:'ALL', ontoNodes:{}, ontoEdges:{}
 };
 
 window.currentView = 'home';
@@ -314,6 +314,9 @@ window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
+
+// Expand state for Onto Graph
+window.ontoExpanded = window.ontoExpanded || new Set();
 
 // Undo & Redo History
 window.undoStack = [];
@@ -347,7 +350,6 @@ window.redo = () => {
   window.toast('다시 실행했습니다.');
 };
 
-// Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
@@ -355,7 +357,22 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── UTILS & CORE ─────────────────────────────────────
-const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
+
+// 밝고 화사한 컬러 팔레트 적용
+window.getNColor = (d) => {
+    if (!d) return '#CBD5E1';
+    if (d.srcType === 'TSK') return '#60A5FA'; // 파랑 (과제)
+    if (d.srcType === 'DOC') {
+        if(d.dtype === '법령') return '#F87171'; // 빨강
+        if(d.dtype === '사규') return '#FB923C'; // 주황
+        if(d.dtype === '지침') return '#FBBF24'; // 노랑
+        return '#A78BFA'; // 보라 (프로세스, 관행 등)
+    }
+    if (d.srcType === 'DAT') return '#34D399'; // 민트
+    if (d.srcType === 'TRM') return '#2DD4BF'; // 청록
+    if (d.srcType === 'EXP') return '#F472B6'; // 분홍
+    return '#94A3B8';
+};
 
 window.nc = (arrKey, pfx) => {
   const arr = window.S[arrKey] || [];
@@ -461,7 +478,6 @@ window.replaceReferences = (oldCode, newCode) => {
   if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
 };
 
-// 행 드래그 앤 드롭 (순서 변경)
 window.draggedRow = { arrKey: null, code: null };
 window.rowDragStart = (e, arrKey, code) => {
     if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
@@ -483,7 +499,6 @@ window.rowDrop = (e, arrKey, targetCode) => {
     window.draggedRow = { arrKey: null, code: null };
 };
 
-// 순번 강제 정렬 기능
 window.reorderCodes = (arrKey) => {
     window.pushHistory();
     const arr = S[arrKey];
@@ -802,8 +817,6 @@ window.V.home = () => {
     </div>`;
 };
 
-// KANBAN DRAG
-let draggedK = null;
 window.kDrag = (e, code) => { draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
 window.kDrop = (e, col) => { if(draggedK) { window.pushHistory(); window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
@@ -850,416 +863,25 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 
-// ── REL 연결 대시보드 (트리 및 개별 연결 해제 로직 추가) ───────────────────────────────
-window.relExpanded = window.relExpanded || {};
-window.toggleRel = (code) => {
-    window.relExpanded[code] = !window.relExpanded[code];
-    window.V.docs('rel');
-};
-
-window.relDragStart = (e, code, arrKey) => {
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('tree-toggle') || e.target.classList.contains('rel-unlink-btn')) return;
-    window.draggedRel = { code, arrKey };
-    e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation();
-};
-window.relDragOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('drag-over'); };
-window.relDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over'); };
-window.relDrop = (e, targetCode, targetArrKey) => {
-    e.preventDefault(); e.stopPropagation();
-    e.currentTarget.classList.remove('drag-over');
-    
-    const src = window.draggedRel;
-    if (!src || src.code === targetCode) return;
-    if (src.arrKey === 'tasks') { window.toast('과제(TSK)는 하위 항목으로 이동할 수 없습니다.'); return; }
-    
-    if (src.arrKey === 'docs' && targetArrKey === 'docs') {
-         let cur = S.docs.find(d => d.code === targetCode);
-         let depth = 0;
-         while (cur && cur.parentDoc && depth < 20) {
-              if (cur.parentDoc === src.code) { window.toast('하위 항목을 상위로 지정할 수 없습니다 (순환 참조).'); return; }
-              cur = S.docs.find(d => d.code === cur.parentDoc);
-              depth++;
-         }
-    }
-
-    window.pushHistory();
-    const sRow = S[src.arrKey].find(x => x.code === src.code);
-    
-    const addRef = (existing, newRef) => {
-        let arr = window.parseRef(existing);
-        if (!arr.includes(newRef)) arr.push(newRef);
-        return arr.join(', ');
-    };
-
-    if (targetArrKey === 'root' || targetArrKey === 'orphan') {
-        sRow.tskRef = ''; sRow.docRef = ''; if(src.arrKey==='docs') sRow.parentDoc = '';
-    } else if (targetArrKey === 'tasks') {
-        sRow.tskRef = addRef(sRow.tskRef, targetCode);
-    } else if (targetArrKey === 'docs') {
-        if(src.arrKey==='docs') sRow.parentDoc = targetCode; 
-        else sRow.docRef = addRef(sRow.docRef, targetCode);
-    } else {
-        window.toast('해당 항목 하위로는 이동할 수 없습니다.');
-        window.undoStack.pop(); window.isHistoryAction = false; return;
-    }
-    
-    if (targetCode !== 'root' && targetCode !== 'orphan') window.relExpanded[targetCode] = true;
-    window.stateChanged();
-};
-
-// 특정 부모와의 연결만 끊는 로직
-window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
-    if(e) e.stopPropagation();
-    window.pushHistory();
-    
-    const cRow = S[childArrKey].find(x => x.code === childCode);
-    if (!cRow) return;
-
-    const removeRef = (str, target) => {
-        let arr = window.parseRef(str);
-        return arr.filter(code => code !== target).join(', ');
-    };
-
-    if (parentArrKey === 'tasks') {
-        cRow.tskRef = removeRef(cRow.tskRef, parentCode);
-    } else if (parentArrKey === 'docs') {
-        if (childArrKey === 'docs' && cRow.parentDoc === parentCode) {
-            cRow.parentDoc = '';
-        } else {
-            cRow.docRef = removeRef(cRow.docRef, parentCode);
-        }
-    }
-    
-    window.stateChanged();
-    window.toast(`${parentCode} 와(과)의 연결이 해제되었습니다.`);
-};
-
-window.V.docs = (tab) => {
-  if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
-  else { window.dtab = tab || window.dtab; }
-  
-  document.getElementById('pg-actions').innerHTML=`
-    <button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : window.dtab === 'rel' ? '' : 'tasks'}')">🔢 코드 순번 정렬</button>
-    <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
-    <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
-  `;
-  
-  const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
-  const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
-
-  if (window.dtab === 'rel') {
-    const root = { children: [] };
-    const nodeMap = {};
-    
-    S.tasks.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'tasks', children: [] });
-    S.docs.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'docs', children: [] });
-    S.terms.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'terms', children: [] });
-    S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [] });
-    S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [] });
-    
-    // 트리를 그리기 위해 참조 관계에 따라 children 배열에 복사본을 삽입
-    S.docs.forEach(d => {
-        if (d.parentDoc && nodeMap[d.parentDoc]) {
-            nodeMap[d.parentDoc].children.push({...nodeMap[d.code]});
-        } else if (d.tskRef && window.parseRef(d.tskRef).length > 0) {
-            window.parseRef(d.tskRef).forEach(pCode => {
-                if (nodeMap[pCode]) nodeMap[pCode].children.push({...nodeMap[d.code]});
-            });
-        } else {
-            root.children.push({...nodeMap[d.code]});
-        }
-    });
-    
-    const linkNode = (item, possibleParents) => {
-        let placedInTree = false;
-        for (let pField of possibleParents) {
-            if (item[pField]) {
-                const refs = window.parseRef(item[pField]);
-                refs.forEach(refCode => {
-                    if (nodeMap[refCode]) {
-                        nodeMap[refCode].children.push({...nodeMap[item.code]});
-                        placedInTree = true;
-                    }
-                });
-            }
-        }
-        if (!placedInTree) root.children.push({...nodeMap[item.code]});
-    };
-
-    S.terms.forEach(t => linkNode(t, ['docRef', 'tskRef']));
-    S.exps.forEach(e => linkNode(e, ['docRef', 'tskRef']));
-    S.dats.forEach(d => linkNode(d, ['docRef', 'tskRef']));
-    S.tasks.forEach(t => root.children.push({...nodeMap[t.code]}));
-
-    const renderTreeNode = (n, parentCode, parentArrKey, depth = 0) => {
-        if (depth > 15) return ''; 
-        const hasChild = n.children && n.children.length > 0;
-        const exp = window.relExpanded[n.code];
-        const toggleIcon = hasChild ? (exp ? '▼' : '▶') : '<span style="display:inline-block;width:10px"></span>';
-        const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
-        const title = n[nameField] || '미입력';
-        
-        const unlinkBtn = parentCode ? `<button class="rel-unlink-btn" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
-
-        return `
-            <div style="margin-top:2px;">
-                <div class="tree-node" 
-                     draggable="true" 
-                     ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')"
-                     ondragover="window.relDragOver(event)"
-                     ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, '${n.code}', '${n.arrKey}')">
-                    <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();" draggable="false">${toggleIcon}</div>
-                    <div class="tree-content">
-                        ${window.badge(n.code)}
-                        <span style="font-size:12px;font-weight:500;">${String(title).replace(/"/g,'&quot;')}</span>
-                        ${unlinkBtn}
-                    </div>
-                </div>
-                ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, n.code, n.arrKey, depth + 1)).join('')}</div>` : ''}
-            </div>
-        `;
-    };
-    
-    let orphans = [];
-    let connectedFlat = [];
-    ['tasks','docs','exps','terms','dats'].forEach(k => {
-      S[k].forEach(item => {
-        let hasLink = false;
-        Object.keys(item).forEach(f => { 
-          if (f === '_locked') return; 
-          if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk' || f==='parentDoc') && window.parseRef(item[f]).length > 0) hasLink = true; 
-        });
-        if (!hasLink && item.code && k !== 'tasks') orphans.push({ ...item, arrKey: k });
-        if (hasLink && item.code && k !== 'tasks') connectedFlat.push({ ...item, arrKey: k });
-      });
-    });
-
-    const renderFlatNode = (n) => {
-        const nameField = n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
-        const title = n[nameField] || '미입력';
-        return `
-            <div class="flat-node" draggable="true" ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')">
-                <div class="tree-content" style="gap:6px;">
-                    ${window.badge(n.code)}
-                    <span style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${String(title).replace(/"/g,'&quot;')}</span>
-                </div>
-            </div>
-        `;
-    };
-
-    const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
-    const orphansHtml = orphans.map(renderFlatNode).join('');
-    const connectedHtml = connectedFlat.map(renderFlatNode).join('');
-    
-    document.getElementById('content').innerHTML=`
-      <div class="stabs">${stH}</div>
-      <div style="flex:1; padding:18px; min-width:0; min-height:0; display:flex; flex-direction:column;">
-        <div class="banner" style="margin-bottom:14px; flex-shrink:0;">
-          좌측 트리의 항목을 마우스로 드래그하여 다른 과제나 문서에 <strong>중복 종속</strong>시킬 수 있습니다. 하위 항목 우측에 나타나는 <strong>✕ 버튼</strong>을 눌러 개별 연결만 끊거나, 우측 상단으로 드래그하여 모든 연결을 해제하세요.
-        </div>
-        <div style="display:flex; flex:1; gap:14px; overflow:hidden;">
-            
-            <div class="card" style="flex:1.4; display:flex; flex-direction:column; overflow:hidden;">
-                <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
-                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
-                     ondragover="window.relDragOver(event)"
-                     ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, 'root', 'root')">
-                    ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
-                </div>
-            </div>
-            
-            <div style="width:340px; display:flex; flex-direction:column; gap:14px; overflow:hidden; flex-shrink:0;">
-                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#FCEBEB; border-color:#F7C1C1; padding:12px;">
-                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#791F1F; font-size:12px;">미연결 고립 항목</h3></div>
-                    <div style="flex:1; overflow-y:auto; padding-right:4px;"
-                         ondragover="window.relDragOver(event)"
-                         ondragleave="window.relDragLeave(event)"
-                         ondrop="window.relDrop(event, 'orphan', 'orphan')">
-                        ${orphansHtml || '<div style="color:gray;font-size:11px;">미연결 항목이 없습니다.</div>'}
-                    </div>
-                </div>
-                
-                <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#EAF3DE; border-color:#C1E1C1; padding:12px;">
-                    <div class="sec" style="margin-bottom:8px;"><h3 style="color:#27500A; font-size:12px;">연결 항목 (중복 드래그용)</h3></div>
-                    <div style="flex:1; overflow-y:auto; padding-right:4px;">
-                        ${connectedHtml || '<div style="color:gray;font-size:11px;">연결된 항목이 없습니다.</div>'}
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-      </div>`;
-    return;
-  }
-
-  const cfgs={
-    tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
-    exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
-    trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
-    dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
-  };
-  
-  const c=cfgs[window.dtab];
-  let currentRows = S[c.k];
-
-  let filterHtml = '';
-  let primaryFilterKey = '';
-  let subTabsHtml = '';
-
-  if (window.dtab === 'doc') {
-    window.docSubTab = window.docSubTab || '법령';
-    const subs = ['법령', '사규', '지침', '프로세스(운영)', '관행/기타'];
-    subTabsHtml = `<div style="display:flex; gap:6px; margin-bottom:4px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
-      ${subs.map(s => `<button class="btn ${window.docSubTab === s ? 'btn-g' : 'btn-o'}" style="border-radius:20px; padding:4px 14px; font-weight:700;" onclick="window.docSubTab='${s}'; window.V.docs()">${s}</button>`).join('')}
-    </div>`;
-    
-    if (window.docSubTab === '관행/기타') {
-       currentRows = currentRows.filter(r => r.dtype === '관행' || r.dtype === '기타');
-    } else {
-       currentRows = currentRows.filter(r => r.dtype === window.docSubTab);
-    }
-  } else {
-    if (c.sl) {
-      primaryFilterKey = Object.keys(c.sl)[0];
-      const opts = c.sl[primaryFilterKey];
-      filterHtml = `<select class="doc-search-bar" style="width:130px; margin:0;" onchange="window.docFilterVal=this.value; window.V.docs()">
-        <option value="">전체 필터</option>
-        ${opts.map(o => `<option value="${o}" ${window.docFilterVal===o?'selected':''}>${o}</option>`).join('')}
-      </select>`;
-    }
-    if (window.docFilterVal && primaryFilterKey) {
-       currentRows = currentRows.filter(r => r[primaryFilterKey] === window.docFilterVal);
-    }
-  }
-
-  if(window.docSearchQuery) {
-     const q = window.docSearchQuery.toLowerCase();
-     currentRows = currentRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
-  }
-
-  const tbody=currentRows.map(row=>{
-    const cells=c.fl.map((f,i)=>{
-      const h = c.hd[i];
-      if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
-      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
-      if(c.sl?.[f]) return `<td><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
-      if(c.dl?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
-      return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
-    }).join('');
-    
-    return `<tr draggable="true" 
-                ondragstart="window.rowDragStart(event, '${c.k}', '${row.code}')" 
-                ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" 
-                ondragleave="this.style.backgroundColor='';" 
-                ondrop="this.style.backgroundColor=''; window.rowDrop(event, '${c.k}', '${row.code}')" 
-                style="cursor:grab;">
-              <td>${window.editableCode(c.k, row)}</td>
-              ${cells}
-              <td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td>
-            </tr>`;
-  }).join('');
-  
-  document.getElementById('content').innerHTML=`
-    <div class="stabs">${stH}</div>
-    <div style="flex:1; display:flex; flex-direction:column; padding:14px 18px 18px; overflow:hidden; gap:10px; min-width:0; min-height:0;">
-      ${subTabsHtml}
-      <div style="display:flex; gap:8px; flex-shrink:0;">
-        ${filterHtml}
-        <input type="text" class="doc-search-bar" style="flex:1; margin:0;" placeholder="시트 내 전체 내용 검색..." value="${window.docSearchQuery}" oninput="window.docSearchQuery=this.value; window.V.docs()">
-      </div>
-      <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
-        <div style="flex:1; overflow:auto;">
-          <table><thead><tr>${window.th(c.k, '코드', 'width:100px; min-width:100px; text-align:center;')}${c.hd.map(h=>window.th(c.k, h)).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
-        </div>
-      </div>
-      <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
-        <button class="add-row" onclick="window.addDocRow('${window.dtab}')">+ 행 추가</button>
-        <div class="note" style="margin:0;">※ 표의 <strong>행을 위아래로 드래그</strong>하여 목록 순서를 변경할 수 있습니다. <strong>자물쇠(🔓)</strong>를 눌러 코드를 잠그면 순번 정렬이나 수기 변환에서 보호됩니다.</div>
-      </div>
-    </div>`;
-    setTimeout(window.initResizers, 50);
-};
-
-window.addDocRow = (tab) => {
-  window.pushHistory();
-  if (tab === 'doc') {
-    let dt = window.docSubTab || '법령';
-    if (dt === '관행/기타') dt = '관행';
-    const pfxMap = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
-    const pfx = pfxMap[dt] || 'DOC';
-    S.docs.push({
-      code: window.nc('docs', pfx), _locked: false,
-      dtype: dt, name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', parentDoc:'', _exp:[], _trm:[]
-    });
-  } else {
-    const m={tsk:['tasks','TSK'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
-    const d={
-      tsk:{name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]},
-      exp:{sit:'',hand:'',owner:'',rule:'기준없음',ai:'불가',docRef:'',tskRef:'',note:'',_trm:[]},
-      trm:{term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:''},
-      dat:{name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}
-    };
-    S[m[tab][0]].push({...d[tab], code:window.nc(m[tab][0], m[tab][1]), _locked: false});
-  }
-  window.stateChanged();
-};
-
-// ── DATASET ──────────────────────────────────────────
-window.setDatFilter = (f) => { window.datFilter = f; window.V.data(); };
-
-window.V.data = () => {
-  const dd=S.dats, o=dd.filter(d=>d.own==='보유').length, pa=dd.filter(d=>d.own==='일부보유').length, n=dd.filter(d=>d.own==='미보유').length, sens=dd.filter(d=>d.sens!=='일반').length;
-  
-  let fdd = dd;
-  if(window.datFilter === '보유') fdd = dd.filter(d=>d.own==='보유');
-  else if(window.datFilter === '일부보유') fdd = dd.filter(d=>d.own==='일부보유');
-  else if(window.datFilter === '미보유') fdd = dd.filter(d=>d.own==='미보유');
-  else if(window.datFilter === '민감') fdd = dd.filter(d=>d.sens!=='일반');
-
-  const cardStyle = (f) => `card ${window.datFilter===f?'':'style="opacity:0.6"'}`;
-
-  document.getElementById('pg-actions').innerHTML=`
-    <button class="btn btn-o btn-sm" onclick="window.reorderCodes('dats')">🔢 코드 순번 정렬</button>
-    <button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>
-  `;
-  document.getElementById('content').innerHTML=`
-    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0;">
-      <div class="g4" style="flex-shrink:0;">
-        <div class="${cardStyle('all')}" onclick="window.setDatFilter('all')" style="cursor:pointer;border-bottom: ${window.datFilter==='all'?'3px solid var(--color-border-secondary)':''}"><div class="stat-l">전체 데이터</div><div class="stat-n">${dd.length}</div></div>
-        <div class="${cardStyle('보유')}" onclick="window.setDatFilter('보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='보유'?'3px solid #1D9E75':''}"><div class="stat-l">보유</div><div class="stat-n" style="color:#1D9E75">${o}</div></div>
-        <div class="${cardStyle('일부보유')}" onclick="window.setDatFilter('일부보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='일부보유'?'3px solid #BA7517':''}"><div class="stat-l">일부보유</div><div class="stat-n" style="color:#BA7517">${pa}</div></div>
-        <div class="${cardStyle('미보유')}" onclick="window.setDatFilter('미보유')" style="cursor:pointer;border-bottom: ${window.datFilter==='미보유'?'3px solid #E24B4A':''}"><div class="stat-l">미보유</div><div class="stat-n" style="color:#E24B4A">${n}</div></div>
-        <div class="${cardStyle('민감')}" onclick="window.setDatFilter('민감')" style="cursor:pointer;border-bottom: ${window.datFilter==='민감'?'3px solid #633806':''}"><div class="stat-l">민감데이터</div><div class="stat-n" style="color:#633806">${sens}</div></div>
-      </div>
-      <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
-        <div style="flex:1; overflow:auto;">
-          <table><thead><tr>${window.th('dats', '코드', 'width:100px;min-width:100px;text-align:center;')}${['항목명','데이터 형태','출처','보유 여부','민감도','자동연결 TSK'].map(h=>window.th('dats', h)).join('')}</tr></thead>
-          <tbody>${fdd.map(d=>`
-            <tr draggable="true" ondragstart="window.rowDragStart(event, 'dats', '${d.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'dats', '${d.code}')" style="cursor:grab;">
-              <td>${window.editableCode('dats', d)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td>
-            </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
-        </div>
-      </div>
-    </div>`;
-    setTimeout(window.initResizers, 50);
-};
-
 // ── ONTO ─────────────────────────────────────────────
 window.V.onto = () => {
+  if(!S.ontoTask) {
+      S.ontoTask = 'ALL';
+      window.ontoExpanded.clear();
+  }
+  
   document.getElementById('pg-actions').innerHTML=`
     <select class="topbar-sel" onchange="window.switchOntoTask(this.value)">
-      <option value="">— 과제 선택 —</option>
+      <option value="ALL" ${S.ontoTask==='ALL'?'selected':''}>🌐 전체 데이터 관계망</option>
+      <optgroup label="단일 과제(TSK) 중심 보기">
       ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
+      </optgroup>
     </select>
     <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 재설정</button>
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
-      <div class="o-side">
+      <div class="o-side" style="width:320px;">
         <div class="o-abody" id="o-abody"></div>
       </div>
       <div class="o-graph" id="o-gwrap">
@@ -1270,123 +892,344 @@ window.V.onto = () => {
           <button class="gcb" onclick="window.oZS(0.77)">−</button>
           <button class="gcb" onclick="window.oZF()" style="font-size:11px">⊙</button>
         </div>
-        ${!S.ontoTask?`<div class="g-empty"><div class="g-empty-msg">상단에서 <strong>과제를 선택</strong>하면<br>기준문서에서 연결된 데이터가<br>자동으로 온톨로지 맵을 구성합니다</div></div>`:''}
       </div>
     </div>`;
+  window.buildOntoGraphData(); 
   window.renderOAb();
-  if(S.ontoTask) { window.buildOntoGraphData(); setTimeout(window.initOG,60); }
+  setTimeout(window.initOG, 60);
 };
 
-window.switchOntoTask = (code) => { S.ontoTask=code; S.ontoSel=null; window.V.onto(); };
-window.oSelN = id => { S.ontoSel=id; if(window.oGMain) window.oGMain.selectAll('.ong').select('circle').attr('stroke',d=>d.id===id?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===id?3.5:2.5); window.renderOAb(); };
+window.switchOntoTask = (code) => { 
+    S.ontoTask = code; 
+    S.ontoSel = null; 
+    window.ontoExpanded.clear();
+    if(code !== 'ALL') window.ontoExpanded.add(code);
+    window.V.onto(); 
+};
+
+window.oSelN = id => { 
+    S.ontoSel = id; 
+    if(window.oGMain) {
+        window.oGMain.selectAll('.ong').select('circle')
+            .attr('stroke', d=>d.id===id?'#334155':'#fff')
+            .attr('stroke-width', d=>d.id===id?4:2);
+    }
+    window.renderOAb(); 
+};
+
+window.addOntoRelation = (srcCode) => {
+    const tgtCode = document.getElementById('new-rel-tgt').value;
+    if(!tgtCode || srcCode === tgtCode) return;
+
+    const link = (parentCode, childCode, childArrKey, refField) => {
+        const row = S[childArrKey].find(x => x.code === childCode);
+        if(row) {
+            let arr = window.parseRef(row[refField]);
+            if(!arr.includes(parentCode)) arr.push(parentCode);
+            row[refField] = arr.join(', ');
+            return true;
+        }
+        return false;
+    };
+
+    const sType = srcCode.split('-')[0];
+    const tType = tgtCode.split('-')[0];
+
+    const attemptLink = (c1, t1, c2, t2) => {
+        if(t1==='TSK' && t2==='DOC') return link(c1, c2, 'docs', 'tskRef');
+        if(t1==='TSK' && t2==='TRM') return link(c1, c2, 'terms', 'tskRef');
+        if(t1==='TSK' && t2==='DAT') return link(c1, c2, 'dats', 'tskRef');
+        if(t1==='TSK' && t2==='EXP') return link(c1, c2, 'exps', 'tskRef');
+        if(t1==='DOC' && t2==='DOC') return link(c1, c2, 'docs', 'parentDoc');
+        if(t1==='DOC' && t2==='TRM') return link(c1, c2, 'terms', 'docRef');
+        if(t1==='DOC' && t2==='DAT') return link(c1, c2, 'dats', 'docRef');
+        if(t1==='DOC' && t2==='EXP') return link(c1, c2, 'exps', 'docRef');
+        if(t1==='TRM' && t2==='DAT') return link(c1, c2, 'dats', 'trmRef');
+        return false;
+    };
+
+    let success = attemptLink(srcCode, sType, tgtCode, tType) || attemptLink(tgtCode, tType, srcCode, sType);
+
+    if(success) {
+        window.pushHistory();
+        window.stateChanged();
+        window.toast('관계가 새롭게 연결되었습니다.');
+        window.ontoExpanded.add(tgtCode); 
+        window.V.onto();
+    } else {
+        window.toast('지원하지 않는 연결 방향입니다.');
+    }
+};
 
 window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
-  if (!S.ontoTask) return;
-  const t = S.tasks.find(x=>x.code===S.ontoTask);
-  if (!t) return;
-  
-  nodes.push({id: t.code, label: t.name||t.code, srcType: 'TSK', def: t.purpose});
-  
-  window.parseRef(t._doc).forEach(c => { const d=S.docs.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DOC', def:d.summary}); edges.push({source:t.code, target:c, rtype:'포함/참조', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._dat).forEach(c => { const d=S.dats.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DAT', def:d.dtype}); edges.push({source:t.code, target:c, rtype:'데이터활용', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._trm).forEach(c => { const d=S.terms.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.term||c, srcType:'TRM', def:d.def}); edges.push({source:t.code, target:c, rtype:'용어/객체', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._exp).forEach(c => { const d=S.exps.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.sit||c, srcType:'EXP', def:d.hand}); edges.push({source:t.code, target:c, rtype:'예외조건', id:`E-${t.code}-${c}`}); } });
+  const edgeSet = new Set();
 
-  nodes.forEach(n => {
-    if(n.srcType === 'DOC') {
-      const d = S.docs.find(x=>x.code===n.id);
-      window.parseRef(d._trm).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'정의/기준', id:`E-${n.id}-${c}`}); });
-      window.parseRef(d._exp).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'예외사항', id:`E-${n.id}-${c}`}); });
-    }
+  const addEdge = (src, tgt, rtype) => {
+      if(!src || !tgt) return;
+      const id = `E-${src}-${tgt}`;
+      if(!edgeSet.has(id)) {
+          edges.push({source: src, target: tgt, rtype: rtype, id: id});
+          edgeSet.add(id);
+      }
+  };
+
+  const addNode = (item, srcType, label, def, dtype) => {
+      if(item && item.code && !nodes.find(n => n.id === item.code)) {
+          nodes.push({id: item.code, label: label, srcType: srcType, def: def, dtype: dtype});
+      }
+  };
+
+  S.tasks.forEach(t => addNode(t, 'TSK', t.name||t.code, t.purpose));
+  S.docs.forEach(d => addNode(d, 'DOC', d.name||d.code, d.summary, d.dtype));
+  S.terms.forEach(t => addNode(t, 'TRM', t.term||t.code, t.def));
+  S.dats.forEach(d => addNode(d, 'DAT', d.name||d.code, d.dtype));
+  S.exps.forEach(e => addNode(e, 'EXP', e.sit||e.code, e.hand));
+
+  S.docs.forEach(d => {
+      window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '관련 과제'));
+      if(d.parentDoc) addEdge(d.parentDoc, d.code, '하위 문서');
+  });
+  S.terms.forEach(t => {
+      window.parseRef(t.tskRef).forEach(c => addEdge(c, t.code, '관련 과제'));
+      window.parseRef(t.docRef).forEach(c => addEdge(c, t.code, '정의/기준'));
+  });
+  S.dats.forEach(d => {
+      window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '데이터활용'));
+      window.parseRef(d.docRef).forEach(c => addEdge(c, d.code, '데이터기준'));
+  });
+  S.exps.forEach(e => {
+      window.parseRef(e.tskRef).forEach(c => addEdge(c, e.code, '관련 과제'));
+      window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외사항'));
   });
 
-  nodes = [...new Map(nodes.map(item => [item.id, item])).values()];
-  S.ontoNodes[S.ontoTask] = nodes;
-  S.ontoEdges[S.ontoTask] = edges;
+  if (S.ontoTask !== 'ALL') {
+      let visibleNodes = new Set();
+      window.ontoExpanded.forEach(exNode => {
+          visibleNodes.add(exNode);
+          edges.forEach(e => {
+              if (e.source === exNode) visibleNodes.add(e.target);
+              if (e.target === exNode) visibleNodes.add(e.source);
+          });
+      });
+      nodes = nodes.filter(n => visibleNodes.has(n.id));
+      edges = edges.filter(e => visibleNodes.has(e.source) && visibleNodes.has(e.target));
+  }
+
+  // 수학적으로 완벽하게 분할된 스윔레인 단계(Depth) 설정
+  nodes.forEach(n => {
+      if (n.srcType === 'TSK') n.depth = 0;
+      else if (n.srcType === 'DOC' && (n.dtype === '법령' || n.dtype === '사규')) n.depth = 1;
+      else if (n.srcType === 'DOC') n.depth = 2; // 지침, 프로세스 등
+      else n.depth = 3; // TRM, DAT, EXP
+  });
+
+  S.ontoNodes['CURRENT'] = nodes;
+  S.ontoEdges['CURRENT'] = edges;
 };
 
 window.renderOAb = () => {
   const b = document.getElementById('o-abody');
   if(!b) return;
   if(!S.ontoSel) {
-    b.innerHTML = `<div class="hint">자동 구성된 관계도입니다.<br>그래프에서 노드를 클릭하면 상세 정보가 표시됩니다.</div>`;
+    b.innerHTML = `
+      <div class="hint" style="margin-top:40px;">
+        <span style="font-size:24px;display:block;margin-bottom:10px;">📊</span>
+        노드를 클릭하면 해당 데이터가 어디서 참조되고 어느 하위 항목으로 파생되는지 <strong>상세 관계</strong>가 표시됩니다.<br><br>
+        노드를 <strong>더블 클릭</strong>하면 연결된 항목들을 펼치거나 숨길 수 있습니다.
+      </div>`;
     return;
   }
-  const nodes = S.ontoNodes[S.ontoTask]||[];
+  
+  const nodes = S.ontoNodes['CURRENT']||[];
   const n = nodes.find(x=>x.id===S.ontoSel);
   if(!n) return;
-  const edges = S.ontoEdges[S.ontoTask]||[];
-  const rel = edges.filter(e=>e.source===n.id||e.target===n.id);
+  const edges = S.ontoEdges['CURRENT']||[];
   
-  b.innerHTML=`
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div style="width:12px;height:12px;border-radius:50%;background:${NC[n.srcType]};flex-shrink:0"></div>
-      <div><div style="font-size:13px;font-weight:700">${n.label}</div><div style="font-size:10px;color:var(--color-text-secondary)">${n.srcType} · ${n.id}</div></div>
+  const incoming = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
+  const outgoing = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
+  
+  const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
+  const allOpts = allItems.map(x => {
+      const pfx = x.code.split('-')[0];
+      const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
+      return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
+  }).join('');
+
+  let html = `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--color-border-tertiary);">
+      <div style="width:16px;height:16px;border-radius:50%;background:${window.getNColor(n)};flex-shrink:0;margin-top:2px;"></div>
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${String(n.label).replace(/"/g,'&quot;')}</div>
+        <div style="font-size:10px;color:var(--color-text-secondary)">${n.srcType}${n.dtype ? ' · ' + n.dtype : ''} · ${n.id}</div>
+      </div>
     </div>
-    ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:8px;border-radius:6px;line-height:1.6;margin-bottom:8px">${n.def}</div>`:''}
+    ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:10px;border-radius:6px;line-height:1.6;margin-bottom:14px">${String(n.def).replace(/"/g,'&quot;')}</div>`:''}
+    
+    <div class="o-sec" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;">
+        새로운 관계 직접 연결
+    </div>
+    <div style="display:flex; gap:6px; margin-bottom:20px; align-items:center;">
+       <select id="new-rel-tgt" style="flex:1; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px;">
+          <option value="">대상을 선택하세요...</option>
+          ${allOpts}
+       </select>
+       <button class="btn btn-g btn-sm" style="padding:6px 10px;" onclick="window.addOntoRelation('${n.id}')">추가</button>
+    </div>
+
     <div class="o-div"></div>
-    <div class="o-sec">연결된 관계 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${rel.length}개</span></div>
-    ${rel.map(e=>{const isF=e.source===n.id, o=nodes.find(x=>x.id===(isF?e.target:e.source)); return`<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px dashed #e2e8f0">
-      <div style="width:7px;height:7px;border-radius:50%;background:${NC[o?.srcType]||'#888'};flex-shrink:0;margin-top:4px"></div>
-      <div><div style="font-size:11px">${isF?'→':''} <strong>${o?.label||'?'}</strong> ${!isF?'←':''}</div>
-      <div style="font-size:10px;color:var(--color-text-secondary)">${e.rtype}</div></div></div>`}).join('')||`<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 관계 없음</div>`}
   `;
+
+  if(incoming.length > 0) {
+      html += `<div class="o-sec" style="margin-top:16px; color:#1D9E75;">들어오는 연결 (상위)</div>`;
+      html += incoming.map(e => {
+          const srcId = e.source.id || e.source;
+          const o = nodes.find(x=>x.id===srcId) || {label: srcId, srcType: srcId.split('-')[0]};
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${srcId}')">
+              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:40px;text-align:right;">${e.rtype}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
+              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
+              </div>`;
+      }).join('');
+  }
+
+  if(outgoing.length > 0) {
+      html += `<div class="o-sec" style="margin-top:20px; color:#E24B4A;">나가는 연결 (하위)</div>`;
+      html += outgoing.map(e => {
+          const tgtId = e.target.id || e.target;
+          const o = nodes.find(x=>x.id===tgtId) || {label: tgtId, srcType: tgtId.split('-')[0]};
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${tgtId}')">
+              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:40px;text-align:right;">${e.rtype}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
+              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
+              </div>`;
+      }).join('');
+  }
+
+  b.innerHTML = html;
 };
 
-// D3 Logic
+// D3 Logic (스윔레인 흐름도)
 window.initOG = () => {
   if(window.oSim) window.oSim.stop();
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
+  
   d3.select('#o-svg').selectAll('*').remove();
   window.oSvg = d3.select('#o-svg');
+  
+  // 스윔레인 배경 (Zoom 영향을 받지 않도록 별도 그룹)
+  const bgG = window.oSvg.append('g').attr('class', 'swimlanes');
+  const lanes = ['1. 과제/프로젝트', '2. 상위 문서 (법령/사규)', '3. 하위 문서 (지침/프로세스)', '4. 데이터/용어/예외'];
+  const colWidth = W / 4;
+  
+  lanes.forEach((l, i) => {
+      bgG.append('rect')
+         .attr('x', i * colWidth).attr('y', 0)
+         .attr('width', colWidth).attr('height', H)
+         .attr('fill', i % 2 === 0 ? '#f8fafc' : '#f1f5f9')
+         .attr('opacity', 0.6);
+      bgG.append('text')
+         .attr('x', i * colWidth + colWidth/2).attr('y', 24)
+         .attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', '700').attr('fill', '#94a3b8')
+         .text(l);
+  });
+
   const df = window.oSvg.append('defs');
   df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
     .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  
   window.oGMain = window.oSvg.append('g');
-  window.oZoom = d3.zoom().scaleExtent([0.1,4]).on('zoom',e=>window.oGMain.attr('transform',e.transform));
+  window.oZoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', e => window.oGMain.attr('transform', e.transform));
   window.oSvg.call(window.oZoom);
   
-  const nodes = S.ontoNodes[S.ontoTask]||[];
-  nodes.forEach((n,i)=>{if(!n.x||!n.y){n.x=W/2+Math.cos(i*2*Math.PI/nodes.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/nodes.length)*150}});
-  const links = S.ontoEdges[S.ontoTask]||[];
+  const nodes = S.ontoNodes['CURRENT']||[];
+  const links = S.ontoEdges['CURRENT']||[];
   
-  window.oSim = d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(140)).force('charge',d3.forceManyBody().strength(-500)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(50));
+  // 스윔레인 중앙 정렬을 위한 X축 좌표 계산
+  const getXPos = (depth) => (depth + 0.5) * colWidth;
+
+  nodes.forEach((n,i)=>{
+      if(!n.x||!n.y){
+          n.x = getXPos(n.depth);
+          n.y = H/2 + (Math.random() - 0.5) * 200;
+      }
+  });
+  
+  window.oSim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d=>d.id).strength(0.05))
+    .force('x', d3.forceX(d => getXPos(d.depth)).strength(1))
+    .force('y', d3.forceY(H/2 + 30).strength(0.05))
+    .force('collide', d3.forceCollide(45))
+    .force('charge', d3.forceManyBody().strength(-200));
   
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
-  eS.append('line').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('marker-end','url(#oarr)');
-  eS.append('text').attr('text-anchor','middle').attr('font-size','9px').attr('fill','#3d3d3a').attr('opacity',0.7).attr('pointer-events','none').text(d=>d.rtype);
+  eS.append('path').attr('fill','none').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('marker-end','url(#oarr)');
   
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
     .call(d3.drag().on('start',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;}).on('end',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0);d.fx=null;d.fy=null;}))
-    .on('click',(e,d)=>{e.stopPropagation();window.oSelN(d.id);})
-    .on('mouseenter',(e,d)=>{
-      const tip=document.getElementById('o-tip'); if(!tip) return;
-      tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType} · ${d.id}</span>${d.def?'<br>'+d.def:''}`;
-      tip.classList.add('on');
-      const wr=document.getElementById('o-gwrap').getBoundingClientRect();
-      tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
-      tip.style.top=Math.max(e.clientY-wr.top-8,8)+'px';
-    }).on('mouseleave',()=>document.getElementById('o-tip')?.classList.remove('on'));
+    .on('click',(e,d)=>{
+        e.stopPropagation();
+        window.oSelN(d.id);
+    })
+    .on('dblclick',(e,d)=>{
+        e.stopPropagation();
+        if(window.ontoExpanded.has(d.id)) window.ontoExpanded.delete(d.id);
+        else window.ontoExpanded.add(d.id);
+        window.V.onto();
+    });
     
-  nS.append('circle').attr('r',24).attr('fill',d=>NC[d.srcType]||'#888').attr('stroke',d=>d.id===S.ontoSel?'#1D9E75':'#fff').attr('stroke-width',d=>d.id===S.ontoSel?3.5:2);
-  nS.append('text').attr('text-anchor','middle').attr('dy','4px').attr('font-size','11px').attr('fill','#fff').attr('font-weight','700').attr('pointer-events','none').text(d=>d.label.substring(0,3));
-  nS.append('text').attr('text-anchor','middle').attr('dy','38px').attr('font-size','11px').attr('fill','#3d3d3a').attr('pointer-events','none').text(d=>d.label);
+  // 깔끔한 원형 노드 (내부 텍스트 제거, 색상 분리)
+  nS.append('circle')
+    .attr('r', 18)
+    .attr('fill', d => window.getNColor(d))
+    .attr('stroke', d => d.id === S.ontoSel ? '#334155' : '#fff')
+    .attr('stroke-width', d => d.id === S.ontoSel ? 4 : 2)
+    .style('filter', 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))');
+  
+  // 노드 이름은 하단으로 이동
+  nS.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', '34px')
+    .attr('font-size', '11px')
+    .attr('font-weight', '700')
+    .attr('fill', '#334155')
+    .attr('pointer-events', 'none')
+    .style('text-shadow', '0px 1px 2px #fff, 0px -1px 2px #fff, 1px 0px 2px #fff, -1px 0px 2px #fff')
+    .text(d => {
+        let label = d.label || '';
+        return label.length > 10 ? label.substring(0, 10) + '...' : label;
+    });
   
   window.oSim.on('tick',()=>{
-    eS.select('line').attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x-dx/l*28}).attr('y2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y-dy/l*28});
-    eS.select('text').attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2-6);
+    eS.select('path').attr('d', d => {
+        const sx = d.source.x + 18;
+        const sy = d.source.y;
+        const tx = d.target.x - 22;
+        const ty = d.target.y;
+        // 부드러운 곡선 형태 유지
+        return `M ${sx} ${sy} C ${sx + 40} ${sy}, ${tx - 40} ${ty}, ${tx} ${ty}`;
+    });
     nS.attr('transform',d=>`translate(${d.x},${d.y})`);
   });
   
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
 };
-window.resetOLayout = () => { if(!S.ontoTask) return; const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; (S.ontoNodes[S.ontoTask]||[]).forEach((n,i,a)=>{n.x=W/2+Math.cos(i*2*Math.PI/a.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/a.length)*150; n.fx=null; n.fy=null;}); window.oSim?.alpha(1).restart(); };
+
+window.resetOLayout = () => { 
+  const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; 
+  const colWidth = W / 4;
+  (S.ontoNodes['CURRENT']||[]).forEach((n,i,a)=>{
+      n.x = (n.depth + 0.5) * colWidth; 
+      n.y = H/2 + (Math.random() - 0.5) * 200; 
+      n.fx=null; n.fy=null;
+  }); 
+  window.oSim?.alpha(1).restart(); 
+};
 window.oZS = (k) => window.oSvg?.transition().duration(300).call(window.oZoom.scaleBy,k);
-window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.85)); };
+window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2 + 30).scale(0.85)); };
 
 // ── POC ──────────────────────────────────────────────
 window.V.poc = () => {
