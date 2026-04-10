@@ -115,9 +115,11 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .tree-content { display: flex; align-items: center; gap: 8px; flex: 1; }
 .tree-children { margin-left: 20px; border-left: 1px dashed #cbd5e1; padding-left: 8px; margin-top: 2px; }
 .drag-over { background: #e2e8f0 !important; border: 1px dashed #3b82f6 !important; }
-.rel-unlink-btn { font-size:10px; color:#94a3b8; background:none; border:none; cursor:pointer; padding:2px 4px; border-radius:3px; opacity:0; transition:opacity 0.2s, background 0.2s, color 0.2s; margin-left: auto; }
-.tree-node:hover .rel-unlink-btn { opacity: 1; }
-.rel-unlink-btn:hover { background:#fee2e2; color:#ef4444; }
+.tree-actions { margin-left: auto; display: flex; gap: 2px; }
+.rel-btn { font-size:12px; font-weight:700; color:#94a3b8; background:none; border:none; cursor:pointer; padding:2px 6px; border-radius:4px; opacity:0; transition:all 0.15s; }
+.tree-node:hover .rel-btn { opacity: 1; }
+.rel-btn:hover { background:#e2e8f0; color:#334155; }
+.rel-btn.unlink:hover { background:#fee2e2; color:#ef4444; }
 
 /* Flat Draggable items in the right panel */
 .flat-node { display: flex; align-items: center; padding: 5px 8px; margin-bottom: 6px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; cursor: grab; transition: all 0.15s; }
@@ -935,6 +937,45 @@ window.relDrop = (e, targetCode, targetArrKey) => {
     window.stateChanged();
 };
 
+window.promoteRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
+    if(e) e.stopPropagation();
+    if (parentArrKey === 'tasks') {
+        window.toast('이미 과제 하위의 최상위 항목입니다.');
+        return;
+    }
+    
+    window.pushHistory();
+    const cRow = S[childArrKey].find(x => x.code === childCode);
+    const pRow = S[parentArrKey].find(x => x.code === parentCode);
+    if (!cRow || !pRow) return;
+
+    if (childArrKey === 'docs' && cRow.parentDoc === parentCode) {
+        cRow.parentDoc = '';
+    } else {
+        let refs = window.parseRef(cRow.docRef);
+        cRow.docRef = refs.filter(c => c !== parentCode).join(', ');
+    }
+
+    const addRef = (existing, newRefs) => {
+        let arr = window.parseRef(existing);
+        let newArr = window.parseRef(newRefs);
+        newArr.forEach(r => { if(!arr.includes(r)) arr.push(r); });
+        return arr.join(', ');
+    };
+
+    if (parentArrKey === 'docs') {
+        if (pRow.parentDoc) {
+            if (childArrKey === 'docs') cRow.parentDoc = pRow.parentDoc;
+            else cRow.docRef = addRef(cRow.docRef, pRow.parentDoc);
+        } else if (pRow.tskRef) {
+            cRow.tskRef = addRef(cRow.tskRef, pRow.tskRef);
+        }
+    }
+    
+    window.stateChanged();
+    window.toast('상위 레벨로 이동되었습니다.');
+};
+
 window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     if(e) e.stopPropagation();
     window.pushHistory();
@@ -1025,7 +1066,8 @@ window.V.docs = (tab) => {
         const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
         const title = n[nameField] || '미입력';
         
-        const unlinkBtn = parentCode ? `<button class="rel-unlink-btn" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
+        const promoteBtn = (parentCode && parentArrKey !== 'tasks') ? `<button class="rel-btn" title="상위 레벨로 이동" onclick="window.promoteRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">↰</button>` : '';
+        const unlinkBtn = parentCode ? `<button class="rel-btn unlink" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
 
         return `
             <div style="margin-top:2px;">
@@ -1039,7 +1081,7 @@ window.V.docs = (tab) => {
                     <div class="tree-content">
                         ${window.badge(n.code)}
                         <span style="font-size:12px;font-weight:500;">${String(title).replace(/"/g,'&quot;')}</span>
-                        ${unlinkBtn}
+                        <div class="tree-actions">${promoteBtn}${unlinkBtn}</div>
                     </div>
                 </div>
                 ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, n.code, n.arrKey, depth + 1)).join('')}</div>` : ''}
