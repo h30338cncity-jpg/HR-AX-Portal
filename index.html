@@ -231,6 +231,17 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
+<!-- Quality Check Modal -->
+<div id="quality-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="ms-content" style="width:700px; max-width:95%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 id="qm-title" style="font-weight:700;font-size:15px;"></h3>
+        <button class="btn-o btn-sm" onclick="document.getElementById('quality-modal').style.display='none'" style="border:none;font-size:16px;">✕</button>
+    </div>
+    <div id="qm-body" style="flex:1; overflow-y:auto; max-height:60vh;"></div>
+  </div>
+</div>
+
 <!-- Upload Option Modal -->
 <div id="upload-modal">
   <div class="ms-content" style="width:380px;">
@@ -298,7 +309,7 @@ const firebaseConfig = {
   measurementId: "G-Z64P04D580"
 };
 
-// ── STATE (목표정합성 샘플 데이터 적용) ────────────────────────────────────────────
+// ── STATE ────────────────────────────────────────────
 window.S = {
   team:[{name:'김철수',role:'HR기획',tasks:'TSK-001',note:'',emoji:'🧑‍💻',_tasks:['TSK-001']}],
   tasks:[{code:'TSK-001',name:'조직 목표 정합성 검증',assignee:'김철수',purpose:'전사 전략과 부서 목표 간의 연결성 검증',status:'진행중',note:'',_doc:['DOC-R-001','DOC-P-001'],_trm:['TRM-001'],_dat:['DAT-001'],_exp:['EXP-001']}],
@@ -320,6 +331,17 @@ window.S = {
       'E__TRM-001__DAT-001': {type:'키워드 매칭(추론)', clause:'', relevance:'참고', verbatim:''}
   }
 };
+
+window.REQ_FIELDS = {
+  tasks: ['name'],
+  docs: ['name', 'summary'],
+  exps: ['sit', 'hand'],
+  terms: ['term', 'def'],
+  dats: ['name', 'own']
+};
+
+window.orphanRefs = [];
+window.missingRequired = [];
 
 window.currentView = 'home';
 window.docSearchQuery = '';
@@ -437,7 +459,7 @@ window.fmtCodeList = (strOrArr) => {
   return arr.map(window.badge).join('');
 };
 
-window.editableCode = (arrKey, row) => {
+window.editableCode = (arrKey, row, hasWarning = false) => {
   const code = row.code;
   const isLocked = row._locked;
   const pfx = code.split('-')[0];
@@ -445,7 +467,9 @@ window.editableCode = (arrKey, row) => {
   const lockIcon = isLocked ? '🔒' : '🔓';
   const readonly = isLocked ? 'readonly' : '';
   const style = isLocked ? 'opacity:0.7;cursor:not-allowed;background:transparent!important;border:none;' : '';
-  return `<div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+  const warnIconHtml = hasWarning ? `<span title="필수 입력 항목 누락" style="color:#E24B4A;font-size:12px;margin-right:2px;cursor:help;">⚠️</span>` : '';
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
+            ${warnIconHtml}
             <button class="btn-sm" style="padding:0;background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" onclick="window.toggleLock('${arrKey}', '${code}')" title="${isLocked ? '코드 잠금 해제' : '코드 확정(잠금)'}">${lockIcon}</button>
             <input type="text" class="code-input ${cls}" value="${code}" onchange="window.changeCode('${arrKey}', '${code}', this.value, this)" title="클릭하여 코드 번호 수기 변경" ${readonly} style="${style}">
           </div>`;
@@ -495,7 +519,7 @@ window.replaceReferences = (oldCode, newCode) => {
   window.S.exps.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); });
   window.S.terms.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.parent = replaceRef(r.parent); r.child = replaceRef(r.child); });
   window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
-  window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); });
+  window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); r.contextDocs = replaceRef(r.contextDocs); });
   
   if (S.edgeDetails) {
       const newEdgeDetails = {};
@@ -575,6 +599,42 @@ window.del = (arrKey, code) => {
   if (i > -1) arr.splice(i, 1);
 };
 
+// --- DATA QUALITY LOGIC ---
+window.detectOrphanRefs = () => {
+    const allCodes = new Set();
+    ['tasks','docs','terms','dats','exps','pocs'].forEach(k => S[k].forEach(x => allCodes.add(x.code)));
+    const orphans = [];
+    const check = (arrKey, field) => {
+        S[arrKey].forEach(item => {
+            if(!item[field]) return;
+            const refs = window.parseRef(item[field]);
+            refs.forEach(ref => {
+                if(!allCodes.has(ref)) orphans.push({ arrKey, ownerCode: item.code, field, brokenRef: ref });
+            });
+        });
+    };
+    check('docs', 'tskRef'); check('docs', 'parentDoc');
+    check('exps', 'tskRef'); check('exps', 'docRef');
+    check('terms', 'tskRef'); check('terms', 'docRef'); check('terms', 'parent'); check('terms', 'child');
+    check('dats', 'tskRef'); check('dats', 'docRef'); check('dats', 'trmRef');
+    check('pocs', 'tsk'); check('pocs', 'contextDocs');
+    window.orphanRefs = orphans;
+};
+
+window.checkRequiredFields = () => {
+    const missing = [];
+    Object.keys(window.REQ_FIELDS).forEach(arrKey => {
+        const fields = window.REQ_FIELDS[arrKey];
+        S[arrKey].forEach(item => {
+            const emptyFields = fields.filter(f => !item[f] || String(item[f]).trim() === '');
+            if(emptyFields.length > 0) {
+                missing.push({ arrKey, code: item.code, emptyFields });
+            }
+        });
+    });
+    window.missingRequired = missing;
+};
+
 window.recomputeAll = () => {
   S.tasks.forEach(t => { t._doc=[]; t._trm=[]; t._dat=[]; t._exp=[]; });
   S.docs.forEach(d => { d._exp=[]; d._trm=[]; });
@@ -600,6 +660,9 @@ window.recomputeAll = () => {
   S.pocs.forEach(p => {
     if(p.tsk) { const t = S.tasks.find(x=>x.code===p.tsk); if(t) p._owner = t.assignee; }
   });
+
+  window.detectOrphanRefs();
+  window.checkRequiredFields();
 };
 
 window.stateChanged = () => {
@@ -666,7 +729,6 @@ window.parseType = (code) => {
 window.deleteEdge = (id, src, tgt) => {
     const srcArrKey = window.parseType(src);
     const tgtArrKey = window.parseType(tgt);
-    // tgt holds the ref to src in our mapping
     window.unlinkRel(tgt, tgtArrKey, src, srcArrKey);
 };
 
@@ -812,6 +874,70 @@ window.toggleEmoji = (idx, e) => {
 window.setEmoji = (idx, emoji) => { window.pushHistory(); S.team[idx].emoji = emoji; window.stateChanged(); };
 document.addEventListener('click', (e) => { if(!e.target.closest('.emoji-picker')) document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); });
 
+window.goToItem = (arrKey, code) => {
+    document.getElementById('quality-modal').style.display = 'none';
+    const map = { tasks: 'tasks', docs: 'doc', exps: 'exp', terms: 'trm', dats: 'dat', pocs: 'poc' };
+    const tab = map[arrKey];
+
+    if(arrKey === 'tasks') window.go('tasks');
+    else if(arrKey === 'pocs') window.go('poc');
+    else {
+        window.go('docs');
+        window.V.docs(tab);
+    }
+
+    setTimeout(() => {
+        const els = document.querySelectorAll('tr, .kcard');
+        for(let el of els) {
+            if(el.innerHTML.includes(code)) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const oldBg = el.style.backgroundColor;
+                el.style.transition = 'background-color 0.5s';
+                el.style.backgroundColor = '#FEF08A';
+                setTimeout(() => { el.style.backgroundColor = oldBg; }, 2000);
+                break;
+            }
+        }
+    }, 150);
+};
+
+window.openOrphanModal = () => {
+    document.getElementById('qm-title').innerText = '깨진 참조 (고아 참조) 목록';
+    const rows = window.orphanRefs.map(o => `
+        <tr>
+            <td>${window.badge(o.ownerCode)}</td>
+            <td>${o.field}</td>
+            <td><span style="color:#E24B4A;font-weight:700;">${o.brokenRef}</span></td>
+            <td><button class="btn-sm btn-o" onclick="window.goToItem('${o.arrKey}', '${o.ownerCode}')">이동</button></td>
+        </tr>
+    `).join('');
+    document.getElementById('qm-body').innerHTML = `
+        <table class="ms-tbl">
+            <thead><tr><th>소유 항목</th><th>필드명</th><th>깨진 참조값</th><th>조치</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="4" style="text-align:center;padding:15px">깨진 참조가 없습니다.</td></tr>'}</tbody>
+        </table>
+    `;
+    document.getElementById('quality-modal').style.display = 'flex';
+};
+
+window.openReqModal = () => {
+    document.getElementById('qm-title').innerText = '필수 필드 미입력 목록';
+    const rows = window.missingRequired.map(m => `
+        <tr>
+            <td>${window.badge(m.code)}</td>
+            <td><span style="color:#BA7517;font-weight:700;">${m.emptyFields.join(', ')}</span></td>
+            <td><button class="btn-sm btn-o" onclick="window.goToItem('${m.arrKey}', '${m.code}')">이동</button></td>
+        </tr>
+    `).join('');
+    document.getElementById('qm-body').innerHTML = `
+        <table class="ms-tbl">
+            <thead><tr><th>항목 코드</th><th>누락된 필드</th><th>조치</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="3" style="text-align:center;padding:15px">누락된 필수 필드가 없습니다.</td></tr>'}</tbody>
+        </table>
+    `;
+    document.getElementById('quality-modal').style.display = 'flex';
+};
+
 // ── LOGIN & FIREBASE ─────────────────────────────────
 let db, auth, userDocRef;
 let saveTimeout;
@@ -840,7 +966,6 @@ const initAuth = async () => {
             const data = snap.data();
             Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
             
-            // Migration for Edge Details
             S.edgeDetails = data.edgeDetails || {};
             if(data.edgeTypes && Object.keys(data.edgeTypes).length > 0) {
                 Object.keys(data.edgeTypes).forEach(k => {
@@ -899,6 +1024,10 @@ window.V.home = () => {
   const t=S.tasks, done=t.filter(x=>x.status==='완료').length, prog=t.filter(x=>x.status==='진행중').length;
   const dd=S.dats, own=dd.filter(x=>x.own==='보유').length;
   const pd=S.pocs, pdone=pd.filter(x=>x.status==='완료').length;
+  
+  const oCnt = window.orphanRefs.length;
+  const rCnt = window.missingRequired.length;
+
   document.getElementById('content').innerHTML=`
     <div style="flex:1; overflow-y:auto; padding:18px; min-width:0; min-height:0;">
       <div class="g4" style="margin-bottom:14px">
@@ -907,7 +1036,26 @@ window.V.home = () => {
         <div class="card"><div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${dd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div></div>
         <div class="card"><div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:var(--color-text-secondary)"> / ${pd.length}</span></div><div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div></div>
       </div>
-      <div class="sec"><h3>시스템 바로가기</h3></div>
+
+      <div class="sec" style="margin-top:20px;"><h3>데이터 무결성 검증</h3></div>
+      <div class="g4">
+          <div class="sys-card" style="border-color:${oCnt === 0 ? '#1D9E75' : '#E24B4A'}" onclick="window.openOrphanModal()">
+              <div class="stat-l">깨진 참조 (고아 참조)</div>
+              <div class="stat-n" style="color:${oCnt === 0 ? '#1D9E75' : '#E24B4A'}">
+                  ${oCnt === 0 ? '✅ 0' : `🔴 ${oCnt}`}
+              </div>
+              <div class="sys-ds">존재하지 않는 코드 참조 확인</div>
+          </div>
+          <div class="sys-card" style="border-color:${rCnt === 0 ? '#1D9E75' : '#BA7517'}" onclick="window.openReqModal()">
+              <div class="stat-l">필수 필드 미입력</div>
+              <div class="stat-n" style="color:${rCnt === 0 ? '#1D9E75' : '#BA7517'}">
+                  ${rCnt === 0 ? '✅ 0' : `⚠️ ${rCnt}`}
+              </div>
+              <div class="sys-ds">RAG 품질을 위한 필수 데이터 확인</div>
+          </div>
+      </div>
+
+      <div class="sec" style="margin-top:24px;"><h3>시스템 바로가기</h3></div>
       <div class="g3">
         <div class="sys-card" onclick="window.go('tasks')"><div class="sys-ic">📋</div><div class="sys-nm">과제 현황판</div><div class="sys-ds">과제 진행 상태를 칸반 보드로 시각화 관리</div></div>
         <div class="sys-card" onclick="window.go('docs')"><div class="sys-ic">📄</div><div class="sys-nm">기준문서 관리</div><div class="sys-ds">과제와 연관된 문서/데이터/용어 통합 관리 및 자동 연결</div></div>
@@ -934,12 +1082,16 @@ window.V.tasks = () => {
           <div class="kcol" ondragover="window.kAllow(event)" ondrop="window.kDrop(event, '${col}')">
             <div class="kcol-hd"><span>${col}</span><span class="pill ${cc[col]}">${S.tasks.filter(t=>t.status===col).length}</span></div>
             <div style="flex:1; overflow-y:auto; padding-right:4px;">
-              ${S.tasks.filter(t=>t.status===col).map(t=>`
-                <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')">
-                  <div class="kcard-code">${window.editableCode('tasks', t)}</div>
+              ${S.tasks.filter(t=>t.status===col).map(t=>{
+                const rowHasWarning = window.missingRequired.some(m => m.code === t.code);
+                const nameMissing = !t.name || String(t.name).trim() === '';
+                return `
+                <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')" style="${rowHasWarning ? 'background-color:#FFFBEA;' : ''}">
+                  <div class="kcard-code">${window.editableCode('tasks', t, rowHasWarning)}</div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-                    <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()">
+                    <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()" style="${nameMissing ? 'background-color:#FFFBEA; border:1px dashed #E24B4A;' : ''}">
                     <button class="btn-sm btn-o" onclick="window.openTm('tasks','${t.code}','name','과제명')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>
+                    ${nameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;cursor:help;">⚠️</span>' : ''}
                   </div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
                     <input type="text" value="${t.assignee||''}" readonly style="flex:1;background:transparent;border:1px solid transparent;font-size:11px;color:var(--color-text-secondary);cursor:pointer;outline:none;padding:2px;" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" placeholder="담당자">
@@ -951,7 +1103,7 @@ window.V.tasks = () => {
                     </select>
                     <button class="del-btn" onclick="window.pushHistory(); window.del('tasks','${t.code}'); window.stateChanged()">×</button>
                   </div>
-                </div>`).join('')}
+                </div>`}).join('')}
             </div>
           </div>`).join('')}
       </div>
@@ -1315,13 +1467,22 @@ window.V.docs = (tab) => {
   }
 
   const tbody=currentRows.map(row=>{
+    const rowHasWarning = window.missingRequired.some(m => m.code === row.code);
     const cells=c.fl.map((f,i)=>{
       const h = c.hd[i];
-      if(c.ro?.includes(f)) return `<td><div class="code-list">${window.fmtCodeList(row[f])}</div></td>`;
-      if(c.ms?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button></div></td>`;
-      if(c.sl?.[f]) return `<td><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select></td>`;
-      if(c.dl?.[f]) return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
-      return `<td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>`;
+      const isReq = window.REQ_FIELDS[c.k]?.includes(f);
+      const isMissing = isReq && (!row[f] || String(row[f]).trim() === '');
+      const bg = isMissing ? 'background-color:#FFFBEA;' : '';
+      const warn = isMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : '';
+
+      let inner = '';
+      if(c.ro?.includes(f)) inner = `<div class="code-list">${window.fmtCodeList(row[f])}${warn}</div>`;
+      else if(c.ms?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
+      else if(c.sl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${bg}">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
+      else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+      else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+
+      return `<td style="${bg}">${inner}</td>`;
     }).join('');
     
     return `<tr draggable="true" 
@@ -1330,7 +1491,7 @@ window.V.docs = (tab) => {
                 ondragleave="this.style.backgroundColor='';" 
                 ondrop="this.style.backgroundColor=''; window.rowDrop(event, '${c.k}', '${row.code}')" 
                 style="cursor:grab;">
-              <td>${window.editableCode(c.k, row)}</td>
+              <td style="${rowHasWarning ? 'background-color:#FFFBEA;' : ''}">${window.editableCode(c.k, row, rowHasWarning)}</td>
               ${cells}
               <td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td>
             </tr>`;
@@ -1410,17 +1571,27 @@ window.V.data = () => {
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
           <table><thead><tr>${window.th('dats', '코드', 'width:100px;min-width:100px;text-align:center;')}${['항목명','데이터 형태','출처','보유 여부','민감도','자동연결 TSK'].map(h=>window.th('dats', h)).join('')}</tr></thead>
-          <tbody>${fdd.map(d=>`
+          <tbody>${fdd.map(d=>{
+            const isNameMissing = !d.name || String(d.name).trim() === '';
+            const isOwnMissing = !d.own || String(d.own).trim() === '';
+            const rowHasWarn = isNameMissing || isOwnMissing;
+            return `
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'dats', '${d.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'dats', '${d.code}')" style="cursor:grab;">
-              <td>${window.editableCode('dats', d)}</td><td>${d.name||'—'}</td><td>${d.dtype||'—'}</td><td>${d.src||'—'}</td><td>${window.pill(d.own)}</td><td>${window.pill(d.sens)}</td><td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td>
-            </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
+              <td style="${rowHasWarn ? 'background-color:#FFFBEA;' : ''}">${window.editableCode('dats', d, rowHasWarn)}</td>
+              <td style="${isNameMissing ? 'background-color:#FFFBEA;' : ''}">${d.name||'—'}${isNameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
+              <td>${d.dtype||'—'}</td>
+              <td>${d.src||'—'}</td>
+              <td style="${isOwnMissing ? 'background-color:#FFFBEA;' : ''}">${window.pill(d.own)}${isOwnMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
+              <td>${window.pill(d.sens)}</td>
+              <td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td>
+            </tr>`;}).join('') || `<tr><td colspan="7" style="text-align:center;padding:15px;color:gray">해당 조건의 데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
     </div>`;
     setTimeout(window.initResizers, 50);
 };
 
-// ── ONTO (완벽한 정렬/하이라이트/속성수정 적용) ──────────────────────────────────
+// ── ONTO ──────────────────────────────────
 window.updateEdgeType = (edgeId, newType) => {
     window.pushHistory();
     if(!S.edgeDetails[edgeId]) S.edgeDetails[edgeId] = { type: newType, clause:'', relevance:'참고', verbatim:'' };
@@ -1563,7 +1734,7 @@ window.buildOntoGraphData = () => {
 
   const addEdge = (src, tgt, defaultType) => {
       if(!src || !tgt) return;
-      const id = `E__${src}__${tgt}`; // E__Parent__Child
+      const id = `E__${src}__${tgt}`; 
       if(!edgeSet.has(id)) {
           const det = S.edgeDetails[id] || { type: defaultType, clause:'', relevance:'참고', verbatim:'' };
           edges.push({source: src, target: tgt, rtype: det.type, id: id});
@@ -1583,7 +1754,6 @@ window.buildOntoGraphData = () => {
   S.dats.forEach(d => addNode(d, 'DAT', d.name||d.code, d.dtype));
   S.exps.forEach(e => addNode(e, 'EXP', e.sit||e.code, e.hand));
 
-  // 방향: Parent(Source/Left) -> Child(Target/Right)
   S.docs.forEach(d => {
       window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '단순 참조'));
       if(d.parentDoc) addEdge(d.parentDoc, d.code, '상/하위 종속');
@@ -1615,12 +1785,11 @@ window.buildOntoGraphData = () => {
       edges = edges.filter(e => visibleNodes.has(e.source) && visibleNodes.has(e.target));
   }
 
-  // 스윔레인 단계(Depth) 명확하게 설정 (좌측부터 0)
   nodes.forEach(n => {
       if (n.srcType === 'TSK') n.depth = 0;
       else if (n.srcType === 'DOC' && (n.dtype === '법령' || n.dtype === '사규')) n.depth = 1;
-      else if (n.srcType === 'DOC') n.depth = 2; // 지침, 프로세스, 관행 등
-      else n.depth = 3; // TRM, DAT, EXP
+      else if (n.srcType === 'DOC') n.depth = 2; 
+      else n.depth = 3; 
   });
 
   const validNodes = new Set(nodes.map(n => n.id));
@@ -1648,7 +1817,6 @@ window.renderOAb = () => {
   if(!n) return;
   const edges = S.ontoEdges['CURRENT']||[];
   
-  // Left-to-Right 방향 기준
   const parents = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
   const children = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
   
@@ -1728,7 +1896,7 @@ window.renderOAb = () => {
   b.innerHTML = html;
 };
 
-// D3 Logic (물리 엔진 완벽 제거 및 고정 좌표계 렌더링)
+// D3 Logic (고정형 스윔레인)
 window.initOG = () => {
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
@@ -1736,7 +1904,6 @@ window.initOG = () => {
   d3.select('#o-svg').selectAll('*').remove();
   window.oSvg = d3.select('#o-svg');
   
-  // 1. 스윔레인 배경 그리기
   const bgG = window.oSvg.append('g').attr('class', 'swimlanes');
   const lanes = ['1. 과제/프로젝트 (TSK)', '2. 상위 문서 (법령/사규)', '3. 하위 문서 (지침/프로세스)', '4. 파생 데이터 (용어/셋/예외)'];
   const colWidth = Math.max(220, W / 4);
@@ -1753,7 +1920,6 @@ window.initOG = () => {
          .text(l);
   });
 
-  // 화살표 마커 (우측 방향)
   const df = window.oSvg.append('defs');
   df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
     .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#94a3b8').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
@@ -1765,32 +1931,28 @@ window.initOG = () => {
   const nodes = S.ontoNodes['CURRENT']||[];
   let links = S.ontoEdges['CURRENT']||[];
   
-  // 2. Y축 고정 좌표 수학적 할당 (정렬)
   const depthCounts = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => { depthCounts[n.depth] = (depthCounts[n.depth] || 0) + 1; });
   
   const depthCurrent = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => {
-      n.x = (n.depth + 0.5) * colWidth; // 중앙 정렬
+      n.x = (n.depth + 0.5) * colWidth; 
       const count = depthCounts[n.depth];
       const idx = depthCurrent[n.depth]++;
-      n.y = (H / 2) + (idx - (count - 1) / 2) * 60; // 60px 간격 유지
+      n.y = (H / 2) + (idx - (count - 1) / 2) * 60; 
   });
   
-  // 3. Link Source/Target 매핑
   const nodeById = new Map(nodes.map(n => [n.id, n]));
   links.forEach(l => {
       if (typeof l.source === 'string') l.source = nodeById.get(l.source);
       if (typeof l.target === 'string') l.target = nodeById.get(l.target);
   });
   
-  // 끊어진 링크 제외
   links = links.filter(l => l.source && l.target);
 
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
   
-  // 4. 선 속성(유형)별 스타일 차등 렌더링
   eS.append('path')
     .attr('fill','none')
     .attr('stroke', d => d.rtype === '예외 처리' ? '#F472B6' : (d.rtype === '필수 준수' ? '#3B82F6' : '#cbd5e1'))
@@ -1798,11 +1960,11 @@ window.initOG = () => {
     .attr('stroke-dasharray', d => d.rtype === '단순 참조' || d.rtype === '예외 처리' || (d.rtype && d.rtype.includes('추론')) ? '5,5' : 'none')
     .attr('marker-end','url(#oarr)')
     .attr('d', d => {
-        const sx = d.source.x + 12; // 출발 노드(Parent) 우측 가장자리
+        const sx = d.source.x + 12; 
         const sy = d.source.y;
-        const tx = d.target.x - 16; // 도착 노드(Child) 좌측 가장자리 (화살표 여백)
+        const tx = d.target.x - 16; 
         const ty = d.target.y;
-        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; // 부드러운 S자 곡선
+        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
     });
   
   eS.append('text')
@@ -1820,7 +1982,6 @@ window.initOG = () => {
     .attr('transform', d => `translate(${d.x},${d.y})`)
     .on('click',(e,d)=>{ e.stopPropagation(); window.oSelN(d.id); });
     
-  // 5. 마우스 호버 시 강조 효과 (Dim)
   nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
       tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
@@ -1829,14 +1990,12 @@ window.initOG = () => {
       tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
       tip.style.top=Math.max(e.clientY-wr.top-8,8)+'px';
 
-      // 자신과 직접 연결된 노드 ID 추출
       const connectedIds = new Set([d.id]);
       links.forEach(l => {
           if (l.source.id === d.id) connectedIds.add(l.target.id);
           if (l.target.id === d.id) connectedIds.add(l.source.id);
       });
       
-      // 연결되지 않은 요소는 흐리게
       nG.selectAll('.ong').classed('dimmed', n => !connectedIds.has(n.id));
       eG.selectAll('.oeg').classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id);
   });
@@ -1847,7 +2006,6 @@ window.initOG = () => {
       eG.selectAll('.oeg').classed('dimmed', false);
   });
     
-  // 텍스트를 빼고 깔끔한 원형 노드로 변경
   nS.append('circle')
     .attr('r', 12)
     .attr('fill', d => window.getNColor(d))
@@ -1867,7 +2025,6 @@ window.initOG = () => {
   
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
   
-  // 줌 포지션 초기화
   window.oSvg.call(window.oZoom.transform, d3.zoomIdentity.translate(0,30).scale(0.9));
 };
 
