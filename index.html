@@ -98,9 +98,7 @@ td select{cursor:pointer}
 .pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
 
 /* Editable Code Inputs */
-input.code-input {
-  font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 85px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0;
-}
+input.code-input { font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 3px; border: 1px dashed transparent; width: 85px; text-align: center; outline: none; transition: all 0.2s; cursor: text; margin: 0; }
 input.code-input:hover { border-color: rgba(0,0,0,0.3); opacity: 0.85; }
 input.code-input:focus { border-style: solid; border-color: #1D9E75; background: #fff !important; color: #000 !important; box-shadow: 0 0 0 2px rgba(29,158,117,0.2); }
 
@@ -122,11 +120,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .rel-unlink-btn:hover { background:#fee2e2; color:#ef4444; }
 
 /* Flat Draggable items in the right panel */
-.flat-node {
-    display: flex; align-items: center; padding: 5px 8px; margin-bottom: 6px;
-    background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
-    cursor: grab; transition: all 0.15s;
-}
+.flat-node { display: flex; align-items: center; padding: 5px 8px; margin-bottom: 6px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; cursor: grab; transition: all 0.15s; }
 .flat-node:hover { border-color: var(--color-border-secondary); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
 /* Team & Emoji Picker */
@@ -145,22 +139,22 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .tci.rl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
 .tc-field{margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0}
 .tc-label{font-size:10px;font-weight:700;color:var(--color-text-secondary);margin-bottom:4px}
+
 /* ONTO */
 .onto-wrap{display:flex;height:100%;overflow:hidden}
-.o-side{width:258px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden}
-.o-abody{flex:1;overflow-y:auto;padding:12px}
-.o-graph{flex:1;position:relative}
-#o-svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
-#o-svg:active{cursor:grabbing}
+.o-side{width:290px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;z-index:2;}
+.o-abody{flex:1;overflow-y:auto;padding:16px}
+.o-graph{flex:1;position:relative; background:#f8fafc; z-index:1;}
+#o-svg{position:absolute;inset:0;width:100%;height:100%;}
 .g-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .g-empty-msg{text-align:center;color:var(--color-text-secondary);font-size:12px;line-height:1.9;background:var(--color-background-primary);padding:20px 24px;border-radius:10px;border:1px solid var(--color-border-tertiary);max-width:260px}
-.g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px}
-.gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.g-ctrls{position:absolute;bottom:14px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:5;}
+.gcb{width:30px;height:30px;border:1px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
 .gcb:hover{background:var(--color-background-secondary)}
-.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:190px;line-height:1.7;z-index:10;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.g-tip{position:absolute;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:7px;padding:8px 10px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:220px;line-height:1.7;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .g-tip.on{opacity:1}
 .o-sec{font-size:12px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)}
-.o-div{height:1px;background:var(--color-border-tertiary);margin:10px 0}
+.o-div{height:1px;background:var(--color-border-tertiary);margin:14px 0}
 .hint{text-align:center;padding:20px 10px;color:var(--color-text-secondary);font-size:11px;line-height:1.9}
 .note{font-size:11px;color:var(--color-text-secondary);margin-top:8px}
 .banner{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px}
@@ -168,6 +162,13 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .topbar-sel:focus{border-color:#1D9E75}
 .toast{position:fixed;bottom:18px;right:18px;background:#1D9E75;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
 .toast.show{opacity:1}
+
+/* D3 Graph Hover Dimming */
+.dimmed { opacity: 0.15; transition: opacity 0.2s; }
+.highlight { opacity: 1; transition: opacity 0.2s; }
+.ong { transition: opacity 0.2s; }
+.oeg { transition: opacity 0.2s; }
+
 /* Modals */
 #ms-modal, #text-modal, #upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
 .ms-content{background:#fff;border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:500px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
@@ -303,7 +304,7 @@ window.S = {
   terms:[{code:'TRM-001',term:'',def:'',otype:'객체',parent:'',child:'',sim:'',docRef:'',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'',dtype:'',src:'',own:'미확인',cycle:'',sens:'일반',trmRef:'',docRef:'',tskRef:'',note:''}],
   pocs:[{code:'POC-001',tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'',_owner:''}],
-  ontoTask:'', ontoNodes:{}, ontoEdges:{}
+  ontoTask:'ALL', ontoNodes:{}, ontoEdges:{}, edgeTypes:{}
 };
 
 window.currentView = 'home';
@@ -314,6 +315,9 @@ window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
+
+// Expand state for Onto Graph
+window.ontoExpanded = window.ontoExpanded || new Set();
 
 // Undo & Redo History
 window.undoStack = [];
@@ -332,6 +336,7 @@ window.undo = () => {
   window.isHistoryAction = true;
   window.redoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.undoStack.pop()));
+  if(!window.S.edgeTypes) window.S.edgeTypes = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('실행 취소했습니다.');
@@ -342,12 +347,12 @@ window.redo = () => {
   window.isHistoryAction = true;
   window.undoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.redoStack.pop()));
+  if(!window.S.edgeTypes) window.S.edgeTypes = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('다시 실행했습니다.');
 };
 
-// Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
@@ -355,7 +360,21 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── UTILS & CORE ─────────────────────────────────────
-const NC={'TSK':'#534AB7','DOC':'#0F6E56','DAT':'#D85A30','TRM':'#185FA5','EXP':'#BA7517'};
+
+window.getNColor = (d) => {
+    if (!d) return '#CBD5E1';
+    if (d.srcType === 'TSK') return '#60A5FA'; // 파랑
+    if (d.srcType === 'DOC') {
+        if(d.dtype === '법령') return '#F87171'; // 빨강
+        if(d.dtype === '사규') return '#FB923C'; // 주황
+        if(d.dtype === '지침') return '#FBBF24'; // 노랑
+        return '#A78BFA'; // 보라
+    }
+    if (d.srcType === 'DAT') return '#34D399'; // 민트
+    if (d.srcType === 'TRM') return '#2DD4BF'; // 청록
+    if (d.srcType === 'EXP') return '#F472B6'; // 분홍
+    return '#94A3B8';
+};
 
 window.nc = (arrKey, pfx) => {
   const arr = window.S[arrKey] || [];
@@ -457,11 +476,21 @@ window.replaceReferences = (oldCode, newCode) => {
   window.S.terms.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.parent = replaceRef(r.parent); r.child = replaceRef(r.child); });
   window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
   window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); });
+  
+  if (S.edgeTypes) {
+      Object.keys(S.edgeTypes).forEach(key => {
+          if (key.includes(oldCode)) {
+              const newKey = key.replace(oldCode, newCode);
+              S.edgeTypes[newKey] = S.edgeTypes[key];
+              delete S.edgeTypes[key];
+          }
+      });
+  }
+
   if(window.S.ontoTask === oldCode) window.S.ontoTask = newCode;
   if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
 };
 
-// 행 드래그 앤 드롭 (순서 변경)
 window.draggedRow = { arrKey: null, code: null };
 window.rowDragStart = (e, arrKey, code) => {
     if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
@@ -483,7 +512,6 @@ window.rowDrop = (e, arrKey, targetCode) => {
     window.draggedRow = { arrKey: null, code: null };
 };
 
-// 순번 강제 정렬 기능
 window.reorderCodes = (arrKey) => {
     window.pushHistory();
     const arr = S[arrKey];
@@ -735,6 +763,7 @@ const initAuth = async () => {
         if (snap.exists()) {
             const data = snap.data();
             Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
+            if(!S.edgeTypes) S.edgeTypes = {};
         } else {
             await setDoc(userDocRef, window.buildDataToSave());
         }
@@ -755,7 +784,8 @@ window.buildDataToSave = () => {
   });
   return {
     team: cleanData(S.team), tasks: cleanData(S.tasks), docs: cleanData(S.docs),
-    exps: cleanData(S.exps), terms: cleanData(S.terms), dats: cleanData(S.dats), pocs: cleanData(S.pocs)
+    exps: cleanData(S.exps), terms: cleanData(S.terms), dats: cleanData(S.dats), pocs: cleanData(S.pocs),
+    edgeTypes: S.edgeTypes || {}
   };
 };
 
@@ -802,8 +832,6 @@ window.V.home = () => {
     </div>`;
 };
 
-// KANBAN DRAG
-let draggedK = null;
 window.kDrag = (e, code) => { draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
 window.kDrop = (e, col) => { if(draggedK) { window.pushHistory(); window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
@@ -850,7 +878,6 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 
-// ── REL 연결 대시보드 (트리 및 개별 연결 해제 로직 추가) ───────────────────────────────
 window.relExpanded = window.relExpanded || {};
 window.toggleRel = (code) => {
     window.relExpanded[code] = !window.relExpanded[code];
@@ -908,7 +935,6 @@ window.relDrop = (e, targetCode, targetArrKey) => {
     window.stateChanged();
 };
 
-// 특정 부모와의 연결만 끊는 로직
 window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     if(e) e.stopPropagation();
     window.pushHistory();
@@ -958,7 +984,6 @@ window.V.docs = (tab) => {
     S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [] });
     S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [] });
     
-    // 트리를 그리기 위해 참조 관계에 따라 children 배열에 복사본을 삽입
     S.docs.forEach(d => {
         if (d.parentDoc && nodeMap[d.parentDoc]) {
             nodeMap[d.parentDoc].children.push({...nodeMap[d.code]});
@@ -1208,7 +1233,6 @@ window.addDocRow = (tab) => {
   window.stateChanged();
 };
 
-// ── DATASET ──────────────────────────────────────────
 window.setDatFilter = (f) => { window.datFilter = f; window.V.data(); };
 
 window.V.data = () => {
@@ -1250,16 +1274,23 @@ window.V.data = () => {
 
 // ── ONTO ─────────────────────────────────────────────
 window.V.onto = () => {
+  if(!S.ontoTask) {
+      S.ontoTask = 'ALL';
+      window.ontoExpanded.clear();
+  }
+  
   document.getElementById('pg-actions').innerHTML=`
     <select class="topbar-sel" onchange="window.switchOntoTask(this.value)">
-      <option value="">— 과제 선택 —</option>
+      <option value="ALL" ${S.ontoTask==='ALL'?'selected':''}>🌐 전체 데이터 관계망</option>
+      <optgroup label="단일 과제(TSK) 중심 보기">
       ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
+      </optgroup>
     </select>
     <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 재설정</button>
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
-      <div class="o-side">
+      <div class="o-side" style="width:320px;">
         <div class="o-abody" id="o-abody"></div>
       </div>
       <div class="o-graph" id="o-gwrap">
@@ -1270,123 +1301,386 @@ window.V.onto = () => {
           <button class="gcb" onclick="window.oZS(0.77)">−</button>
           <button class="gcb" onclick="window.oZF()" style="font-size:11px">⊙</button>
         </div>
-        ${!S.ontoTask?`<div class="g-empty"><div class="g-empty-msg">상단에서 <strong>과제를 선택</strong>하면<br>기준문서에서 연결된 데이터가<br>자동으로 온톨로지 맵을 구성합니다</div></div>`:''}
       </div>
     </div>`;
+  window.buildOntoGraphData(); 
   window.renderOAb();
-  if(S.ontoTask) { window.buildOntoGraphData(); setTimeout(window.initOG,60); }
+  setTimeout(window.initOG, 60);
 };
 
-window.switchOntoTask = (code) => { S.ontoTask=code; S.ontoSel=null; window.V.onto(); };
-window.oSelN = id => { S.ontoSel=id; if(window.oGMain) window.oGMain.selectAll('.ong').select('circle').attr('stroke',d=>d.id===id?'#1D9E75':'var(--color-background-primary)').attr('stroke-width',d=>d.id===id?3.5:2.5); window.renderOAb(); };
+window.switchOntoTask = (code) => { 
+    S.ontoTask = code; 
+    S.ontoSel = null; 
+    window.ontoExpanded.clear();
+    if(code !== 'ALL') window.ontoExpanded.add(code);
+    window.V.onto(); 
+};
+
+window.oSelN = id => { 
+    S.ontoSel = id; 
+    if(window.oGMain) {
+        window.oGMain.selectAll('.ong').select('circle')
+            .attr('stroke', d=>d.id===id?'#334155':'#fff')
+            .attr('stroke-width', d=>d.id===id?4:2);
+    }
+    window.renderOAb(); 
+};
+
+window.addOntoRelation = (srcCode) => {
+    const tgtCode = document.getElementById('new-rel-tgt').value;
+    const relType = document.getElementById('new-rel-type').value || '단순 참조';
+    if(!tgtCode || srcCode === tgtCode) return;
+
+    const link = (parentCode, childCode, childArrKey, refField) => {
+        const row = S[childArrKey].find(x => x.code === childCode);
+        if(row) {
+            let arr = window.parseRef(row[refField]);
+            if(!arr.includes(parentCode)) arr.push(parentCode);
+            row[refField] = arr.join(', ');
+            
+            const edgeId = `E-${childCode}-${parentCode}`;
+            S.edgeTypes[edgeId] = relType;
+            return true;
+        }
+        return false;
+    };
+
+    const sType = srcCode.split('-')[0];
+    const tType = tgtCode.split('-')[0];
+
+    // Source는 항상 Child, Target은 항상 Parent 여야 함. 
+    // 화면상의 논리: 과제(상위) <- 문서 <- 용어(하위)
+    const attemptLink = (c1, t1, c2, t2) => {
+        if(t1==='DOC' && t2==='TSK') return link(c2, c1, 'docs', 'tskRef');
+        if(t1==='TRM' && t2==='TSK') return link(c2, c1, 'terms', 'tskRef');
+        if(t1==='DAT' && t2==='TSK') return link(c2, c1, 'dats', 'tskRef');
+        if(t1==='EXP' && t2==='TSK') return link(c2, c1, 'exps', 'tskRef');
+        if(t1==='DOC' && t2==='DOC') return link(c2, c1, 'docs', 'parentDoc');
+        if(t1==='TRM' && t2==='DOC') return link(c2, c1, 'terms', 'docRef');
+        if(t1==='DAT' && t2==='DOC') return link(c2, c1, 'dats', 'docRef');
+        if(t1==='EXP' && t2==='DOC') return link(c2, c1, 'exps', 'docRef');
+        if(t1==='DAT' && t2==='TRM') return link(c2, c1, 'dats', 'trmRef');
+        return false;
+    };
+
+    let success = attemptLink(srcCode, sType, tgtCode, tType) || attemptLink(tgtCode, tType, srcCode, sType);
+
+    if(success) {
+        window.pushHistory();
+        window.stateChanged();
+        window.toast('관계가 새롭게 연결되었습니다.');
+        window.ontoExpanded.add(tgtCode); 
+        window.V.onto();
+    } else {
+        window.toast('지원하지 않는 계층 방향입니다. (상/하위 기준을 확인하세요)');
+    }
+};
 
 window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
-  if (!S.ontoTask) return;
-  const t = S.tasks.find(x=>x.code===S.ontoTask);
-  if (!t) return;
-  
-  nodes.push({id: t.code, label: t.name||t.code, srcType: 'TSK', def: t.purpose});
-  
-  window.parseRef(t._doc).forEach(c => { const d=S.docs.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DOC', def:d.summary}); edges.push({source:t.code, target:c, rtype:'포함/참조', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._dat).forEach(c => { const d=S.dats.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.name||c, srcType:'DAT', def:d.dtype}); edges.push({source:t.code, target:c, rtype:'데이터활용', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._trm).forEach(c => { const d=S.terms.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.term||c, srcType:'TRM', def:d.def}); edges.push({source:t.code, target:c, rtype:'용어/객체', id:`E-${t.code}-${c}`}); } });
-  window.parseRef(t._exp).forEach(c => { const d=S.exps.find(x=>x.code===c); if(d) { nodes.push({id:c, label:d.sit||c, srcType:'EXP', def:d.hand}); edges.push({source:t.code, target:c, rtype:'예외조건', id:`E-${t.code}-${c}`}); } });
+  const edgeSet = new Set();
 
-  nodes.forEach(n => {
-    if(n.srcType === 'DOC') {
-      const d = S.docs.find(x=>x.code===n.id);
-      window.parseRef(d._trm).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'정의/기준', id:`E-${n.id}-${c}`}); });
-      window.parseRef(d._exp).forEach(c => { if(nodes.find(x=>x.id===c)) edges.push({source:n.id, target:c, rtype:'예외사항', id:`E-${n.id}-${c}`}); });
-    }
+  const addEdge = (src, tgt, defaultType) => {
+      if(!src || !tgt) return;
+      const id = `E-${src}-${tgt}`;
+      if(!edgeSet.has(id)) {
+          const rtype = (S.edgeTypes && S.edgeTypes[id]) ? S.edgeTypes[id] : defaultType;
+          edges.push({source: src, target: tgt, rtype: rtype, id: id});
+          edgeSet.add(id);
+      }
+  };
+
+  const addNode = (item, srcType, label, def, dtype) => {
+      if(item && item.code && !nodes.find(n => n.id === item.code)) {
+          nodes.push({id: item.code, label: label, srcType: srcType, def: def, dtype: dtype});
+      }
+  };
+
+  S.tasks.forEach(t => addNode(t, 'TSK', t.name||t.code, t.purpose));
+  S.docs.forEach(d => addNode(d, 'DOC', d.name||d.code, d.summary, d.dtype));
+  S.terms.forEach(t => addNode(t, 'TRM', t.term||t.code, t.def));
+  S.dats.forEach(d => addNode(d, 'DAT', d.name||d.code, d.dtype));
+  S.exps.forEach(e => addNode(e, 'EXP', e.sit||e.code, e.hand));
+
+  // 방향: Child(Source) -> Parent(Target)
+  S.docs.forEach(d => {
+      window.parseRef(d.tskRef).forEach(c => addEdge(d.code, c, '상/하위 종속'));
+      if(d.parentDoc) addEdge(d.code, d.parentDoc, '상/하위 종속');
+  });
+  S.terms.forEach(t => {
+      window.parseRef(t.tskRef).forEach(c => addEdge(t.code, c, '기준 정의'));
+      window.parseRef(t.docRef).forEach(c => addEdge(t.code, c, '기준 정의'));
+  });
+  S.dats.forEach(d => {
+      window.parseRef(d.tskRef).forEach(c => addEdge(d.code, c, '데이터 활용'));
+      window.parseRef(d.docRef).forEach(c => addEdge(d.code, c, '데이터 활용'));
+      window.parseRef(d.trmRef).forEach(c => addEdge(d.code, c, '기준 정의'));
+  });
+  S.exps.forEach(e => {
+      window.parseRef(e.tskRef).forEach(c => addEdge(e.code, c, '예외 처리'));
+      window.parseRef(e.docRef).forEach(c => addEdge(e.code, c, '예외 처리'));
   });
 
-  nodes = [...new Map(nodes.map(item => [item.id, item])).values()];
-  S.ontoNodes[S.ontoTask] = nodes;
-  S.ontoEdges[S.ontoTask] = edges;
+  if (S.ontoTask !== 'ALL') {
+      let visibleNodes = new Set();
+      window.ontoExpanded.forEach(exNode => {
+          visibleNodes.add(exNode);
+          edges.forEach(e => {
+              if (e.source === exNode) visibleNodes.add(e.target);
+              if (e.target === exNode) visibleNodes.add(e.source);
+          });
+      });
+      nodes = nodes.filter(n => visibleNodes.has(n.id));
+      edges = edges.filter(e => visibleNodes.has(e.source) && visibleNodes.has(e.target));
+  }
+
+  // 스윔레인 단계(Depth) 설정 (좌측부터 0)
+  nodes.forEach(n => {
+      if (n.srcType === 'TSK') n.depth = 0;
+      else if (n.srcType === 'DOC' && (n.dtype === '법령' || n.dtype === '사규')) n.depth = 1;
+      else if (n.srcType === 'DOC') n.depth = 2; // 지침, 프로세스 등
+      else n.depth = 3; // TRM, DAT, EXP
+  });
+
+  const validNodes = new Set(nodes.map(n => n.id));
+  edges = edges.filter(e => validNodes.has(e.source) && validNodes.has(e.target));
+
+  S.ontoNodes['CURRENT'] = nodes;
+  S.ontoEdges['CURRENT'] = edges;
 };
 
 window.renderOAb = () => {
   const b = document.getElementById('o-abody');
   if(!b) return;
   if(!S.ontoSel) {
-    b.innerHTML = `<div class="hint">자동 구성된 관계도입니다.<br>그래프에서 노드를 클릭하면 상세 정보가 표시됩니다.</div>`;
+    b.innerHTML = `
+      <div class="hint" style="margin-top:40px;">
+        <span style="font-size:24px;display:block;margin-bottom:10px;">📊</span>
+        노드를 클릭하면 해당 데이터를 참조하는 상위 항목과 파생된 하위 항목이 구분되어 표시됩니다.<br><br>
+        그래프의 빈 공간을 드래그하여 화면을 이동할 수 있습니다.
+      </div>`;
     return;
   }
-  const nodes = S.ontoNodes[S.ontoTask]||[];
+  
+  const nodes = S.ontoNodes['CURRENT']||[];
   const n = nodes.find(x=>x.id===S.ontoSel);
   if(!n) return;
-  const edges = S.ontoEdges[S.ontoTask]||[];
-  const rel = edges.filter(e=>e.source===n.id||e.target===n.id);
+  const edges = S.ontoEdges['CURRENT']||[];
   
-  b.innerHTML=`
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div style="width:12px;height:12px;border-radius:50%;background:${NC[n.srcType]};flex-shrink:0"></div>
-      <div><div style="font-size:13px;font-weight:700">${n.label}</div><div style="font-size:10px;color:var(--color-text-secondary)">${n.srcType} · ${n.id}</div></div>
+  // 방향: Child(Source) -> Parent(Target) 이므로
+  // 현재 노드의 '상위 항목'은 이 노드에서 나가는(Outgoing) 엣지의 Target
+  // 현재 노드의 '하위 항목'은 이 노드로 들어오는(Incoming) 엣지의 Source
+  const parents = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
+  const children = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
+  
+  const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
+  const allOpts = allItems.map(x => {
+      const pfx = x.code.split('-')[0];
+      const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
+      return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
+  }).join('');
+
+  let html = `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;background:#fff;padding:12px;border-radius:8px;border:1px solid var(--color-border-tertiary);">
+      <div style="width:16px;height:16px;border-radius:50%;background:${window.getNColor(n)};flex-shrink:0;margin-top:2px;"></div>
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">${String(n.label).replace(/"/g,'&quot;')}</div>
+        <div style="font-size:10px;color:var(--color-text-secondary)">${n.srcType}${n.dtype ? ' · ' + n.dtype : ''} · ${n.id}</div>
+      </div>
     </div>
-    ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:8px;border-radius:6px;line-height:1.6;margin-bottom:8px">${n.def}</div>`:''}
+    ${n.def?`<div style="font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:10px;border-radius:6px;line-height:1.6;margin-bottom:14px">${String(n.def).replace(/"/g,'&quot;')}</div>`:''}
+    
+    <div class="o-sec" style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;">
+        새로운 관계 직접 연결
+    </div>
+    <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:20px;">
+       <select id="new-rel-type" style="width:100%; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px;">
+          <option value="상/하위 종속">상/하위 종속</option>
+          <option value="단순 참조">단순 참조</option>
+          <option value="필수 준수">필수 준수</option>
+          <option value="데이터 활용">데이터 활용</option>
+          <option value="기준 정의">기준 정의</option>
+          <option value="예외 처리">예외 처리</option>
+          <option value="키워드 매칭">키워드 매칭(추론)</option>
+       </select>
+       <div style="display:flex; gap:6px; align-items:center;">
+           <select id="new-rel-tgt" style="flex:1; font-size:11px; padding:6px; border:1px solid var(--color-border-secondary); border-radius:4px;">
+              <option value="">대상 선택 (상/하위 제한됨)</option>
+              ${allOpts}
+           </select>
+           <button class="btn btn-g btn-sm" style="padding:6px 10px;" onclick="window.addOntoRelation('${n.id}')">추가</button>
+       </div>
+    </div>
+
     <div class="o-div"></div>
-    <div class="o-sec">연결된 관계 <span style="font-weight:400;font-size:11px;color:var(--color-text-secondary)">${rel.length}개</span></div>
-    ${rel.map(e=>{const isF=e.source===n.id, o=nodes.find(x=>x.id===(isF?e.target:e.source)); return`<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px dashed #e2e8f0">
-      <div style="width:7px;height:7px;border-radius:50%;background:${NC[o?.srcType]||'#888'};flex-shrink:0;margin-top:4px"></div>
-      <div><div style="font-size:11px">${isF?'→':''} <strong>${o?.label||'?'}</strong> ${!isF?'←':''}</div>
-      <div style="font-size:10px;color:var(--color-text-secondary)">${e.rtype}</div></div></div>`}).join('')||`<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 관계 없음</div>`}
   `;
+
+  if(parents.length > 0) {
+      html += `<div class="o-sec" style="margin-top:16px; color:#3B82F6;">상위 항목 (참조 대상)</div>`;
+      html += parents.map(e => {
+          const pId = e.target.id || e.target;
+          const o = nodes.find(x=>x.id===pId) || {label: pId, srcType: pId.split('-')[0]};
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${pId}')">
+              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:55px;text-align:right;">${e.rtype}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
+              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
+              </div>`;
+      }).join('');
+  }
+
+  if(children.length > 0) {
+      html += `<div class="o-sec" style="margin-top:20px; color:#10B981;">하위 항목 (파생 대상)</div>`;
+      html += children.map(e => {
+          const cId = e.source.id || e.source;
+          const o = nodes.find(x=>x.id===cId) || {label: cId, srcType: cId.split('-')[0]};
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed #e2e8f0;cursor:pointer;" onclick="window.oSelN('${cId}')">
+              <div style="font-size:11px;color:#94a3b8;flex-shrink:0;width:55px;text-align:right;">${e.rtype}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-top:4px"></div>
+              <div style="font-size:11px;font-weight:500;">${String(o?.label).replace(/"/g,'&quot;')}</div>
+              </div>`;
+      }).join('');
+  }
+
+  if(parents.length === 0 && children.length === 0) {
+      html += `<div style="font-size:11px;color:var(--color-text-secondary);padding:6px 0">연결된 항목 없음</div>`;
+  }
+
+  b.innerHTML = html;
 };
 
-// D3 Logic
+// D3 Logic (고정형 스윔레인)
 window.initOG = () => {
-  if(window.oSim) window.oSim.stop();
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
+  
   d3.select('#o-svg').selectAll('*').remove();
   window.oSvg = d3.select('#o-svg');
+  
+  const bgG = window.oSvg.append('g').attr('class', 'swimlanes');
+  const lanes = ['1. 과제/프로젝트', '2. 상위 문서 (법령/사규)', '3. 하위 문서 (지침/프로세스)', '4. 데이터/용어/예외'];
+  const colWidth = Math.max(220, W / 4);
+  
+  lanes.forEach((l, i) => {
+      bgG.append('rect')
+         .attr('x', i * colWidth).attr('y', 0)
+         .attr('width', colWidth).attr('height', H)
+         .attr('fill', i % 2 === 0 ? '#f8fafc' : '#f1f5f9')
+         .attr('opacity', 0.6);
+      bgG.append('text')
+         .attr('x', i * colWidth + colWidth/2).attr('y', 24)
+         .attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', '700').attr('fill', '#94a3b8')
+         .text(l);
+  });
+
   const df = window.oSvg.append('defs');
   df.append('marker').attr('id','oarr').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
-    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+    .append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','rgba(0,0,0,0.3)').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
+  
   window.oGMain = window.oSvg.append('g');
-  window.oZoom = d3.zoom().scaleExtent([0.1,4]).on('zoom',e=>window.oGMain.attr('transform',e.transform));
+  window.oZoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', e => window.oGMain.attr('transform', e.transform));
   window.oSvg.call(window.oZoom);
   
-  const nodes = S.ontoNodes[S.ontoTask]||[];
-  nodes.forEach((n,i)=>{if(!n.x||!n.y){n.x=W/2+Math.cos(i*2*Math.PI/nodes.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/nodes.length)*150}});
-  const links = S.ontoEdges[S.ontoTask]||[];
+  const nodes = S.ontoNodes['CURRENT']||[];
+  const links = S.ontoEdges['CURRENT']||[];
   
-  window.oSim = d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(d=>d.id).distance(140)).force('charge',d3.forceManyBody().strength(-500)).force('center',d3.forceCenter(W/2,H/2)).force('collision',d3.forceCollide(50));
+  // Y축 고정 좌표 계산 로직
+  const depthCounts = {0:0, 1:0, 2:0, 3:0};
+  nodes.forEach(n => { depthCounts[n.depth] = (depthCounts[n.depth] || 0) + 1; });
+  
+  const depthCurrent = {0:0, 1:0, 2:0, 3:0};
+  nodes.forEach(n => {
+      n.x = (n.depth + 0.5) * colWidth;
+      const count = depthCounts[n.depth];
+      const idx = depthCurrent[n.depth]++;
+      n.y = (H / 2) + (idx - (count - 1) / 2) * 80;
+  });
   
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
-  eS.append('line').attr('stroke','rgba(0,0,0,0.2)').attr('stroke-width',1.5).attr('marker-end','url(#oarr)');
-  eS.append('text').attr('text-anchor','middle').attr('font-size','9px').attr('fill','#3d3d3a').attr('opacity',0.7).attr('pointer-events','none').text(d=>d.rtype);
+  
+  // 연결 속성에 따른 선 스타일 적용
+  eS.append('path')
+    .attr('fill','none')
+    .attr('stroke', d => d.rtype === '예외 처리' ? '#F87171' : 'rgba(0,0,0,0.25)')
+    .attr('stroke-width', d => d.rtype === '필수 준수' ? 3 : 1.5)
+    .attr('stroke-dasharray', d => d.rtype === '단순 참조' || d.rtype === '예외 처리' || (d.rtype && d.rtype.includes('추론')) ? '5,5' : 'none')
+    .attr('marker-end','url(#oarr)')
+    .attr('d', d => {
+        // Child(Source, 오른쪽) -> Parent(Target, 왼쪽)
+        const sx = (d.source.x || 0) - 18;
+        const sy = (d.source.y || 0);
+        const tx = (d.target.x || 0) + 22;
+        const ty = (d.target.y || 0);
+        return `M ${sx} ${sy} C ${sx - 60} ${sy}, ${tx + 60} ${ty}, ${tx} ${ty}`;
+    });
+  
+  eS.append('text')
+    .attr('text-anchor','middle')
+    .attr('font-size','9px')
+    .attr('fill','#64748b')
+    .attr('pointer-events','none')
+    .attr('x', d => ((d.source.x || 0) + (d.target.x || 0)) / 2)
+    .attr('y', d => ((d.source.y || 0) + (d.target.y || 0)) / 2 - 8)
+    .text(d => d.rtype);
   
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
-    .call(d3.drag().on('start',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;}).on('end',(e,d)=>{if(!e.active)window.oSim.alphaTarget(0);d.fx=null;d.fy=null;}))
-    .on('click',(e,d)=>{e.stopPropagation();window.oSelN(d.id);})
-    .on('mouseenter',(e,d)=>{
+    .attr('transform', d => `translate(${d.x},${d.y})`)
+    .on('click',(e,d)=>{
+        e.stopPropagation();
+        window.oSelN(d.id);
+    });
+    
+  // 마우스 호버 시 흐리게 처리 (Dim) 로직
+  nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
-      tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType} · ${d.id}</span>${d.def?'<br>'+d.def:''}`;
+      tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
       tip.classList.add('on');
       const wr=document.getElementById('o-gwrap').getBoundingClientRect();
       tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
       tip.style.top=Math.max(e.clientY-wr.top-8,8)+'px';
-    }).on('mouseleave',()=>document.getElementById('o-tip')?.classList.remove('on'));
-    
-  nS.append('circle').attr('r',24).attr('fill',d=>NC[d.srcType]||'#888').attr('stroke',d=>d.id===S.ontoSel?'#1D9E75':'#fff').attr('stroke-width',d=>d.id===S.ontoSel?3.5:2);
-  nS.append('text').attr('text-anchor','middle').attr('dy','4px').attr('font-size','11px').attr('fill','#fff').attr('font-weight','700').attr('pointer-events','none').text(d=>d.label.substring(0,3));
-  nS.append('text').attr('text-anchor','middle').attr('dy','38px').attr('font-size','11px').attr('fill','#3d3d3a').attr('pointer-events','none').text(d=>d.label);
-  
-  window.oSim.on('tick',()=>{
-    eS.select('line').attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x-dx/l*28}).attr('y2',d=>{const dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,l=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y-dy/l*28});
-    eS.select('text').attr('x',d=>(d.source.x+d.target.x)/2).attr('y',d=>(d.source.y+d.target.y)/2-6);
-    nS.attr('transform',d=>`translate(${d.x},${d.y})`);
+
+      const connectedIds = new Set([d.id]);
+      links.forEach(l => {
+          if (l.source.id === d.id) connectedIds.add(l.target.id);
+          if (l.target.id === d.id) connectedIds.add(l.source.id);
+      });
+      
+      nG.selectAll('.ong').classed('dimmed', n => !connectedIds.has(n.id));
+      eG.selectAll('.oeg').classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id);
   });
+  
+  nS.on('mouseleave', () => {
+      document.getElementById('o-tip')?.classList.remove('on');
+      nG.selectAll('.ong').classed('dimmed', false);
+      eG.selectAll('.oeg').classed('dimmed', false);
+  });
+    
+  nS.append('circle')
+    .attr('r', 16)
+    .attr('fill', d => window.getNColor(d))
+    .attr('stroke', d => d.id === S.ontoSel ? '#334155' : '#fff')
+    .attr('stroke-width', d => d.id === S.ontoSel ? 4 : 2)
+    .style('filter', 'drop-shadow(0px 3px 4px rgba(0,0,0,0.1))');
+  
+  nS.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', '32px')
+    .attr('font-size', '11px')
+    .attr('font-weight', '700')
+    .attr('fill', '#334155')
+    .attr('pointer-events', 'none')
+    .style('text-shadow', '0px 1px 2px #fff, 0px -1px 2px #fff, 1px 0px 2px #fff, -1px 0px 2px #fff')
+    .text(d => d.label.length > 12 ? d.label.substring(0, 12) + '...' : d.label);
   
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
 };
-window.resetOLayout = () => { if(!S.ontoTask) return; const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; (S.ontoNodes[S.ontoTask]||[]).forEach((n,i,a)=>{n.x=W/2+Math.cos(i*2*Math.PI/a.length)*150; n.y=H/2+Math.sin(i*2*Math.PI/a.length)*150; n.fx=null; n.fy=null;}); window.oSim?.alpha(1).restart(); };
+
+window.resetOLayout = () => { 
+  window.V.onto(); // Re-renders completely with fixed layout
+};
 window.oZS = (k) => window.oSvg?.transition().duration(300).call(window.oZoom.scaleBy,k);
-window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.85)); };
+window.oZF = () => { const W=document.getElementById('o-gwrap').clientWidth, H=document.getElementById('o-gwrap').clientHeight; window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(W/2,H/2 + 30).scale(0.85)); };
 
 // ── POC ──────────────────────────────────────────────
 window.V.poc = () => {
