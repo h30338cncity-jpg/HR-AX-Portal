@@ -21,9 +21,23 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .sb-item.active{background:#e2e8f0;color:var(--color-text-primary);font-weight:700}
 .sb-ic{width:16px;text-align:center;flex-shrink:0;font-size:14px}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0}
-.topbar{height:50px;flex-shrink:0;background:#F8F9FA;border-bottom:1px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 18px;gap:10px}
-.topbar h2{font-size:15px;font-weight:700;flex:1}
+.topbar{height:50px;flex-shrink:0;background:#F8F9FA;border-bottom:1px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 18px;gap:10px;position:relative;z-index:20;}
+.topbar h2{font-size:15px;font-weight:700;}
 .topbar-r{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+
+/* Global Search */
+.global-search-wrap { position:relative; display:flex; align-items:center; margin-left:14px; }
+.global-search-input { width:220px; padding:6px 12px 6px 30px; border-radius:20px; border:1px solid var(--color-border-secondary); font-size:12px; outline:none; background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 10px center; transition:border-color 0.2s; }
+.global-search-input:focus { border-color:#1D9E75; }
+.search-dropdown { position:absolute; top:36px; left:0; width:400px; max-height:400px; overflow-y:auto; background:#fff; border:1px solid var(--color-border-tertiary); border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:10000; display:none; flex-direction:column; }
+.search-dropdown.active { display:flex; }
+.search-sec { padding:6px 12px; background:#f8fafc; font-size:11px; font-weight:700; color:var(--color-text-secondary); border-bottom:1px solid var(--color-border-tertiary); }
+.search-item { padding:8px 12px; border-bottom:1px solid var(--color-border-tertiary); cursor:pointer; display:flex; flex-direction:column; gap:4px; transition:background 0.1s; }
+.search-item:hover { background:#f1f5f9; }
+.search-item:last-child { border-bottom:none; }
+.search-match-text { font-size:11px; color:var(--color-text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
+
 /* Buttons */
 .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:opacity .12s;white-space:nowrap}
 .btn:hover{opacity:.85}.btn-g{background:#1D9E75;color:#fff}
@@ -33,6 +47,7 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .add-row:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
 .del-btn{width:22px;height:22px;border:none;border-radius:4px;background:transparent;color:var(--color-text-secondary);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 .del-btn:hover{background:var(--color-background-secondary);color:#E24B4A}
+
 /* Cards & Grid */
 .card{background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:14px;transition:all 0.15s;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -47,6 +62,7 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 .sys-card:hover{border-color:var(--color-border-secondary);transform:translateY(-1px)}
 .sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:700;margin-bottom:3px}
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
+
 /* Table */
 .tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
 table{width:max-content;min-width:100%;border-collapse:collapse;background:var(--color-background-primary)}
@@ -64,6 +80,7 @@ td select{cursor:pointer}
 .code-list{display:flex;flex-wrap:wrap;gap:4px}
 .doc-search-bar{padding:8px 12px;border:1px solid var(--color-border-tertiary);border-radius:6px;font-size:12px;outline:none;background:#fff;}
 .doc-search-bar:focus{border-color:#1D9E75}
+
 /* Kanban */
 .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;height:100%;}
 .kcol{background:var(--color-background-secondary);border-radius:8px;padding:10px;display:flex;flex-direction:column;overflow:hidden;max-height:100%;}
@@ -78,6 +95,7 @@ td select{cursor:pointer}
 .kcard .kas{font-size:11px;cursor:pointer}
 .kcard-ft{margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 .kcard-ft select{font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-primary);cursor:pointer}
+
 /* Subtabs */
 .stabs{display:flex;border-bottom:1px solid var(--color-border-tertiary);flex-shrink:0;background:#F8F9FA}
 .stab{padding:9px 13px;border-bottom:2px solid transparent;cursor:pointer;font-size:12px;font-weight:700;color:var(--color-text-secondary);white-space:nowrap;transition:background 0.2s}
@@ -87,6 +105,7 @@ td select{cursor:pointer}
 .stab.on-trm{border-bottom-color:#0C447C;color:#0C447C;background:#E6F1FB}
 .stab.on-dat{border-bottom-color:#712B13;color:#712B13;background:#FAECE7}
 .stab.on-rel{border-bottom-color:#72243E;color:#72243E;background:#FBEAF0}
+
 /* Code badges */
 .code{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px;display:inline-block;cursor:default;}
 .ct{background:#EEEDFE;color:#3C3489}.cd{background:#E1F5EE;color:#085041}
@@ -108,24 +127,18 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .resizer.active { background: rgba(29,158,117,0.6); }
 
 /* Tree Styles for REL Dashboard */
-.tree-node { display: flex; align-items: center; padding: 6px; cursor: grab; border-radius: 4px; border: 1px solid transparent; transition: background 0.1s; }
+.tree-node { display: flex; align-items: center; padding: 6px; cursor: pointer; border-radius: 4px; border: 1px solid transparent; transition: background 0.1s; }
 .tree-node:hover { background: var(--color-background-secondary); border-color: var(--color-border-tertiary); }
-.tree-node.edge-selected { background: #EEEDFE; border-color: #534AB7; }
+.tree-node.node-selected { background: #EEEDFE; border-color: #534AB7; }
 .tree-toggle { width: 24px; text-align: center; cursor: pointer; font-size: 11px; color: #666; user-select: none; }
 .tree-toggle:hover { color: #000; }
 .tree-content { display: flex; align-items: center; gap: 8px; flex: 1; }
 .tree-children { margin-left: 20px; border-left: 1px dashed #cbd5e1; padding-left: 8px; margin-top: 2px; }
-.drag-over { background: #e2e8f0 !important; border: 1px dashed #3b82f6 !important; }
-.tree-actions { margin-left: auto; display: flex; gap: 2px; }
-.rel-btn { font-size:12px; font-weight:700; color:#94a3b8; background:none; border:none; cursor:pointer; padding:2px 6px; border-radius:4px; opacity:0; transition:all 0.15s; }
-.tree-node:hover .rel-btn { opacity: 1; }
-.rel-btn:hover { background:#e2e8f0; color:#334155; }
-.rel-btn.unlink:hover { background:#fee2e2; color:#ef4444; }
 
 /* REL Tab Edges */
 .edge-row { cursor: pointer; transition: background 0.1s; }
 .edge-row:hover { background: #f8fafc; }
-.edge-row.selected { background: #EEEDFE; }
+.edge-row.selected { background: #EEEDFE !important; border-color: #534AB7 !important; }
 
 /* Team & Emoji Picker */
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -173,7 +186,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .oeg { transition: opacity 0.2s; }
 
 /* Modals */
-#ms-modal, #text-modal, #upload-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+#ms-modal, #text-modal, #upload-modal, #add-rel-edge-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
 .ms-content{background:#fff;border:1px solid var(--color-border-tertiary);padding:18px;border-radius:10px;width:500px;max-width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(0,0,0,0.15)}
 .ms-search{width:100%;padding:8px 10px;border:1px solid var(--color-border-secondary);border-radius:6px;margin-bottom:12px;font-size:12px;outline:none}
 .ms-search:focus{border-color:#1D9E75}
@@ -219,6 +232,13 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="topbar">
       <button class="btn btn-o btn-sm" onclick="document.querySelector('.sb').classList.toggle('collapsed')" style="border:none;font-size:16px;padding:0 5px;background:transparent;cursor:pointer">☰</button>
       <h2 id="pg-title">홈 대시보드</h2>
+      
+      <div class="global-search-wrap">
+         <input type="text" id="global-search-input" class="global-search-input" placeholder="통합 검색... (Ctrl+K)" oninput="window.performGlobalSearch()">
+         <div id="global-search-results" class="search-dropdown"></div>
+      </div>
+
+      <div style="flex:1"></div>
       <div class="topbar-r">
         <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소 (Ctrl+Z)">↩️ 취소</button>
         <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행 (Ctrl+Y)">↪️ 복구</button>
@@ -280,6 +300,41 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
       <button class="btn btn-o" onclick="document.getElementById('text-modal').style.display='none'">취소</button>
       <button class="btn btn-g" onclick="window.applyTm()">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Rel Edge Modal -->
+<div id="add-rel-edge-modal">
+  <div class="ms-content" style="width:420px;">
+    <h3 style="font-weight:700;margin-bottom:12px">새로운 엣지 연결</h3>
+    <div style="margin-bottom:12px;">
+       <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">연결 방향 지정</label>
+       <select id="add-rel-edge-dir" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer;">
+          <option value="parent">현재 노드가 다음 대상을 참조 (상위로 지정)</option>
+          <option value="child">현재 노드에서 다음 대상이 파생 (하위로 지정)</option>
+       </select>
+    </div>
+    <div style="margin-bottom:12px;">
+       <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">대상 선택 (검색 가능)</label>
+       <select id="add-rel-edge-tgt" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer;">
+       </select>
+    </div>
+    <div style="margin-bottom:20px;">
+       <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">관계 유형</label>
+       <select id="add-rel-edge-type" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer;">
+          <option value="상/하위 종속">상/하위 종속</option>
+          <option value="단순 참조">단순 참조</option>
+          <option value="필수 준수">필수 준수</option>
+          <option value="데이터 활용">데이터 활용</option>
+          <option value="기준 정의">기준 정의</option>
+          <option value="예외 처리">예외 처리</option>
+          <option value="키워드 매칭(추론)">키워드 매칭(추론)</option>
+       </select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-o" onclick="document.getElementById('add-rel-edge-modal').style.display='none'">취소</button>
+      <button class="btn btn-g" onclick="window.applyAddRelEdge()">생성</button>
     </div>
   </div>
 </div>
@@ -349,14 +404,14 @@ window.docFilterVal = '';
 window.docSubTab = '법령';
 window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
-window.selectedEdgeId = null;
+window.relSelectedNode = null;
+window.relSelectedEdgeId = null;
+window.relShowAllEdges = false;
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
 
-// Expand state for Onto Graph
 window.ontoExpanded = window.ontoExpanded || new Set();
 
-// Undo & Redo History
 window.undoStack = [];
 window.redoStack = [];
 window.isHistoryAction = false;
@@ -389,6 +444,89 @@ window.redo = () => {
   window.isHistoryAction = false;
   window.toast('다시 실행했습니다.');
 };
+
+document.addEventListener('keydown', (e) => {
+  if(e.ctrlKey && e.key.toLowerCase() === 'k') {
+      e.preventDefault(); 
+      document.getElementById('global-search-input')?.focus();
+      return;
+  }
+  if(e.key === 'Escape') {
+      document.getElementById('global-search-results')?.classList.remove('active');
+      document.getElementById('global-search-input')?.blur();
+  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
+  if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); window.redo(); }
+});
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.global-search-wrap')) {
+      document.getElementById('global-search-results')?.classList.remove('active');
+  }
+});
+
+// ── GLOBAL SEARCH ────────────────────────────────────
+window.performGlobalSearch = () => {
+    const q = document.getElementById('global-search-input').value.trim().toLowerCase();
+    const dd = document.getElementById('global-search-results');
+    if (q.length < 2) { dd.classList.remove('active'); return; }
+
+    const results = { tasks: [], docs: [], exps: [], terms: [], dats: [], pocs: [] };
+    const labels = { tasks:'과제 (TSK)', docs:'기준문서 (DOC)', exps:'예외기준 (EXP)', terms:'용어·객체 (TRM)', dats:'데이터셋 (DAT)', pocs:'PoC 현황' };
+
+    const highlight = (text) => {
+        if(!text) return '';
+        const str = String(text);
+        const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return str.replace(regex, '<mark>$1</mark>');
+    };
+
+    const searchObj = (obj, arrKey) => {
+        let matched = false;
+        let matchText = '';
+        let matchField = '';
+        for (let key in obj) {
+            if(key.startsWith('_')) continue;
+            const val = String(obj[key]||'').toLowerCase();
+            if (val.includes(q)) {
+                matched = true;
+                matchText = highlight(String(obj[key]));
+                matchField = key;
+                break; 
+            }
+        }
+        if (matched && results[arrKey].length < 5) {
+            results[arrKey].push({ code: obj.code, field: matchField, text: matchText });
+        }
+    };
+
+    Object.keys(results).forEach(k => {
+        S[k].forEach(item => searchObj(item, k));
+    });
+
+    let html = '';
+    let total = 0;
+    Object.keys(results).forEach(k => {
+        if (results[k].length > 0) {
+            total += results[k].length;
+            html += `<div class="search-sec">${labels[k]} (${results[k].length})</div>`;
+            results[k].forEach(r => {
+                html += `<div class="search-item" onclick="window.goToItem('${k}', '${r.code}')">
+                            <div style="display:flex; align-items:center; gap:6px;">${window.badge(r.code)} <span style="font-size:10px;color:#94a3b8">[${r.field}]</span></div>
+                            <div class="search-match-text">${r.text}</div>
+                         </div>`;
+            });
+        }
+    });
+
+    if (total === 0) {
+        html = `<div style="padding:15px; text-align:center; color:gray;">검색 결과가 없습니다.</div>`;
+    }
+    dd.innerHTML = html;
+    dd.classList.add('active');
+};
+
 
 // ── UTILS & CORE ─────────────────────────────────────
 
@@ -532,6 +670,7 @@ window.replaceReferences = (oldCode, newCode) => {
 
   if(window.S.ontoTask === oldCode) window.S.ontoTask = newCode;
   if(window.S.ontoSel === oldCode) window.S.ontoSel = newCode;
+  if(window.relSelectedNode === oldCode) window.relSelectedNode = newCode;
 };
 
 window.draggedRow = { arrKey: null, code: null };
@@ -709,16 +848,35 @@ window.getAllEdges = () => {
     return edges;
 };
 
-window.updateEdgeDetail = (id, field, val) => {
-    window.pushHistory();
-    if(!S.edgeDetails[id]) S.edgeDetails[id] = { type:'단순 참조', clause:'', relevance:'참고', verbatim:'' };
-    S.edgeDetails[id][field] = val;
-    window.stateChanged();
-};
+window.createLinkCore = (pCode, cCode, relType) => {
+    const link = (parentCode, childCode, childArrKey, refField) => {
+        const row = S[childArrKey].find(x => x.code === childCode);
+        if(row) {
+            let arr = window.parseRef(row[refField]);
+            if(!arr.includes(parentCode)) arr.push(parentCode);
+            row[refField] = arr.join(', ');
+            
+            const edgeId = `E__${parentCode}__${childCode}`;
+            S.edgeDetails[edgeId] = { type: relType, clause:'', relevance:'참고', verbatim:'' };
+            return true;
+        }
+        return false;
+    };
 
-window.selectEdge = (id) => {
-    window.selectedEdgeId = id;
-    if (window.currentView === 'docs' && window.dtab === 'rel') window.V.docs('rel');
+    const pType = pCode.split('-')[0];
+    const cType = cCode.split('-')[0];
+
+    if(pType==='TSK' && cType==='DOC') return link(pCode, cCode, 'docs', 'tskRef');
+    if(pType==='TSK' && cType==='TRM') return link(pCode, cCode, 'terms', 'tskRef');
+    if(pType==='TSK' && cType==='DAT') return link(pCode, cCode, 'dats', 'tskRef');
+    if(pType==='TSK' && cType==='EXP') return link(pCode, cCode, 'exps', 'tskRef');
+    if(pType==='DOC' && cType==='DOC') return link(pCode, cCode, 'docs', 'parentDoc');
+    if(pType==='DOC' && cType==='TRM') return link(pCode, cCode, 'terms', 'docRef');
+    if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
+    if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
+    if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
+    
+    return false;
 };
 
 window.parseType = (code) => {
@@ -876,6 +1034,8 @@ document.addEventListener('click', (e) => { if(!e.target.closest('.emoji-picker'
 
 window.goToItem = (arrKey, code) => {
     document.getElementById('quality-modal').style.display = 'none';
+    document.getElementById('global-search-results')?.classList.remove('active');
+    
     const map = { tasks: 'tasks', docs: 'doc', exps: 'exp', terms: 'trm', dats: 'dat', pocs: 'poc' };
     const tab = map[arrKey];
 
@@ -883,6 +1043,14 @@ window.goToItem = (arrKey, code) => {
     else if(arrKey === 'pocs') window.go('poc');
     else {
         window.go('docs');
+        if (arrKey === 'docs') {
+            const docItem = S.docs.find(d => d.code === code);
+            if(docItem) {
+                let dt = docItem.dtype;
+                if(dt === '관행' || dt === '기타') dt = '관행/기타';
+                window.docSubTab = dt;
+            }
+        }
         window.V.docs(tab);
     }
 
@@ -893,7 +1061,7 @@ window.goToItem = (arrKey, code) => {
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 const oldBg = el.style.backgroundColor;
                 el.style.transition = 'background-color 0.5s';
-                el.style.backgroundColor = '#FEF08A';
+                el.style.backgroundColor = '#FFF9C4';
                 setTimeout(() => { el.style.backgroundColor = oldBg; }, 2000);
                 break;
             }
@@ -1114,100 +1282,74 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 
+// --- REL TAB 3-COLUMN LOGIC ---
 window.relExpanded = window.relExpanded || {};
 window.toggleRel = (code) => {
     window.relExpanded[code] = !window.relExpanded[code];
     window.V.docs('rel');
 };
 
-window.relDragStart = (e, code, arrKey) => {
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('tree-toggle') || e.target.classList.contains('rel-unlink-btn')) return;
-    window.draggedRel = { code, arrKey };
-    e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation();
-};
-window.relDragOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('drag-over'); };
-window.relDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over'); };
-window.relDrop = (e, targetCode, targetArrKey) => {
-    e.preventDefault(); e.stopPropagation();
-    e.currentTarget.classList.remove('drag-over');
-    
-    const src = window.draggedRel;
-    if (!src || src.code === targetCode) return;
-    if (src.arrKey === 'tasks') { window.toast('과제(TSK)는 하위 항목으로 이동할 수 없습니다.'); return; }
-    
-    if (src.arrKey === 'docs' && targetArrKey === 'docs') {
-         let cur = S.docs.find(d => d.code === targetCode);
-         let depth = 0;
-         while (cur && cur.parentDoc && depth < 20) {
-              if (cur.parentDoc === src.code) { window.toast('하위 항목을 상위로 지정할 수 없습니다 (순환 참조).'); return; }
-              cur = S.docs.find(d => d.code === cur.parentDoc);
-              depth++;
-         }
-    }
-
-    window.pushHistory();
-    const sRow = S[src.arrKey].find(x => x.code === src.code);
-    
-    const addRef = (existing, newRef) => {
-        let arr = window.parseRef(existing);
-        if (!arr.includes(newRef)) arr.push(newRef);
-        return arr.join(', ');
-    };
-
-    if (targetArrKey === 'root' || targetArrKey === 'orphan') {
-        sRow.tskRef = ''; sRow.docRef = ''; if(src.arrKey==='docs') sRow.parentDoc = '';
-    } else if (targetArrKey === 'tasks') {
-        sRow.tskRef = addRef(sRow.tskRef, targetCode);
-    } else if (targetArrKey === 'docs') {
-        if(src.arrKey==='docs') sRow.parentDoc = targetCode; 
-        else sRow.docRef = addRef(sRow.docRef, targetCode);
-    } else {
-        window.toast('해당 항목 하위로는 이동할 수 없습니다.');
-        window.undoStack.pop(); window.isHistoryAction = false; return;
-    }
-    
-    if (targetCode !== 'root' && targetCode !== 'orphan') window.relExpanded[targetCode] = true;
-    window.stateChanged();
+window.selectRelNode = (code) => {
+    window.relSelectedNode = code;
+    window.relSelectedEdgeId = null;
+    window.V.docs('rel');
 };
 
-window.promoteRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
-    if(e) e.stopPropagation();
-    if (parentArrKey === 'tasks') {
-        window.toast('이미 과제 하위의 최상위 항목입니다.');
-        return;
-    }
+window.selectRelEdge = (edgeId) => {
+    window.relSelectedEdgeId = edgeId;
+    window.V.docs('rel');
+};
+
+window.saveEdgeDetailPanel = () => {
+    if(!window.relSelectedEdgeId) return;
+    const clause = document.getElementById('edge-edit-clause').value;
+    const rel = document.getElementById('edge-edit-rel').value;
+    const verb = document.getElementById('edge-edit-verb').value;
     
     window.pushHistory();
-    const cRow = S[childArrKey].find(x => x.code === childCode);
-    const pRow = S[parentArrKey].find(x => x.code === parentCode);
-    if (!cRow || !pRow) return;
-
-    if (childArrKey === 'docs' && cRow.parentDoc === parentCode) {
-        cRow.parentDoc = '';
-    } else {
-        let refs = window.parseRef(cRow.docRef);
-        cRow.docRef = refs.filter(c => c !== parentCode).join(', ');
+    if(!S.edgeDetails[window.relSelectedEdgeId]) {
+        S.edgeDetails[window.relSelectedEdgeId] = { type:'단순 참조', clause:'', relevance:'참고', verbatim:'' };
     }
-
-    const addRef = (existing, newRefs) => {
-        let arr = window.parseRef(existing);
-        let newArr = window.parseRef(newRefs);
-        newArr.forEach(r => { if(!arr.includes(r)) arr.push(r); });
-        return arr.join(', ');
-    };
-
-    if (parentArrKey === 'docs') {
-        if (pRow.parentDoc) {
-            if (childArrKey === 'docs') cRow.parentDoc = pRow.parentDoc;
-            else cRow.docRef = addRef(cRow.docRef, pRow.parentDoc);
-        } else if (pRow.tskRef) {
-            cRow.tskRef = addRef(cRow.tskRef, pRow.tskRef);
-        }
-    }
-    
+    S.edgeDetails[window.relSelectedEdgeId].clause = clause;
+    S.edgeDetails[window.relSelectedEdgeId].relevance = rel;
+    S.edgeDetails[window.relSelectedEdgeId].verbatim = verb;
     window.stateChanged();
-    window.toast('상위 레벨로 이동되었습니다.');
+    window.toast('엣지 속성이 저장되었습니다.');
+};
+
+window.openAddRelEdgeModal = () => {
+    if(!window.relSelectedNode) return;
+    const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
+    const opts = allItems.filter(x => x.code !== window.relSelectedNode).map(x => {
+        const pfx = x.code.split('-')[0];
+        const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
+        return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
+    }).join('');
+    
+    document.getElementById('add-rel-edge-tgt').innerHTML = `<option value="">대상을 선택하세요</option>${opts}`;
+    document.getElementById('add-rel-edge-modal').style.display = 'flex';
+};
+
+window.applyAddRelEdge = () => {
+    const dir = document.getElementById('add-rel-edge-dir').value;
+    const tgtCode = document.getElementById('add-rel-edge-tgt').value;
+    const type = document.getElementById('add-rel-edge-type').value;
+    const srcCode = window.relSelectedNode;
+
+    if(!tgtCode) { window.toast('대상을 선택하세요.'); return; }
+
+    let parentCode = dir === 'parent' ? tgtCode : srcCode;
+    let childCode = dir === 'parent' ? srcCode : tgtCode;
+
+    let success = window.createLinkCore(parentCode, childCode, type);
+    if(success) {
+        window.pushHistory();
+        window.stateChanged();
+        document.getElementById('add-rel-edge-modal').style.display = 'none';
+        window.toast('새로운 연결 엣지가 추가되었습니다.');
+    } else {
+        window.toast('지원하지 않는 상/하위 방향입니다.');
+    }
 };
 
 window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
@@ -1236,6 +1378,7 @@ window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     if(S.edgeDetails && S.edgeDetails[edgeId]) delete S.edgeDetails[edgeId];
     
     if (window.selectedEdgeId === edgeId) window.selectedEdgeId = null;
+    if (window.relSelectedEdgeId === edgeId) window.relSelectedEdgeId = null;
 
     window.stateChanged();
     window.toast(`${parentCode} 와(과)의 연결이 해제되었습니다.`);
@@ -1256,8 +1399,7 @@ window.V.docs = (tab) => {
 
   if (window.dtab === 'rel') {
     const allEdges = window.getAllEdges();
-    const selEdge = window.selectedEdgeId ? allEdges.find(e => e.id === window.selectedEdgeId) : null;
-
+    
     const root = { children: [] };
     const nodeMap = {};
     
@@ -1308,26 +1450,16 @@ window.V.docs = (tab) => {
         const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
         const title = n[nameField] || '미입력';
         
-        const edgeId = parentCode ? `E__${parentCode}__${n.code}` : null;
-        const isSel = window.selectedEdgeId === edgeId;
-        
-        const promoteBtn = (parentCode && parentArrKey !== 'tasks') ? `<button class="rel-btn" title="상위 레벨로 이동" onclick="window.promoteRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">↰</button>` : '';
-        const unlinkBtn = parentCode ? `<button class="rel-btn unlink" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
+        const isNodeSel = window.relSelectedNode === n.code;
 
         return `
             <div style="margin-top:2px;">
-                <div class="tree-node ${isSel ? 'edge-selected' : ''}" 
-                     draggable="true" 
-                     ondragstart="window.relDragStart(event, '${n.code}', '${n.arrKey}')"
-                     ondragover="window.relDragOver(event)"
-                     ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, '${n.code}', '${n.arrKey}')"
-                     onclick="if('${edgeId}' !== 'null') window.selectEdge('${edgeId}')">
-                    <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();" draggable="false">${toggleIcon}</div>
+                <div class="tree-node ${isNodeSel ? 'node-selected' : ''}" 
+                     onclick="window.selectRelNode('${n.code}')">
+                    <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();">${toggleIcon}</div>
                     <div class="tree-content">
                         ${window.badge(n.code)}
                         <span style="font-size:12px;font-weight:500;">${String(title).replace(/"/g,'&quot;')}</span>
-                        <div class="tree-actions">${promoteBtn}${unlinkBtn}</div>
                     </div>
                 </div>
                 ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, n.code, n.arrKey, depth + 1)).join('')}</div>` : ''}
@@ -1336,86 +1468,163 @@ window.V.docs = (tab) => {
     };
 
     const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
-    const orphansHtml = root.children.filter(c => c.arrKey !== 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
     
+    let orphans = [];
+    ['docs','exps','terms','dats'].forEach(k => {
+      S[k].forEach(item => {
+        let hasLink = false;
+        Object.keys(item).forEach(f => { 
+          if (f === '_locked') return; 
+          if ((f.endsWith('Ref') || f.startsWith('_') || f==='parent' || f==='child' || f==='tsk' || f==='parentDoc') && window.parseRef(item[f]).length > 0) hasLink = true; 
+        });
+        if (!hasLink && item.code) orphans.push({ ...item, arrKey: k });
+      });
+    });
+    const orphansHtml = orphans.map(c => renderTreeNode(c, null, null, 0)).join('');
+
+    // Col 2 rendering
+    let col2Html = '';
+    if (!window.relSelectedNode) {
+        col2Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">좌측 트리에서 기준 항목을 선택해 주세요.</div>`;
+    } else {
+        const nodeEdges = allEdges.filter(e => e.source === window.relSelectedNode || e.target === window.relSelectedNode);
+        if (nodeEdges.length === 0) {
+            col2Html = `<div style="text-align:center; color:#94a3b8; padding:30px 20px; font-size:12px;">연결된 엣지가 없습니다.</div>`;
+        } else {
+            col2Html = nodeEdges.map(e => {
+                const isSource = e.source === window.relSelectedNode; 
+                // isSource means the selected node is the Child. So Target is Parent.
+                // Direction: Target(상위) ← Source(하위, 나).
+                const otherCode = isSource ? e.target : e.source;
+                const dirIcon = isSource 
+                    ? '<span style="color:#3B82F6;font-weight:bold;display:inline-block;width:55px;" title="선택 노드가 참조함">← (상위)</span>' 
+                    : '<span style="color:#10B981;font-weight:bold;display:inline-block;width:55px;" title="선택 노드로부터 파생됨">→ (하위)</span>';
+                const isSel = window.relSelectedEdgeId === e.id;
+                
+                return `
+                <div class="edge-row ${isSel ? 'selected' : ''}" onclick="window.selectRelEdge('${e.id}')" style="display:flex;align-items:center;gap:8px;padding:10px 8px;border-bottom:1px solid #e2e8f0;border-radius:6px;background:${isSel?'#EEEDFE':'#fff'};border:1px solid ${isSel?'#534AB7':'transparent'};margin-bottom:4px;">
+                    ${dirIcon}
+                    <div style="width:90px;flex-shrink:0;">${window.badge(otherCode)}</div>
+                    <div style="flex:1;font-size:11px;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <span class="pill pt" style="background:#e2e8f0;color:#475569">${e.detail.type}</span>
+                            <span style="font-weight:bold;color:${e.detail.relevance==='필수'?'#E24B4A':(e.detail.relevance==='충돌가능'?'#BA7517':'#94a3b8')}">${e.detail.relevance}</span>
+                        </div>
+                        <div style="color:gray;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            ${e.detail.clause ? `<strong style="color:#334155">${e.detail.clause.replace(/"/g,'&quot;')}</strong> | ` : ''}${e.detail.verbatim ? e.detail.verbatim.replace(/"/g,'&quot;') : '(발췌 없음)'}
+                        </div>
+                    </div>
+                    <button class="del-btn" style="width:24px;height:24px;padding:0;background:#fee2e2;color:#ef4444;border-radius:4px;flex-shrink:0;" onclick="event.stopPropagation(); window.deleteEdge('${e.id}', '${e.source}', '${e.target}')" title="삭제">✕</button>
+                </div>`;
+            }).join('');
+        }
+        col2Html += `<button class="btn btn-o" style="width:100%; justify-content:center; margin-top:10px; padding:10px; border-style:dashed;" onclick="window.openAddRelEdgeModal()">+ 새로운 엣지 연결</button>`;
+    }
+
+    // Col 3 rendering
+    let col3Html = '';
+    if (!window.relSelectedEdgeId) {
+         col3Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">중앙 목록에서 엣지를 선택하여<br>상세 정보를 편집하세요.</div>`;
+    } else {
+         const e = allEdges.find(x => x.id === window.relSelectedEdgeId);
+         if (e) {
+             col3Html = `
+                <div style="background:#fff; padding:12px; border-radius:6px; border:1px solid #e2e8f0; font-size:11px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:6px;"><span style="color:gray; width:45px;">Source:</span> ${window.badge(e.source)}</div>
+                    <div style="display:flex; align-items:center; gap:6px; margin-top:8px;"><span style="color:gray; width:45px;">Target:</span> ${window.badge(e.target)}</div>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1; color:gray;">유형: <strong style="color:#334155">${e.detail.type}</strong></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px; flex:1;">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">참조 위치 (Clause)</label>
+                        <input type="text" id="edge-edit-clause" value="${e.detail.clause.replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">중요도 (Relevance)</label>
+                        <select id="edge-edit-rel" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;">
+                            <option value="참고" ${e.detail.relevance==='참고'?'selected':''}>참고 (기본값)</option>
+                            <option value="필수" ${e.detail.relevance==='필수'?'selected':''}>필수</option>
+                            <option value="충돌가능" ${e.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; min-height:150px;">
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">원문/발췌 (Verbatim)</label>
+                        <textarea id="edge-edit-verb" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:none;">${e.detail.verbatim}</textarea>
+                    </div>
+                    <button class="btn btn-g" style="width:100%; justify-content:center; padding:10px; font-size:13px;" onclick="window.saveEdgeDetailPanel()">엣지 정보 저장</button>
+                </div>
+             `;
+         }
+    }
+
     document.getElementById('content').innerHTML=`
       <div class="stabs">${stH}</div>
-      <div style="display:flex; flex-direction:column; flex:1; gap:14px; padding:18px; overflow:hidden;">
-          <div style="display:flex; flex:1; gap:14px; overflow:hidden; min-height: 45%;">
-              <div class="card" style="flex:2; display:flex; flex-direction:column; overflow:hidden;">
-                  <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
-                  <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
-                       ondragover="window.relDragOver(event)"
-                       ondragleave="window.relDragLeave(event)"
-                       ondrop="window.relDrop(event, 'root', 'root')">
-                      ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
-                      ${orphansHtml ? `<div class="o-sec" style="margin-top:20px;">미연결 항목 (고립)</div>${orphansHtml}` : ''}
-                  </div>
-              </div>
-              <div class="card" style="width:360px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:#f8fafc;">
-                  <div class="sec" style="margin-bottom:10px;"><h3>엣지 상세 패널</h3></div>
-                  <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-right:4px;">
-                      ${selEdge ? `
-                          <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e2e8f0; font-size:11px;">
-                              <div style="display:flex; align-items:center; gap:6px;"><span style="color:gray; width:45px;">Source:</span> ${window.badge(selEdge.source)} <span style="font-weight:600; color:#334155;">${window.getItemName(selEdge.source).replace(/"/g,'&quot;')}</span></div>
-                              <div style="display:flex; align-items:center; gap:6px; margin-top:6px;"><span style="color:gray; width:45px;">Target:</span> ${window.badge(selEdge.target)} <span style="font-weight:600; color:#334155;">${window.getItemName(selEdge.target).replace(/"/g,'&quot;')}</span></div>
-                          </div>
-                          <div>
-                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">참조 위치 (Clause)</label>
-                              <input type="text" value="${selEdge.detail.clause.replace(/"/g,'&quot;')}" onblur="window.updateEdgeDetail('${selEdge.id}', 'clause', this.value)" placeholder="예: 제50조 1항, 3장 2절" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;">
-                          </div>
-                          <div>
-                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">중요도 (Relevance)</label>
-                              <select onchange="window.updateEdgeDetail('${selEdge.id}', 'relevance', this.value)" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;">
-                                  <option value="참고" ${selEdge.detail.relevance==='참고'?'selected':''}>참고 (기본값)</option>
-                                  <option value="필수" ${selEdge.detail.relevance==='필수'?'selected':''}>필수</option>
-                                  <option value="충돌가능" ${selEdge.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
-                              </select>
-                          </div>
-                          <div style="flex:1; display:flex; flex-direction:column; min-height:120px;">
-                              <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">원문/발췌 (Verbatim)</label>
-                              <textarea onblur="window.updateEdgeDetail('${selEdge.id}', 'verbatim', this.value)" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:none;">${selEdge.detail.verbatim}</textarea>
-                          </div>
-                      ` : `
-                          <div style="text-align:center; color:#94a3b8; margin-top:40px; font-size:12px; line-height:1.6;">
-                              왼쪽 트리나 하단 테이블에서<br><strong>연결선(엣지)</strong>을 클릭하면<br>상세 정보를 편집할 수 있습니다.
-                          </div>
-                      `}
-                  </div>
-              </div>
-          </div>
-          
-          <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-              <div class="sec" style="margin-bottom:8px;"><h3>엣지 전체 관리</h3></div>
-              <div style="flex:1; overflow:auto;" class="tw">
-                  <table style="width:100%;">
-                      <thead>
-                          <tr>
-                              <th style="width:100px;">Source</th>
-                              <th style="width:100px;">Target</th>
-                              <th style="width:100px;">유형</th>
-                              <th style="width:120px;">참조 위치</th>
-                              <th style="width:80px;">중요도</th>
-                              <th>발췌 (Verbatim)</th>
-                              <th style="width:30px; text-align:center;"></th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          ${allEdges.map(e => `
-                              <tr class="edge-row ${window.selectedEdgeId === e.id ? 'selected' : ''}" onclick="window.selectEdge('${e.id}')">
-                                  <td>${window.badge(e.source)}</td>
-                                  <td>${window.badge(e.target)}</td>
-                                  <td><span style="font-size:10px;color:gray">${e.detail.type}</span></td>
-                                  <td>${e.detail.clause ? `<span style="font-weight:500;">${e.detail.clause}</span>` : '<span style="color:#cbd5e1">-</span>'}</td>
-                                  <td>${e.detail.relevance === '필수' ? '<span style="color:#E24B4A;font-weight:700">필수</span>' : (e.detail.relevance === '충돌가능' ? '<span style="color:#BA7517;font-weight:700">충돌가능</span>' : '<span style="color:gray">참고</span>')}</td>
-                                  <td><div style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; color:gray;" title="${e.detail.verbatim.replace(/"/g,'&quot;')}">${e.detail.verbatim || '-'}</div></td>
-                                  <td style="text-align:center;"><button class="del-btn" style="width:20px;height:20px;padding:0;" onclick="event.stopPropagation(); window.deleteEdge('${e.id}', '${e.source}', '${e.target}')" title="연결 해제">✕</button></td>
-                              </tr>
-                          `).join('') || `<tr><td colspan="7" style="text-align:center;color:gray;padding:20px;">생성된 연결선이 없습니다.</td></tr>`}
-                      </tbody>
-                  </table>
-              </div>
-          </div>
+      <div style="flex:1; display:flex; flex-direction:column; padding:14px 18px 18px; overflow:hidden; gap:10px; min-width:0; min-height:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div class="banner" style="margin:0; flex:1; margin-right:14px;">좌측 트리에서 기준 노드를 선택하면, 연결된 엣지(Edge)를 체계적으로 관리할 수 있습니다.</div>
+            <button class="btn btn-o btn-sm" onclick="window.relShowAllEdges = !window.relShowAllEdges; window.V.docs('rel')">전체 엣지 보기 ${window.relShowAllEdges ? '▲' : '▼'}</button>
+        </div>
+        
+        <div style="display:flex; flex:1; gap:14px; overflow:hidden;">
+            <!-- 1열: 트리 -->
+            <div class="card" style="flex: 0 0 240px; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
+                <div class="sec"><h3>데이터 트리</h3></div>
+                <div style="flex:1; overflow-y:auto; padding-right:6px;">
+                    ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
+                    ${orphansHtml ? `<div class="o-sec" style="margin-top:20px; color:#E24B4A;">미연결 항목 (고립)</div>${orphansHtml}` : ''}
+                </div>
+            </div>
+            
+            <!-- 2열: 엣지 목록 -->
+            <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px; background:#f8fafc;">
+                <div class="sec"><h3>선택 노드의 연결망</h3></div>
+                <div style="flex:1; overflow-y:auto; padding-right:6px;">
+                    ${col2Html}
+                </div>
+            </div>
+            
+            <!-- 3열: 엣지 상세 -->
+            <div class="card" style="flex: 0 0 280px; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
+                <div class="sec"><h3>엣지 속성 관리</h3></div>
+                <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding-right:4px;">
+                    ${col3Html}
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 전체 테이블 (토글) -->
+        <div style="display:${window.relShowAllEdges ? 'flex' : 'none'}; flex-direction:column; height:35%; min-height:250px; overflow:hidden; flex-shrink:0; margin-top:10px;" class="card">
+            <div class="sec" style="margin-bottom:8px;"><h3>엣지 전체 관리 테이블</h3></div>
+            <div style="flex:1; overflow:auto;" class="tw">
+                <table style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:100px;">Source</th>
+                            <th style="width:100px;">Target</th>
+                            <th style="width:100px;">유형</th>
+                            <th style="width:120px;">참조 위치</th>
+                            <th style="width:80px;">중요도</th>
+                            <th>발췌 (Verbatim)</th>
+                            <th style="width:30px; text-align:center;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allEdges.map(e => `
+                            <tr class="edge-row ${window.relSelectedEdgeId === e.id ? 'selected' : ''}" onclick="window.selectRelEdge('${e.id}')">
+                                <td>${window.badge(e.source)}</td>
+                                <td>${window.badge(e.target)}</td>
+                                <td><span style="font-size:10px;color:gray">${e.detail.type}</span></td>
+                                <td>${e.detail.clause ? `<span style="font-weight:500;">${e.detail.clause.replace(/"/g,'&quot;')}</span>` : '<span style="color:#cbd5e1">-</span>'}</td>
+                                <td>${e.detail.relevance === '필수' ? '<span style="color:#E24B4A;font-weight:700">필수</span>' : (e.detail.relevance === '충돌가능' ? '<span style="color:#BA7517;font-weight:700">충돌가능</span>' : '<span style="color:gray">참고</span>')}</td>
+                                <td><div style="max-width:350px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; color:gray;" title="${e.detail.verbatim.replace(/"/g,'&quot;')}">${e.detail.verbatim || '-'}</div></td>
+                                <td style="text-align:center;"><button class="del-btn" style="width:20px;height:20px;padding:0;" onclick="event.stopPropagation(); window.deleteEdge('${e.id}', '${e.source}', '${e.target}')" title="연결 해제">✕</button></td>
+                            </tr>
+                        `).join('') || `<tr><td colspan="7" style="text-align:center;color:gray;padding:20px;">생성된 연결선이 없습니다.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
       </div>`;
     return;
   }
@@ -1685,37 +1894,7 @@ window.addOntoRelation = (srcCode) => {
     const relType = document.getElementById('new-rel-type').value || '단순 참조';
     if(!tgtCode || srcCode === tgtCode) return;
 
-    const link = (parentCode, childCode, childArrKey, refField) => {
-        const row = S[childArrKey].find(x => x.code === childCode);
-        if(row) {
-            let arr = window.parseRef(row[refField]);
-            if(!arr.includes(parentCode)) arr.push(parentCode);
-            row[refField] = arr.join(', ');
-            
-            const edgeId = `E__${parentCode}__${childCode}`;
-            S.edgeDetails[edgeId] = { type: relType, clause:'', relevance:'참고', verbatim:'' };
-            return true;
-        }
-        return false;
-    };
-
-    const sType = srcCode.split('-')[0];
-    const tType = tgtCode.split('-')[0];
-
-    const attemptLink = (pCode, pType, cCode, cType) => {
-        if(pType==='TSK' && cType==='DOC') return link(pCode, cCode, 'docs', 'tskRef');
-        if(pType==='TSK' && cType==='TRM') return link(pCode, cCode, 'terms', 'tskRef');
-        if(pType==='TSK' && cType==='DAT') return link(pCode, cCode, 'dats', 'tskRef');
-        if(pType==='TSK' && cType==='EXP') return link(pCode, cCode, 'exps', 'tskRef');
-        if(pType==='DOC' && cType==='DOC') return link(pCode, cCode, 'docs', 'parentDoc');
-        if(pType==='DOC' && cType==='TRM') return link(pCode, cCode, 'terms', 'docRef');
-        if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
-        if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
-        if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
-        return false;
-    };
-
-    let success = attemptLink(srcCode, sType, tgtCode, tType) || attemptLink(tgtCode, tType, srcCode, sType);
+    let success = window.createLinkCore(tgtCode, srcCode, relType); // dir based on modal logic
 
     if(success) {
         window.pushHistory();
