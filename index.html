@@ -117,6 +117,9 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 .tree-content { display: flex; align-items: center; gap: 8px; flex: 1; }
 .tree-children { margin-left: 20px; border-left: 1px dashed #cbd5e1; padding-left: 8px; margin-top: 2px; }
 .drag-over { background: #e2e8f0 !important; border: 1px dashed #3b82f6 !important; }
+.rel-unlink-btn { font-size:10px; color:#94a3b8; background:none; border:none; cursor:pointer; padding:2px 4px; border-radius:3px; opacity:0; transition:opacity 0.2s, background 0.2s, color 0.2s; margin-left: auto; }
+.tree-node:hover .rel-unlink-btn { opacity: 1; }
+.rel-unlink-btn:hover { background:#fee2e2; color:#ef4444; }
 
 /* Flat Draggable items in the right panel */
 .flat-node {
@@ -847,7 +850,7 @@ window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tas
 
 window.dtab = 'tsk';
 
-// ── REL 트리형 (아코디언) 빌드 및 렌더링 로직 ───────────────────────────────
+// ── REL 연결 대시보드 (트리 및 개별 연결 해제 로직 추가) ───────────────────────────────
 window.relExpanded = window.relExpanded || {};
 window.toggleRel = (code) => {
     window.relExpanded[code] = !window.relExpanded[code];
@@ -855,7 +858,7 @@ window.toggleRel = (code) => {
 };
 
 window.relDragStart = (e, code, arrKey) => {
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('tree-toggle')) return;
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('tree-toggle') || e.target.classList.contains('rel-unlink-btn')) return;
     window.draggedRel = { code, arrKey };
     e.dataTransfer.effectAllowed = 'move';
     e.stopPropagation();
@@ -905,6 +908,33 @@ window.relDrop = (e, targetCode, targetArrKey) => {
     window.stateChanged();
 };
 
+// 특정 부모와의 연결만 끊는 로직
+window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
+    if(e) e.stopPropagation();
+    window.pushHistory();
+    
+    const cRow = S[childArrKey].find(x => x.code === childCode);
+    if (!cRow) return;
+
+    const removeRef = (str, target) => {
+        let arr = window.parseRef(str);
+        return arr.filter(code => code !== target).join(', ');
+    };
+
+    if (parentArrKey === 'tasks') {
+        cRow.tskRef = removeRef(cRow.tskRef, parentCode);
+    } else if (parentArrKey === 'docs') {
+        if (childArrKey === 'docs' && cRow.parentDoc === parentCode) {
+            cRow.parentDoc = '';
+        } else {
+            cRow.docRef = removeRef(cRow.docRef, parentCode);
+        }
+    }
+    
+    window.stateChanged();
+    window.toast(`${parentCode} 와(과)의 연결이 해제되었습니다.`);
+};
+
 window.V.docs = (tab) => {
   if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
   else { window.dtab = tab || window.dtab; }
@@ -922,48 +952,47 @@ window.V.docs = (tab) => {
     const root = { children: [] };
     const nodeMap = {};
     
-    S.tasks.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'tasks', children: [], _isOrphan: true });
-    S.docs.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'docs', children: [], _isOrphan: true });
-    S.terms.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'terms', children: [], _isOrphan: true });
-    S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [], _isOrphan: true });
-    S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [], _isOrphan: true });
+    S.tasks.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'tasks', children: [] });
+    S.docs.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'docs', children: [] });
+    S.terms.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'terms', children: [] });
+    S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [] });
+    S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [] });
     
+    // 트리를 그리기 위해 참조 관계에 따라 children 배열에 복사본을 삽입
     S.docs.forEach(d => {
-        const n = nodeMap[d.code];
         if (d.parentDoc && nodeMap[d.parentDoc]) {
-            nodeMap[d.parentDoc].children.push(n);
+            nodeMap[d.parentDoc].children.push({...nodeMap[d.code]});
         } else if (d.tskRef && window.parseRef(d.tskRef).length > 0) {
             window.parseRef(d.tskRef).forEach(pCode => {
-                if (nodeMap[pCode]) nodeMap[pCode].children.push(n);
+                if (nodeMap[pCode]) nodeMap[pCode].children.push({...nodeMap[d.code]});
             });
         } else {
-            root.children.push(n);
+            root.children.push({...nodeMap[d.code]});
         }
     });
     
     const linkNode = (item, possibleParents) => {
-        const n = nodeMap[item.code];
         let placedInTree = false;
         for (let pField of possibleParents) {
             if (item[pField]) {
                 const refs = window.parseRef(item[pField]);
                 refs.forEach(refCode => {
                     if (nodeMap[refCode]) {
-                        nodeMap[refCode].children.push(n);
+                        nodeMap[refCode].children.push({...nodeMap[item.code]});
                         placedInTree = true;
                     }
                 });
             }
         }
-        if (!placedInTree) root.children.push(n);
+        if (!placedInTree) root.children.push({...nodeMap[item.code]});
     };
 
     S.terms.forEach(t => linkNode(t, ['docRef', 'tskRef']));
     S.exps.forEach(e => linkNode(e, ['docRef', 'tskRef']));
     S.dats.forEach(d => linkNode(d, ['docRef', 'tskRef']));
-    S.tasks.forEach(t => root.children.push(nodeMap[t.code]));
+    S.tasks.forEach(t => root.children.push({...nodeMap[t.code]}));
 
-    const renderTreeNode = (n, depth = 0) => {
+    const renderTreeNode = (n, parentCode, parentArrKey, depth = 0) => {
         if (depth > 15) return ''; 
         const hasChild = n.children && n.children.length > 0;
         const exp = window.relExpanded[n.code];
@@ -971,6 +1000,8 @@ window.V.docs = (tab) => {
         const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
         const title = n[nameField] || '미입력';
         
+        const unlinkBtn = parentCode ? `<button class="rel-unlink-btn" title="연결 해제" onclick="window.unlinkRel('${n.code}', '${n.arrKey}', '${parentCode}', '${parentArrKey}', event)">✕</button>` : '';
+
         return `
             <div style="margin-top:2px;">
                 <div class="tree-node" 
@@ -983,14 +1014,14 @@ window.V.docs = (tab) => {
                     <div class="tree-content">
                         ${window.badge(n.code)}
                         <span style="font-size:12px;font-weight:500;">${String(title).replace(/"/g,'&quot;')}</span>
+                        ${unlinkBtn}
                     </div>
                 </div>
-                ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, depth + 1)).join('')}</div>` : ''}
+                ${hasChild && exp ? `<div class="tree-children">${n.children.map(c => renderTreeNode(c, n.code, n.arrKey, depth + 1)).join('')}</div>` : ''}
             </div>
         `;
     };
     
-    // 연결 / 미연결 상태 분리
     let orphans = [];
     let connectedFlat = [];
     ['tasks','docs','exps','terms','dats'].forEach(k => {
@@ -1018,7 +1049,7 @@ window.V.docs = (tab) => {
         `;
     };
 
-    const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, 0)).join('');
+    const tasksHtml = root.children.filter(c => c.arrKey === 'tasks').map(c => renderTreeNode(c, null, null, 0)).join('');
     const orphansHtml = orphans.map(renderFlatNode).join('');
     const connectedHtml = connectedFlat.map(renderFlatNode).join('');
     
@@ -1026,11 +1057,10 @@ window.V.docs = (tab) => {
       <div class="stabs">${stH}</div>
       <div style="flex:1; padding:18px; min-width:0; min-height:0; display:flex; flex-direction:column;">
         <div class="banner" style="margin-bottom:14px; flex-shrink:0;">
-          좌측 트리의 항목을 마우스로 드래그하여 다른 과제나 문서에 <strong>중복 종속</strong>시킬 수 있습니다. 연결을 완전히 끊으려면 가장 우측 상단의 <strong>미연결 고립 항목</strong> 영역으로 빼주세요.
+          좌측 트리의 항목을 마우스로 드래그하여 다른 과제나 문서에 <strong>중복 종속</strong>시킬 수 있습니다. 하위 항목 우측에 나타나는 <strong>✕ 버튼</strong>을 눌러 개별 연결만 끊거나, 우측 상단으로 드래그하여 모든 연결을 해제하세요.
         </div>
         <div style="display:flex; flex:1; gap:14px; overflow:hidden;">
             
-            <!-- Left Tree -->
             <div class="card" style="flex:1.4; display:flex; flex-direction:column; overflow:hidden;">
                 <div class="sec"><h3>데이터 연결 트리 (과제 및 하위 구조)</h3></div>
                 <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
@@ -1041,7 +1071,6 @@ window.V.docs = (tab) => {
                 </div>
             </div>
             
-            <!-- Right Panels (Orphans & Connected) -->
             <div style="width:340px; display:flex; flex-direction:column; gap:14px; overflow:hidden; flex-shrink:0;">
                 <div class="card" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background:#FCEBEB; border-color:#F7C1C1; padding:12px;">
                     <div class="sec" style="margin-bottom:8px;"><h3 style="color:#791F1F; font-size:12px;">미연결 고립 항목</h3></div>
