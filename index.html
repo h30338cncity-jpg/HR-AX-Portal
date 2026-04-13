@@ -454,6 +454,49 @@ window.redo = () => {
   window.toast('다시 실행했습니다.');
 };
 
+window.handleLogin = () => {
+  const id = document.getElementById('login-id').value;
+  const pw = document.getElementById('login-pw').value;
+  if (id === 'admin' && pw === 'admin') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    initAuth();
+  } else { document.getElementById('login-err').style.display = 'block'; }
+};
+
+const initAuth = async () => {
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    await signInAnonymously(auth).catch(e => { alert("Firebase 인증 실패: " + e.message); });
+    userDocRef = doc(db, 'hr-ax-portal', 'global', 'data', 'shared_state');
+    
+    try {
+        const snap = await getDoc(userDocRef);
+        if (snap.exists()) {
+            const data = snap.data();
+            Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
+            
+            S.edgeDetails = data.edgeDetails || {};
+            if(data.edgeTypes && Object.keys(data.edgeTypes).length > 0) {
+                Object.keys(data.edgeTypes).forEach(k => {
+                    if(!S.edgeDetails[k]) S.edgeDetails[k] = { type: data.edgeTypes[k], clause:'', relevance:'참고', verbatim:'' };
+                });
+                S.edgeTypes = {};
+            }
+        } else {
+            await setDoc(userDocRef, window.buildDataToSave());
+        }
+        window.recomputeAll();
+        window.go('home');
+    } catch (err) {
+        alert("데이터베이스 연결 실패: " + err.message);
+        window.go('home');
+    }
+  } catch(e) { window.go('home'); }
+};
+
 document.addEventListener('keydown', (e) => {
   if(e.ctrlKey && e.key.toLowerCase() === 'k') {
       e.preventDefault(); 
@@ -1447,7 +1490,7 @@ window.applyAddRelEdge = () => {
         document.getElementById('add-rel-edge-modal').style.display = 'none';
         window.toast('새로운 연결 엣지가 추가되었습니다.');
     } else {
-        window.toast('지원하지 않는 상/하위 방향입니다.');
+        window.toast('지원하지 않는 상하위 방향입니다.');
     }
 };
 
@@ -1546,8 +1589,7 @@ window.V.docs = (tab) => {
 
   if (window.dtab === 'rel') {
     const allEdges = window.getAllEdges();
-    const selEdge = window.selectedEdgeId ? allEdges.find(e => e.id === window.selectedEdgeId) : null;
-
+    
     const root = { children: [] };
     const nodeMap = {};
     
@@ -2202,7 +2244,7 @@ window.renderOAb = () => {
         <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed #e2e8f0; cursor:pointer; transition:background 0.1s; border-radius:4px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="window.oSelN('${relatedNodeId}')">
             <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-left:4px;"></div>
             <div style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155">${String(o?.label).replace(/"/g,'&quot;')}</div>
-            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeDetail('${e.id}', 'type', this.value)" onclick="event.stopPropagation()">
+            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeType('${e.id}', this.value)" onclick="event.stopPropagation()">
                 <option value="상/하위 종속" ${e.rtype==='상/하위 종속'?'selected':''}>상/하위 종속</option>
                 <option value="단순 참조" ${e.rtype==='단순 참조'?'selected':''}>단순 참조</option>
                 <option value="필수 준수" ${e.rtype==='필수 준수'?'selected':''}>필수 준수</option>
@@ -2232,7 +2274,6 @@ window.renderOAb = () => {
   b.innerHTML = html;
 };
 
-// D3 Logic (고정형 스윔레인 + 엣지 툴팁 적용)
 window.initOG = () => {
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
@@ -2257,7 +2298,6 @@ window.initOG = () => {
   });
 
   const df = window.oSvg.append('defs');
-  // 세 가지 상태의 화살표 마커 생성 (기본, 필수, 충돌가능)
   df.append('marker').attr('id','oarr-gray').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#cbd5e1').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-blue').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#3B82F6').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-red').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#EF4444').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
@@ -2291,7 +2331,6 @@ window.initOG = () => {
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
   
-  // 가시적 패스 (Visible Path)
   eS.append('path')
     .attr('class', 'visible-edge')
     .attr('fill','none')
@@ -2328,7 +2367,6 @@ window.initOG = () => {
         return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
     });
   
-  // 텍스트 라벨
   eS.append('text')
     .attr('text-anchor','middle')
     .attr('font-size','9px')
@@ -2339,7 +2377,6 @@ window.initOG = () => {
     .attr('y', d => (d.source.y + d.target.y) / 2 - 6)
     .text(d => d.rtype);
 
-  // 이벤트 수신용 투명 두꺼운 패스 (Hit Path)
   eS.append('path')
     .attr('class', 'hit-edge')
     .attr('fill', 'none')
@@ -2437,7 +2474,6 @@ window.resetOLayout = () => { window.V.onto(); };
 window.oZS = (k) => window.oSvg?.transition().duration(300).call(window.oZoom.scaleBy,k);
 window.oZF = () => { window.oSvg?.transition().duration(400).call(window.oZoom.transform, d3.zoomIdentity.translate(0,30).scale(0.9)); };
 
-// ── POC ──────────────────────────────────────────────
 window.V.poc = () => {
   document.getElementById('pg-actions').innerHTML=`
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('pocs')">🔢 코드 순번 정렬</button>
@@ -2485,7 +2521,6 @@ window.V.poc = () => {
 
 window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:'',_locked:false}); window.stateChanged(); };
 
-// ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addMember()">+ 팀원 추가</button>`;
   document.getElementById('content').innerHTML=`
@@ -2498,4 +2533,79 @@ window.V.team = () => {
               <div class="emoji-picker" id="ep-${i}">
                 <div class="emoji-btn" onclick="window.toggleEmoji(${i}, event)">${m.emoji||'👤'}</div>
                 <div class="emoji-grid" id="eg-${i}" style="display:none;">
-                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤
+                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'].map(e=>`<div class="emoji-item" onclick="window.setEmoji(${i}, '${e}')">${e}</div>`).join('')}
+                </div>
+              </div>
+              <button class="del-btn" onclick="window.pushHistory(); S.team.splice(${i},1); window.stateChanged()">×</button>
+            </div>
+            <input class="tci nm" placeholder="이름" value="${m.name||''}" onchange="window.pushHistory(); S.team[${i}].name=this.value; window.saveStateFn()">
+            <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" onchange="window.pushHistory(); S.team[${i}].role=this.value; window.saveStateFn()">
+            <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
+            <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" onchange="window.pushHistory(); S.team[${i}].note=this.value; window.saveStateFn()"></div>
+          </div>`).join('')}</div>
+      </div>
+    </div>`;
+};
+
+window.addMember = () => { window.pushHistory(); S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
+
+window.closeUploadModal = () => {
+  document.getElementById('upload-modal').style.display = 'none';
+  pendingUploadData = null;
+};
+
+window.applyUpload = (mode) => {
+  if (!pendingUploadData) return;
+  window.pushHistory();
+  const wb = pendingUploadData;
+  const sm = {'1_TSK_과제':'tasks','2_DOC_기준문서':'docs','3_EXP_예외기준':'exps','4_TRM_용어객체':'terms','5_DAT_데이터셋':'dats'};
+  
+  if (mode === 'overwrite') {
+    for (let nm in sm) {
+      if (wb.Sheets[nm]) S[sm[nm]] = []; 
+    }
+  }
+
+  for (let nm in sm) {
+    if(wb.Sheets[nm]) {
+      let arr = XLSX.utils.sheet_to_json(wb.Sheets[nm]);
+      let target = S[sm[nm]];
+      arr.forEach(row => {
+        if(row['코드']) {
+          let existing = target.find(x => x.code === row['코드']);
+          if(!existing) { existing = {code: row['코드'], _locked: false}; target.push(existing); }
+          Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
+        }
+      });
+    }
+  }
+  window.stateChanged();
+  window.closeUploadModal();
+  window.toast(mode === 'overwrite' ? 'Excel 데이터 덮어쓰기 완료' : 'Excel 데이터 추가 완료');
+};
+
+window.handleExcelUpload = (e) => {
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const data = new Uint8Array(evt.target.result);
+    pendingUploadData = XLSX.read(data, {type: 'array'});
+    document.getElementById('upload-modal').style.display = 'flex';
+    e.target.value = ''; 
+  };
+  reader.readAsArrayBuffer(f);
+};
+
+window.getKeyByHeader = (sheet, hdr) => {
+  const m = {
+    '과제명':'name', '담당자':'assignee', '과제 목적':'purpose', '진행상황':'status', '비고':'note',
+    '구분':'dtype', '문서명/조항':'name', '핵심 내용':'summary', '소관 부서':'dept', '현행화':'cur', '위치':'loc', '관련 TSK':'tskRef', '문제유형':'issueType', '보완 방향':'action',
+    '예외상황/기준명':'sit', '처리 방법':'hand', '판단 주체':'owner', '기준 유무':'rule', 'AI 처리':'ai', '관련 DOC':'docRef',
+    '용어명':'term', '정의':'def', '객체 유형':'otype', '상위 객체':'parent', '하위 객체':'child', '유사어':'sim',
+    '항목명':'name', '데이터 형태':'dtype', '출처':'src', '보유 여부':'own', '수집 주기':'cycle', '민감도':'sens', '관련 TRM':'trmRef', '비고(품질이슈 등)':'note'
+  };
+  return m[hdr] || hdr;
+};
+</script>
+</body>
+</html>
