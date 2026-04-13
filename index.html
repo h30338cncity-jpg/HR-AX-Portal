@@ -233,9 +233,9 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="sb-item" id="n-objects" onclick="window.goModule('objects', 'obj', this)"><span class="sb-ic">💎</span>확정 객체 (표준)</div>
     
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
-   <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
-    <div class="sb-item" id="n-objrel" onclick="window.goModule('objrel', 'objrel', this)"><span class="sb-ic">🔀</span>객체 간 연결</div>
-    <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
+    <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>① 관계 정의 (문서·과제)</div>
+    <div class="sb-item" id="n-objrel" onclick="window.goModule('objrel', 'objrel', this)"><span class="sb-ic">🔀</span>② 객체 간 연결 (의미)</div>
+    <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>③ 온톨로지 맵</div>
     
     <div class="sb-sec">Phase 4 · 시스템 구현</div>
     <div class="sb-item" id="n-data" onclick="window.goModule('data', 'data', this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
@@ -3061,7 +3061,7 @@ window.V.objrel = () => {
       </div>
       <div class="tw" style="flex:1; overflow:auto;">
         <table>
-          <thead><tr><th>주어 (Subject)</th><th style="text-align:center;">관계 유형 (Predicate)</th><th>대상 (Object)</th><th style="width:30px"></th></tr></thead>
+          <thead><tr><th>주어 (Subject)</th><th style="text-align:center;">관계 유형 (Predicate)</th><th>대상 (Object)</th><th>출처 문서(DOC)</th><th>출처 과제(TSK)</th><th style="width:30px"></th></tr></thead>
           <tbody>
             ${objs.flatMap(o => window.parseRef(o.child).filter(c=>c).map(childCode => {
               const childObj = S.terms.find(t=>t.code===childCode);
@@ -3070,9 +3070,11 @@ window.V.objrel = () => {
                 <td>${window.badge(o.code)} <span style="font-size:12px;">${o.term}</span></td>
                 <td style="text-align:center;"><span class="pill" style="background:#EEEDFE;color:#3C3489;">하위 개념</span></td>
                 <td>${window.badge(childCode)} <span style="font-size:12px;">${childObj.term||''}</span></td>
+                <td style="font-size:11px;">${window.fmtCodeList(window.parseRef(o.docRef))}</td>
+                <td style="font-size:11px;">${window.fmtCodeList(window.parseRef(o.tskRef))}</td>
                 <td><button class="del-btn" onclick="window.pushHistory(); const p=S.terms.find(t=>t.code==='${o.code}'); if(p){p.child=window.parseRef(p.child).filter(c=>c!=='${childCode}').join(', ');} window.stateChanged();">×</button></td>
               </tr>`;
-            })).join('') || `<tr><td colspan="4" style="text-align:center;padding:20px;color:gray;">등록된 객체 관계가 없습니다.</td></tr>`}
+            })).join('') || `<tr><td colspan="6" style="text-align:center;padding:20px;color:gray;">등록된 객체 관계가 없습니다.</td></tr>`}
           </tbody>
         </table>
       </div>
