@@ -27,7 +27,9 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 
 /* Global Search */
 .global-search-wrap { position:relative; display:flex; align-items:center; margin-left:14px; }
-.global-search-input { width:220px; padding:6px 12px 6px 30px; border-radius:20px; border:1px solid var(--color-border-secondary); font-size:12px; outline:none; background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 10px center; transition:border-color 0.2s; }
+.global-search-input { width:220px; padding:6px 12px 6px 30px; border-radius:20px; border:1px solid var(--color-border-secondary); font-size:12px; outline:none;
+background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 10px center;
+transition:border-color 0.2s; }
 .global-search-input:focus { border-color:#1D9E75; }
 .search-dropdown { position:absolute; top:36px; left:0; width:400px; max-height:400px; overflow-y:auto; background:#fff; border:1px solid var(--color-border-tertiary); border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:10000; display:none; flex-direction:column; }
 .search-dropdown.active { display:flex; }
@@ -66,10 +68,6 @@ mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
 /* New Home Cards */
 .h-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer; }
 .h-card:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.05); }
-.hc-tsk { border-left:4px solid #3730A3; }
-.hc-doc { border-left:4px solid #1D4ED8; }
-.hc-dat { border-left:4px solid #0369A1; }
-.hc-poc { border-left:4px solid #0F766E; }
 
 /* Table */
 .tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
@@ -213,8 +211,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 <div id="login-screen">
   <div class="login-box">
     <h2 style="text-align:center;margin-bottom:10px">AX 포털 로그인</h2>
-    <input type="text" id="login-id" class="login-input" placeholder="아이디" onkeypress="if(event.key==='Enter') handleLogin()">
-    <input type="password" id="login-pw" class="login-input" placeholder="비밀번호" onkeypress="if(event.key==='Enter') handleLogin()">
+    <input type="text" id="login-id" class="login-input" placeholder="아이디 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
+    <input type="password" id="login-pw" class="login-input" placeholder="비밀번호 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
     <button class="login-btn" onclick="handleLogin()">로그인</button>
     <div id="login-err" style="color:#E24B4A;font-size:11px;text-align:center;display:none">아이디 또는 비밀번호를 확인해주세요.</div>
   </div>
@@ -227,22 +225,26 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
       <p>AI Transformation 통합 관리</p>
     </div>
     <div class="sb-sec">메인</div>
-    <div class="sb-item active" id="n-home" onclick="window.go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
+    <div class="sb-item active" id="n-home" onclick="window.goModule('home', 'home', this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
     <div class="sb-sec">Phase 1 · 기준 확립</div>
-    <div class="sb-item" id="n-tasks" onclick="window.go('tasks',this)"><span class="sb-ic">📋</span>업무 과제 관리</div>
-    <div class="sb-item" id="n-docs" onclick="window.go('docs',this)"><span class="sb-ic">📄</span>표준문서 관리</div>
+    <div class="sb-item" id="n-tasks" onclick="window.goModule('tasks', 'tasks', this)"><span class="sb-ic">📋</span>업무 과제 관리</div>
+    <div class="sb-item" id="n-docs" onclick="window.goModule('standard', 'doc', this)"><span class="sb-ic">📄</span>표준문서 관리</div>
+    
     <div class="sb-sec">Phase 2 · 언어·개념 체계화</div>
-    <div class="sb-item" id="n-terms" onclick="window.currentView='docs'; window.dtab='trm'; window.go('docs',this)"><span class="sb-ic">📝</span>용어·객체 정의</div>
-    <div class="sb-item" id="n-aiext" onclick="window.go('aiext',this)"><span class="sb-ic">🔍</span>용어 추출 AI<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:#FAEEDA;color:#633806;margin-left:auto;">예정</span></div>
+    <div class="sb-item" id="n-terms" onclick="window.goModule('terms', 'trm', this)"><span class="sb-ic">📝</span>용어·객체 정의</div>
+    <div class="sb-item" id="n-aiext" onclick="window.goModule('aiext', 'aiext', this)"><span class="sb-ic">🔍</span>용어 추출 AI<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:#FAEEDA;color:#633806;margin-left:auto;">예정</span></div>
+    
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
-    <div class="sb-item" id="n-rel" onclick="window.currentView='docs'; window.dtab='rel'; window.go('docs',this)"><span class="sb-ic">🔗</span>관계 정의</div>
-    <div class="sb-item" id="n-onto" onclick="window.go('onto',this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
+    <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
+    <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
+    
     <div class="sb-sec">Phase 4 · 시스템 구현</div>
-    <div class="sb-item" id="n-data" onclick="window.go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
-    <div class="sb-item" id="n-poc" onclick="window.go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
-    <div class="sb-item" id="n-rag" onclick="window.go('rag',this)"><span class="sb-ic">📐</span>RAG 설계</div>
+    <div class="sb-item" id="n-data" onclick="window.goModule('data', 'data', this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
+    <div class="sb-item" id="n-poc" onclick="window.goModule('poc', 'poc', this)"><span class="sb-ic">🧪</span>PoC 현황</div>
+    <div class="sb-item" id="n-rag" onclick="window.goModule('rag', 'rag', this)"><span class="sb-ic">📐</span>RAG 설계</div>
+    
     <div class="sb-sec">팀</div>
-    <div class="sb-item" id="n-team" onclick="window.go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
+    <div class="sb-item" id="n-team" onclick="window.goModule('team', 'team', this)"><span class="sb-ic">👥</span>팀원 R&R</div>
   </div>
   <div class="main">
     <div class="topbar">
@@ -282,8 +284,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <h3 style="font-weight:700;margin-bottom:12px">Excel 업로드 방식 선택</h3>
     <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">
       업로드할 데이터를 어떻게 처리할까요?<br><br>
-      • <strong style="color:#E24B4A">덮어쓰기:</strong> 포털의 기존 데이터를 지문을 지우고 엑셀 파일의 내용으로 완전히 교체합니다.<br><br>
-      • <strong style="color:#1D9E75">추가하기:</strong> 기존 데이터를 유지한 상태에서 엑셀 파일의 내용을 하단에 추가(병합)합니다.
+      • <strong style="color:#E24B4A">덮어쓰기:</strong> 포털의 기존 데이터를 지우고 엑셀 파일의 내용으로 완전히 교체합니다.<br><br>
+      • <strong style="color:#1D9E75">추가하기:</strong> 기존 데이터를 유지한 상태에서 엑셀 파일의 내용을 하단에 추가합니다.
     </p>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-o" onclick="window.closeUploadModal()">취소</button>
@@ -365,6 +367,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+// 추후 보안 규칙 및 ENV 처리가 필요한 부분
 const firebaseConfig = {
   apiKey: "AIzaSyAv4SD_lsng3eYiOkH5pzS1Va2qF_V4Tjw",
   authDomain: "hr-ax-portal.firebaseapp.com",
@@ -398,7 +401,8 @@ window.S = {
   },
   ragChunks: [],
   ragRetrieval: { embedModel:'', topK:'', searchType:'Dense', rerankModel:'', filterStrategy:'' },
-  ragPrompt: { systemRole:'', contextFormat:'단순 나열', outputFormat:'자유 텍스트', citation:'인용 필요', memo:''}
+  ragPrompt: { systemRole:'', contextFormat:'단순 나열', outputFormat:'자유 텍스트', citation:'인용 필요', memo:''},
+  manualChecks: {} // 수동 체크 상태 저장 (추가됨)
 };
 
 window.REQ_FIELDS = {
@@ -412,6 +416,7 @@ window.REQ_FIELDS = {
 window.orphanRefs = [];
 window.missingRequired = [];
 
+window.activeModule = 'home'; // 모듈(메뉴) 상태 관리
 window.currentView = 'home';
 window.docSearchQuery = '';
 window.docFilterVal = '';
@@ -421,13 +426,14 @@ window.colWidths = window.colWidths || {};
 window.relSelectedNode = null;
 window.relSelectedEdgeId = null;
 window.relShowAllEdges = false;
+
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
 
 window.ontoExpanded = window.ontoExpanded || new Set();
 window.ontoExpandedEdge = null;
-
 window.phExpanded = window.phExpanded || new Set();
+
 window.togglePhase = (id) => {
     if(window.phExpanded.has(id)) window.phExpanded.delete(id);
     else window.phExpanded.add(id);
@@ -451,6 +457,7 @@ window.undo = () => {
   window.redoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.undoStack.pop()));
   if(!window.S.edgeDetails) window.S.edgeDetails = {};
+  if(!window.S.manualChecks) window.S.manualChecks = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('실행 취소했습니다.');
@@ -462,6 +469,7 @@ window.redo = () => {
   window.undoStack.push(JSON.stringify(window.buildDataToSave()));
   Object.assign(window.S, JSON.parse(window.redoStack.pop()));
   if(!window.S.edgeDetails) window.S.edgeDetails = {};
+  if(!window.S.manualChecks) window.S.manualChecks = {};
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('다시 실행했습니다.');
@@ -496,14 +504,12 @@ window.performGlobalSearch = () => {
 
     const results = { tasks: [], docs: [], exps: [], terms: [], dats: [], pocs: [] };
     const labels = { tasks:'과제 (TSK)', docs:'기준문서 (DOC)', exps:'예외기준 (EXP)', terms:'용어·객체 (TRM)', dats:'데이터셋 (DAT)', pocs:'PoC 현황' };
-
     const highlight = (text) => {
         if(!text) return '';
         const str = String(text);
         const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         return str.replace(regex, '<mark>$1</mark>');
     };
-
     const searchObj = (obj, arrKey) => {
         let matched = false;
         let matchText = '';
@@ -541,7 +547,6 @@ window.performGlobalSearch = () => {
             });
         }
     });
-
     if (total === 0) {
         html = `<div style="padding:15px; text-align:center; color:gray;">검색 결과가 없습니다.</div>`;
     }
@@ -628,7 +633,6 @@ window.editableCode = (arrKey, row, hasWarning = false) => {
   const readonly = isLocked ? 'readonly' : '';
   const style = isLocked ? 'opacity:0.7;cursor:not-allowed;background:transparent!important;border:none;' : '';
   const warnIconHtml = hasWarning ? `<span title="필수 입력 항목 누락" style="color:#E24B4A;font-size:12px;margin-right:2px;cursor:help;">⚠️</span>` : '';
-  
   return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
             ${warnIconHtml}
             <button class="btn-sm" style="padding:0;background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" onclick="window.toggleLock('${arrKey}', '${code}')" title="${isLocked ? '코드 잠금 해제' : '코드 확정(잠금)'}">${lockIcon}</button>
@@ -701,7 +705,6 @@ window.rowDragStart = (e, arrKey, code) => {
     window.draggedRow = { arrKey, code };
     e.dataTransfer.effectAllowed = 'move';
 };
-
 window.rowDrop = (e, arrKey, targetCode) => {
     e.preventDefault();
     if(!window.draggedRow.code || window.draggedRow.arrKey !== arrKey || window.draggedRow.code === targetCode) return;
@@ -730,7 +733,6 @@ window.reorderCodes = (arrKey) => {
             lockedByPrefix[pfx].add(num);
         }
     });
-
     let currentCounter = {};
     let changedCount = 0;
 
@@ -740,18 +742,19 @@ window.reorderCodes = (arrKey) => {
             if(match) {
                 const pfx = match[1];
                 if(!currentCounter[pfx]) currentCounter[pfx] = 1;
+              
                 while(lockedByPrefix[pfx] && lockedByPrefix[pfx].has(currentCounter[pfx])) currentCounter[pfx]++;
                 const newCode = pfx + '-' + String(currentCounter[pfx]).padStart(3, '0');
                 if (item.code !== newCode) {
                     window.replaceReferences(item.code, newCode);
                     item.code = newCode;
+        
                     changedCount++;
                 }
                 currentCounter[pfx]++;
             }
         }
     });
-
     window.stateChanged();
     window.toast(`순차 정렬 완료 (${changedCount}건이 변경되었습니다.)`);
 };
@@ -832,6 +835,8 @@ window.recomputeAll = () => {
 window.stateChanged = () => {
   window.recomputeAll();
   if (window.saveStateFn && !window.isHistoryAction) window.saveStateFn();
+  
+  if (window.currentView === 'home') window.V.home();
   if (window.currentView === 'docs') window.V.docs(window.dtab);
   if (window.currentView === 'team') window.V.team();
   if (window.currentView === 'poc') window.V.poc();
@@ -855,7 +860,6 @@ window.getAllEdges = () => {
             edges.push({ id, source: src, target: tgt, detail: det });
         }
     };
-
     S.docs.forEach(d => {
         window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '단순 참조'));
         if(d.parentDoc) addEdge(d.parentDoc, d.code, '상/하위 종속');
@@ -873,7 +877,6 @@ window.getAllEdges = () => {
         window.parseRef(e.tskRef).forEach(c => addEdge(c, e.code, '예외 처리'));
         window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외 처리'));
     });
-
     return edges;
 };
 
@@ -894,27 +897,22 @@ window.createLinkCore = (pCode, cCode, relType) => {
 
     const pType = pCode.split('-')[0];
     const cType = cCode.split('-')[0];
-
     if(pType==='TSK' && cType==='DOC') return link(pCode, cCode, 'docs', 'tskRef');
     if(pType==='TSK' && cType==='TRM') return link(pCode, cCode, 'terms', 'tskRef');
     if(pType==='TSK' && cType==='DAT') return link(pCode, cCode, 'dats', 'tskRef');
     if(pType==='TSK' && cType==='EXP') return link(pCode, cCode, 'exps', 'tskRef');
-
     if(pType==='DOC' && cType==='DOC') return link(pCode, cCode, 'docs', 'parentDoc');
     if(pType==='DOC' && cType==='TRM') return link(pCode, cCode, 'terms', 'docRef');
     if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
     if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
-    
     if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
     
     return false;
 };
-
 window.parseType = (code) => {
     const pfx = code.split('-')[0];
     return {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats'}[pfx];
 };
-
 window.deleteEdge = (id, src, tgt) => {
     const srcArrKey = window.parseType(src);
     const tgtArrKey = window.parseType(tgt);
@@ -945,7 +943,6 @@ window.handleSelectChange = (arrKey, code, field, val, oldVal) => {
   }
   window.stateChanged();
 };
-
 window.initResizers = () => {
   document.querySelectorAll('th[data-wkey]').forEach(th => {
     th.style.position = 'relative';
@@ -992,21 +989,18 @@ window.openMs = (arrKey, rowCode, field, type) => {
       opts.push({ v: val, l: val, sub: '삭제된 항목', deleted: true });
     }
   });
-
   msState = { arrKey, rowCode, field, type, opts, valArr };
   document.getElementById('ms-search').value = '';
   window.renderMsList();
   document.getElementById('ms-modal').style.display = 'flex';
   document.getElementById('ms-search').focus();
 };
-
 window.filterMs = () => window.renderMsList();
 
 window.renderMsList = () => {
   const q = document.getElementById('ms-search').value.toLowerCase();
   const filtered = msState.opts.filter(o => o.v.toLowerCase().includes(q) || o.l.toLowerCase().includes(q) || (o.sub||'').toLowerCase().includes(q));
   const listEl = document.getElementById('ms-list');
-
   if (msState.type === 'DOC') {
     const rows = filtered.map(o => `
       <tr>
@@ -1022,7 +1016,8 @@ window.renderMsList = () => {
           <div class="ms-item">
             <input type="checkbox" id="ms-${o.v}" value="${o.v}" ${msState.valArr.includes(o.v)?'checked':''}>
             <label for="ms-${o.v}" style="${o.deleted?'color:#E24B4A;text-decoration:line-through':''}">${msState.type!=='TEAM'?window.badge(o.v):''} <strong>${o.l}</strong> <span style="color:gray;font-size:11px">(${o.sub||''})</span></label>
-          </div>`).join('') || '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}</div>`;
+          </div>`).join('') ||
+          '<div style="padding:15px;text-align:center;color:gray">항목이 없습니다</div>'}</div>`;
   }
 };
 
@@ -1038,7 +1033,6 @@ window.applyMs = () => {
 };
 
 let tmState = { arrKey:'', rowCode:'', field:'' };
-
 window.openTm = (arrKey, rowCode, field, title) => {
   const row = S[arrKey].find(x=>x.code===rowCode);
   tmState = { arrKey, rowCode, field };
@@ -1047,7 +1041,6 @@ window.openTm = (arrKey, rowCode, field, title) => {
   document.getElementById('text-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('tm-input').focus(), 50);
 };
-
 window.applyTm = () => {
   const val = document.getElementById('tm-input').value;
   const row = S[tmState.arrKey].find(x=>x.code===tmState.rowCode);
@@ -1063,7 +1056,6 @@ window.toggleEmoji = (idx, e) => {
   eg.style.display = eg.style.display === 'none' ? 'grid' : 'none';
 };
 window.setEmoji = (idx, emoji) => { window.pushHistory(); S.team[idx].emoji = emoji; window.stateChanged(); };
-
 document.addEventListener('click', (e) => { if(!e.target.closest('.emoji-picker')) document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); });
 
 window.goToItem = (arrKey, code) => {
@@ -1072,10 +1064,10 @@ window.goToItem = (arrKey, code) => {
     const map = { tasks: 'tasks', docs: 'doc', exps: 'exp', terms: 'trm', dats: 'dat', pocs: 'poc' };
     const tab = map[arrKey];
 
-    if(arrKey === 'tasks') window.go('tasks');
-    else if(arrKey === 'pocs') window.go('poc');
+    if(arrKey === 'tasks') window.goModule('tasks', 'tasks');
+    else if(arrKey === 'pocs') window.goModule('poc', 'poc');
     else {
-        window.go('docs');
+        window.activeModule = 'all'; // 전체 탭 노출
         if (arrKey === 'docs') {
             const docItem = S.docs.find(d => d.code === code);
             if(docItem) {
@@ -1084,7 +1076,9 @@ window.goToItem = (arrKey, code) => {
                 window.docSubTab = dt;
             }
         }
-        window.V.docs(tab);
+        window.dtab = tab;
+        window.currentView = 'docs';
+        window.go('docs');
     }
 
     setTimeout(() => {
@@ -1142,7 +1136,6 @@ window.openReqModal = () => {
 // ── LOGIN & FIREBASE ─────────────────────────────────
 let db, auth, userDocRef;
 let saveTimeout;
-
 window.handleLogin = () => {
   const id = document.getElementById('login-id').value;
   const pw = document.getElementById('login-pw').value;
@@ -1168,12 +1161,7 @@ const initAuth = async () => {
             Object.keys(data).forEach(k => { if(S[k] !== undefined) S[k] = data[k]; });
             
             S.edgeDetails = data.edgeDetails || {};
-            if(data.edgeTypes && Object.keys(data.edgeTypes).length > 0) {
-                Object.keys(data.edgeTypes).forEach(k => {
-                    if(!S.edgeDetails[k]) S.edgeDetails[k] = { type: data.edgeTypes[k], clause:'', relevance:'참고', verbatim:'' };
-                });
-                S.edgeTypes = {};
-            }
+            S.manualChecks = data.manualChecks || {}; // 수동 체크 동기화
 
             if(!S.ragChunks) S.ragChunks = [];
             if(!S.ragRetrieval) S.ragRetrieval = {embedModel:'',topK:'',searchType:'Dense',rerankModel:'',filterStrategy:''};
@@ -1182,12 +1170,12 @@ const initAuth = async () => {
             await setDoc(userDocRef, window.buildDataToSave());
         }
         window.recomputeAll();
-        window.go('home');
+        window.goModule('home', 'home');
     } catch (err) {
         alert("데이터베이스 연결 실패: " + err.message);
-        window.go('home');
+        window.goModule('home', 'home');
     }
-  } catch(e) { window.go('home'); }
+  } catch(e) { window.goModule('home', 'home'); }
 };
 
 window.buildDataToSave = () => {
@@ -1202,7 +1190,8 @@ window.buildDataToSave = () => {
     edgeDetails: S.edgeDetails || {},
     ragChunks: S.ragChunks,
     ragRetrieval: S.ragRetrieval,
-    ragPrompt: S.ragPrompt
+    ragPrompt: S.ragPrompt,
+    manualChecks: S.manualChecks || {}
   };
 };
 
@@ -1218,7 +1207,7 @@ window.saveStateFn = () => {
 const titles = {
   home: '홈 대시보드',
   tasks: '업무 과제 관리',
-  docs: '표준문서 관리',
+  docs: '표준문서 및 자산 관리',
   data: '데이터셋 현황',
   onto: '온톨로지 맵',
   poc: 'PoC 현황',
@@ -1228,77 +1217,116 @@ const titles = {
 };
 
 window.V = {};
+
+window.goModule = (mod, tab, el) => {
+    window.activeModule = mod;
+    window.dtab = tab;
+    let viewMap = {
+        'home': 'home', 'tasks': 'tasks', 'standard': 'docs', 'terms': 'docs', 
+        'rel': 'docs', 'onto': 'onto', 'data': 'data', 'poc': 'poc', 'rag': 'rag', 
+        'team': 'team', 'aiext': 'aiext'
+    };
+    window.go(viewMap[mod] || 'docs', el);
+};
+
 window.go = (v, el) => {
   window.currentView = v;
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  (el||document.getElementById('n-'+v))?.classList.add('active');
-  document.getElementById('pg-title').textContent = titles[v] || '';
-  if (v === 'home') {
-      document.getElementById('pg-actions').innerHTML = '';
+  
+  if(el) {
+      el.classList.add('active');
   } else {
-      document.getElementById('pg-actions').innerHTML = '';
+      // Find matching active sidebar item (Fallback)
+      const matchingEl = Array.from(document.querySelectorAll('.sb-item')).find(item => {
+          return item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${window.activeModule}'`);
+      });
+      if(matchingEl) matchingEl.classList.add('active');
   }
 
+  document.getElementById('pg-title').textContent = titles[v] || titles[window.activeModule] || '';
+  document.getElementById('pg-actions').innerHTML = '';
   document.getElementById('content').style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--color-background-tertiary); min-width:0; min-height:0;';
   if(window.V[v]) window.V[v]();
 };
 
 // ── VIEWS ────────────────────────────────────────────
+
+// 홈 대시보드 수동 체크 토글 함수
+window.toggleManualCheck = (pIdx, iIdx) => {
+    window.pushHistory();
+    const key = `p${pIdx}_i${iIdx}`;
+    S.manualChecks[key] = !S.manualChecks[key];
+    window.stateChanged();
+};
+
 window.V.home = () => {
   const edges = window.getAllEdges ? window.getAllEdges() : [];
   const t = S.tasks;
   const done = t.filter(x=>x.status==='완료').length;
   const prog = t.filter(x=>x.status==='진행중').length;
+  
   const checks = [
       {
           phase: 1, title: 'Phase 1 · 기준 확립',
           items: [
-              { label: '업무 과제 등록', done: S.tasks.length > 0 },
-              { label: '표준문서 수집', done: S.docs.length > 0 },
-              { label: '현행화 확인', done: S.docs.filter(d => d.cur === '최신').length > 0 }
+              { label: '업무 과제 등록', key: 'p0_i0' },
+              { label: '표준문서 수집', key: 'p0_i1' },
+              { label: '현행화 확인', key: 'p0_i2' }
           ]
       },
       {
           phase: 2, title: 'Phase 2 · 언어·개념 체계화',
           items: [
-              { label: '핵심 용어 초안 추출', done: S.terms.length > 0 },
-              { label: '용어 정의 확정', done: S.terms.length > 0 && S.terms.filter(t => t.def).length === S.terms.length },
-              { label: '객체 정의', done: S.terms.length > 0 && S.terms.filter(t => t.otype).length === S.terms.length },
-              { label: '동의어·유사어 정리', done: S.terms.filter(t => t.sim).length > 0 }
+              { label: '핵심 용어 초안 추출', key: 'p1_i0' },
+              { label: '용어 정의 확정', key: 'p1_i1' },
+              { label: '객체 정의', key: 'p1_i2' },
+              { label: '동의어·유사어 정리', key: 'p1_i3' }
           ]
       },
       {
           phase: 3, title: 'Phase 3 · 관계·구조 설계',
           items: [
-              { label: '문서 간 관계 정의', done: edges.filter(e => e.source.startsWith('DOC') && e.target.startsWith('DOC')).length > 0 },
-              { label: '용어-문서 연결', done: edges.filter(e => e.source.startsWith('TRM') || e.target.startsWith('TRM')).length > 0 },
-              { label: '데이터셋 연결', done: edges.filter(e => e.source.startsWith('DAT') || e.target.startsWith('DAT')).length > 0 },
-              { label: '온톨로지 확정', done: edges.length >= 5 }
+              { label: '문서 간 관계 정의', key: 'p2_i0' },
+              { label: '용어-문서 연결', key: 'p2_i1' },
+              { label: '데이터셋 연결', key: 'p2_i2' },
+              { label: '온톨로지 확정', key: 'p2_i3' }
           ]
       },
       {
           phase: 4, title: 'Phase 4 · 시스템 구현',
           items: [
-              { label: '데이터셋 수집', done: S.dats.filter(d => d.own === '보유').length > 0 },
-              { label: 'PoC 시나리오 등록', done: S.pocs.length > 0 },
-              { label: 'PoC 완료', done: S.pocs.filter(p => p.status === '완료').length > 0 },
-              { label: '이슈 없음', done: S.pocs.length > 0 && S.pocs.filter(p => p.status === '이슈').length === 0 }
+              { label: '데이터셋 수집', key: 'p3_i0' },
+              { label: 'PoC 시나리오 등록', key: 'p3_i1' },
+              { label: 'PoC 완료', key: 'p3_i2' },
+              { label: '이슈 없음', key: 'p3_i3' }
           ]
       }
   ];
 
-  let activePhaseIdx = checks.findIndex(p => p.items.filter(i => i.done).length < p.items.length);
-  if (activePhaseIdx === -1) activePhaseIdx = 999;
-
   let totalItems = 0;
   let compItems = 0;
+  let activePhaseIdx = -1;
 
-  checks.forEach((p, idx) => {
-      p.doneCount = p.items.filter(i => i.done).length;
+  checks.forEach((p, pIdx) => {
+      p.doneCount = 0;
       p.totalCount = p.items.length;
+      
+      p.items.forEach(item => {
+          item.done = !!S.manualChecks[item.key];
+          if(item.done) p.doneCount++;
+      });
+      
       totalItems += p.totalCount;
       compItems += p.doneCount;
 
+      if(p.doneCount < p.totalCount && activePhaseIdx === -1) {
+          activePhaseIdx = pIdx;
+      }
+  });
+
+  if (activePhaseIdx === -1) activePhaseIdx = 999;
+
+  checks.forEach((p, idx) => {
       if (idx < activePhaseIdx) p.status = 'done';
       else if (idx === activePhaseIdx) p.status = 'active';
       else p.status = 'wait';
@@ -1328,7 +1356,8 @@ window.V.home = () => {
       .ph-header { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; user-select: none; transition: background 0.15s; }
       .ph-header:hover { background: #f8fafc; }
       .ph-body { padding: 0 18px 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed #e2e8f0; margin-top: 4px; padding-top: 14px; }
-      .ph-chk { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+      .ph-chk { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.1s; }
+      .ph-chk:hover { background: #f1f5f9; }
       .ph-chk.done { color: #94a3b8; text-decoration: line-through; }
       .ph-chk-ic { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; background: #fff; transition: all 0.2s; }
       .ph-chk.done .ph-chk-ic { background: #1D9E75; border-color: #1D9E75; color: #fff; }
@@ -1348,7 +1377,7 @@ window.V.home = () => {
     <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
       <div style="background:linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         <div>
-          <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 구축 파이프라인</div>
+          <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 구축 파이프라인 (수동 관리)</div>
           <div style="font-size:13px; opacity:0.9;">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</div>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
@@ -1363,7 +1392,7 @@ window.V.home = () => {
       </div>
 
       <div class="ph-wrap">
-        ${checks.map(p => {
+        ${checks.map((p, pIdx) => {
             const isExp = window.phExpanded.has(p.phase);
             return `
             <div class="ph-step ${p.status}">
@@ -1384,14 +1413,14 @@ window.V.home = () => {
                        </div>
                     </div>
                     <div class="ph-body" style="display: ${isExp ? 'flex' : 'none'}">
-                       ${p.items.map(item => `
-                           <div class="ph-chk ${item.done ? 'done' : ''}">
+                       ${p.items.map((item, iIdx) => `
+                           <div class="ph-chk ${item.done ? 'done' : ''}" onclick="event.stopPropagation(); window.toggleManualCheck(${pIdx}, ${iIdx})">
                                <div class="ph-chk-ic">${item.done ? '✓' : ''}</div>
                                <div>${item.label}</div>
                            </div>
                        `).join('')}
                     </div>
-                  </div>
+                 </div>
               </div>
             </div>`;
         }).join('')}
@@ -1413,17 +1442,17 @@ window.V.home = () => {
 
       <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
       <div class="g3">
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3730A3'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('tasks')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3730A3'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('tasks', 'tasks')">
            <div style="font-size:28px; margin-bottom:12px;">📋</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">과제 현황판</div>
            <div style="font-size:11px; color:#64748b;">진행중 ${prog}건 · 완료 ${done}건</div>
         </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#1D4ED8'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('docs')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#1D4ED8'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('standard', 'doc')">
            <div style="font-size:28px; margin-bottom:12px;">📄</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">기준문서 관리</div>
            <div style="font-size:11px; color:#64748b;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건 · 갱신필요 ${S.docs.filter(d=>d.cur==='갱신필요').length}건</div>
         </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#0369A1'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('onto')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#0369A1'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('onto', 'onto')">
            <div style="font-size:28px; margin-bottom:12px;">🔗</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">온톨로지·관계</div>
            <div style="font-size:11px; color:#64748b;">전체 연결 엣지 ${window.getAllEdges().length}건</div>
@@ -1457,12 +1486,12 @@ window.V.tasks = () => {
                 <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')" style="${rowHasWarning ? 'background-color:#FFFBEA;' : ''}">
                   <div class="kcard-code">${window.editableCode('tasks', t, rowHasWarning)}</div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-                    <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()" style="${nameMissing ? 'background-color:#FFFBEA; border:1px dashed #E24B4A;' : ''}">
+                    <input class="knm" placeholder="과제명" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()" style="${nameMissing ? 'background-color:#FFFBEA; border:1px dashed #E24B4A;' : ''}">
                     <button class="btn-sm btn-o" onclick="window.openTm('tasks','${t.code}','name','과제명')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>
                     ${nameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;cursor:help;">⚠️</span>' : ''}
                   </div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-                    <input type="text" value="${t.assignee||''}" readonly style="flex:1;background:transparent;border:1px solid transparent;font-size:11px;color:var(--color-text-secondary);cursor:pointer;outline:none;padding:2px;" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" placeholder="담당자">
+                    <input type="text" value="${(t.assignee||'').replace(/"/g,'&quot;')}" readonly style="flex:1;background:transparent;border:1px solid transparent;font-size:11px;color:var(--color-text-secondary);cursor:pointer;outline:none;padding:2px;" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" placeholder="담당자">
                     <button class="btn-sm btn-o" onclick="window.openMs('tasks','${t.code}','assignee','TEAM')" title="선택">🔍</button>
                   </div>
                   <div class="kcard-ft">
@@ -1478,11 +1507,9 @@ window.V.tasks = () => {
     </div>`;
 };
 
-window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[]}); window.stateChanged(); };
+window.addTask = () => { window.pushHistory(); S.tasks.push({code:window.nc('tasks','TSK'),name:'',assignee:'',purpose:'',status:'미착수',note:'',_doc:[],_trm:[],_dat:[],_exp:[],_locked:false}); window.stateChanged(); };
 
-window.dtab = 'tsk';
-
-// --- REL TAB 3-COLUMN LOGIC ---
+// --- REL TAB LOGIC ---
 window.relExpanded = window.relExpanded || {};
 window.toggleRel = (code) => {
     window.relExpanded[code] = !window.relExpanded[code];
@@ -1567,6 +1594,7 @@ window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     window.pushHistory();
     const cRow = S[childArrKey].find(x => x.code === childCode);
     if (!cRow) return;
+
     const removeRef = (str, target) => {
         let arr = window.parseRef(str);
         return arr.filter(code => code !== target).join(', ');
@@ -1605,12 +1633,18 @@ window.V.docs = (tab) => {
     <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
     <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
   `;
-  const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
+  
+  // 동적 탭 필터링 로직 (activeModule 기준)
+  let tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
+  
+  if (window.activeModule === 'standard') tabs = tabs.filter(t => ['tsk', 'doc', 'exp'].includes(t[0]));
+  else if (window.activeModule === 'terms') tabs = tabs.filter(t => t[0] === 'trm');
+  else if (window.activeModule === 'rel') tabs = tabs.filter(t => t[0] === 'rel');
+  
   const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
-
+  
   if (window.dtab === 'rel') {
     const allEdges = window.getAllEdges();
-    
     const root = { children: [] };
     const nodeMap = {};
     
@@ -1664,8 +1698,7 @@ window.V.docs = (tab) => {
 
         return `
             <div style="margin-top:2px;">
-                <div class="tree-node ${isNodeSel ? 'node-selected' : ''}" 
-                     onclick="window.selectRelNode('${n.code}')">
+                <div class="tree-node ${isNodeSel ? 'node-selected' : ''}" onclick="window.selectRelNode('${n.code}')">
                     <div class="tree-toggle" onclick="event.stopPropagation(); window.toggleRel('${n.code}')" onmousedown="event.stopPropagation();">${toggleIcon}</div>
                     <div class="tree-content">
                         ${window.badge(n.code)}
@@ -1692,7 +1725,6 @@ window.V.docs = (tab) => {
     });
     const orphansHtml = orphans.map(c => renderTreeNode(c, null, null, 0)).join('');
 
-    // Col 2 rendering
     let col2Html = '';
     if (!window.relSelectedNode) {
         col2Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">좌측 트리에서 항목을 선택하세요</div>`;
@@ -1719,16 +1751,13 @@ window.V.docs = (tab) => {
 
                 const relClass = e.detail.relevance === '필수' ? 'pw' : (e.detail.relevance === '충돌가능' ? 'pp' : 'pt');
                 const relText = e.detail.relevance;
-
                 return `
                 <div class="edge-row ${isSel ? 'selected' : ''}" onclick="window.selectRelEdge('${e.id}')"
                      onmouseenter="if(!this.classList.contains('selected')) this.style.background='#F1F5F9'"
                      onmouseleave="if(!this.classList.contains('selected')) this.style.background='#fff'"
                      style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:6px;background:${isSel?'#EEF2FF':'#fff'};border-left:${isSel?'3px solid #3C3489':'3px solid transparent'};margin-bottom:4px;cursor:pointer;transition:background 0.1s;">
                     <div style="display:flex;align-items:center;gap:8px;">
-                        ${srcHtml}
-                        <span style="color:#94a3b8;font-size:12px;">→</span>
-                        ${tgtHtml}
+                        ${srcHtml} <span style="color:#94a3b8;font-size:12px;">→</span> ${tgtHtml}
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;text-align:right;">
                         <span class="pill" style="background:${typeBg};color:${typeColor};font-size:10px;">${e.detail.type}</span>
@@ -1741,7 +1770,6 @@ window.V.docs = (tab) => {
         col2Html += `<button class="btn btn-o" style="width:100%; justify-content:center; margin-top:10px; padding:10px; border-style:dashed;" onclick="window.openAddRelEdgeModal()">+ 새로운 엣지 연결</button>`;
     }
 
-    // Col 3 rendering
     let col3Html = '';
     if (!window.relSelectedEdgeId) {
          col3Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">좌측에서 연결선을 선택하세요</div>`;
@@ -1752,7 +1780,6 @@ window.V.docs = (tab) => {
              const tgtBadge = window.badge(e.target);
              const srcName = window.getItemName(e.source).replace(/"/g,'&quot;');
              const tgtName = window.getItemName(e.target).replace(/"/g,'&quot;');
-
              col3Html = `
                 <div style="background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:14px; text-align:center;">
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
@@ -1776,7 +1803,7 @@ window.V.docs = (tab) => {
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">참조 위치 (Clause)</label>
-                        <input type="text" id="edge-edit-clause" value="${e.detail.clause.replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절, p.12" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;" onblur="window.updateEdgeField('${e.id}', 'clause', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
+                        <input type="text" id="edge-edit-clause" value="${(e.detail.clause||'').replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절, p.12" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;" onblur="window.updateEdgeField('${e.id}', 'clause', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">중요도 (Relevance)</label>
@@ -1788,7 +1815,7 @@ window.V.docs = (tab) => {
                     </div>
                     <div style="display:flex; flex-direction:column; flex:1;">
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">원문/발췌 (Verbatim)</label>
-                        <textarea id="edge-edit-verb" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; min-height:120px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:vertical;" onblur="window.updateEdgeField('${e.id}', 'verbatim', this.value)">${e.detail.verbatim.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        <textarea id="edge-edit-verb" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; min-height:120px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:vertical;" onblur="window.updateEdgeField('${e.id}', 'verbatim', this.value)">${(e.detail.verbatim||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
                     </div>
                 </div>
                 <div style="margin-top:14px; padding-top:14px; border-top:1px dashed #e2e8f0; flex-shrink:0;">
@@ -1805,26 +1832,20 @@ window.V.docs = (tab) => {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
             <div class="banner" style="margin:0; flex:1;">좌측 트리에서 기준 노드를 선택하면, 연결된 엣지(Edge)를 체계적으로 관리할 수 있습니다.</div>
         </div>
-        
         <div style="display:flex; flex:1; gap:14px; overflow:hidden; padding-bottom: 4px;">
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
                 <div class="sec"><h3>데이터 연결 트리</h3></div>
-                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
-                     ondragover="window.relDragOver(event)"
-                     ondragleave="window.relDragLeave(event)"
-                     ondrop="window.relDrop(event, 'root', 'root')">
+                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;" ondragover="window.relDragOver(event)" ondragleave="window.relDragLeave(event)" ondrop="window.relDrop(event, 'root', 'root')">
                     ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
                     ${orphansHtml ? `<div class="o-sec" style="margin-top:20px; color:#E24B4A;">미연결 항목 (고립)</div>${orphansHtml}` : ''}
                 </div>
             </div>
-            
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px; background:#f8fafc;">
                 <div class="sec"><h3>선택 노드 연결망</h3></div>
                 <div style="flex:1; overflow-y:auto; padding-right:6px;">
                     ${col2Html}
                 </div>
             </div>
-            
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
                 <div class="sec"><h3>엣지 속성 관리</h3></div>
                 <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding-right:4px;">
@@ -1832,10 +1853,9 @@ window.V.docs = (tab) => {
                 </div>
             </div>
         </div>
-
       </div>`;
     return;
-}
+  }
 
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
@@ -1844,21 +1864,19 @@ window.V.docs = (tab) => {
     trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
-
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
 
   let filterHtml = '';
   let primaryFilterKey = '';
   let subTabsHtml = '';
-
+  
   if (window.dtab === 'doc') {
     window.docSubTab = window.docSubTab || '법령';
     const subs = ['법령', '사규', '지침', '프로세스(운영)', '관행/기타'];
     subTabsHtml = `<div style="display:flex; gap:6px; margin-bottom:4px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
       ${subs.map(s => `<button class="btn ${window.docSubTab === s ? 'btn-g' : 'btn-o'}" style="border-radius:20px; padding:4px 14px; font-weight:700;" onclick="window.docSubTab='${s}'; window.V.docs()">${s}</button>`).join('')}
     </div>`;
-
     if (window.docSubTab === '관행/기타') {
        currentRows = currentRows.filter(r => r.dtype === '관행' || r.dtype === '기타');
     } else {
@@ -1901,12 +1919,7 @@ window.V.docs = (tab) => {
       return `<td style="${bg}">${inner}</td>`;
     }).join('');
     
-    return `<tr draggable="true" 
-                ondragstart="window.rowDragStart(event, '${c.k}', '${row.code}')" 
-                ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';"
-                ondragleave="this.style.backgroundColor='';" 
-                ondrop="this.style.backgroundColor=''; window.rowDrop(event, '${c.k}', '${row.code}')" 
-                style="cursor:grab;">
+    return `<tr draggable="true" ondragstart="window.rowDragStart(event, '${c.k}', '${row.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, '${c.k}', '${row.code}')" style="cursor:grab;">
               <td style="${rowHasWarning ? 'background-color:#FFFBEA;' : ''}">${window.editableCode(c.k, row, rowHasWarning)}</td>
               ${cells}
               <td><button class="del-btn" onclick="window.pushHistory(); window.del('${c.k}','${row.code}'); window.stateChanged()">×</button></td>
@@ -1971,7 +1984,7 @@ window.V.data = () => {
   const cardStyle = (f) => `card ${window.datFilter===f?'':'style="opacity:0.6"'}`;
   document.getElementById('pg-actions').innerHTML=`
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('dats')">🔢 코드 순번 정렬</button>
-    <button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>
+    <button class="btn btn-o btn-sm" onclick="window.goModule('data', 'dat')">+ 추가</button>
   `;
   document.getElementById('content').innerHTML=`
     <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0;">
@@ -1992,9 +2005,9 @@ window.V.data = () => {
             return `
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'dats', '${d.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'dats', '${d.code}')" style="cursor:grab;">
               <td style="${rowHasWarn ? 'background-color:#FFFBEA;' : ''}">${window.editableCode('dats', d, rowHasWarn)}</td>
-              <td style="${isNameMissing ? 'background-color:#FFFBEA;' : ''}">${d.name||'—'}${isNameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
-              <td>${d.dtype||'—'}</td>
-              <td>${d.src||'—'}</td>
+              <td style="${isNameMissing ? 'background-color:#FFFBEA;' : ''}">${(d.name||'—').replace(/"/g,'&quot;')}${isNameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
+              <td>${(d.dtype||'—').replace(/"/g,'&quot;')}</td>
+              <td>${(d.src||'—').replace(/"/g,'&quot;')}</td>
               <td style="${isOwnMissing ? 'background-color:#FFFBEA;' : ''}">${window.pill(d.own)}${isOwnMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
               <td>${window.pill(d.sens)}</td>
               <td><div class="code-list">${window.fmtCodeList(d.tskRef)}</div></td>
@@ -2056,7 +2069,6 @@ window.V.onto = () => {
     </select>
     <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 중앙정렬</button>
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
-    
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
       <div class="o-side" style="width:310px;">
@@ -2072,7 +2084,6 @@ window.V.onto = () => {
         </div>
       </div>
     </div>`;
-    
   window.buildOntoGraphData(); 
   window.renderOAb();
   setTimeout(window.initOG, 60);
@@ -2122,7 +2133,6 @@ window.toggleOntoEdge = (edgeId, e) => {
 window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
   const edgeSet = new Set();
-  
   const addEdge = (src, tgt, defaultType) => {
       if(!src || !tgt) return;
       const id = `E__${src}__${tgt}`; 
@@ -2182,6 +2192,7 @@ window.buildOntoGraphData = () => {
       else if (n.srcType === 'DOC') n.depth = 2; 
       else n.depth = 3; 
   });
+
   const validNodes = new Set(nodes.map(n => n.id));
   edges = edges.filter(e => validNodes.has(e.source) && validNodes.has(e.target));
 
@@ -2192,7 +2203,6 @@ window.buildOntoGraphData = () => {
 window.renderOAb = () => {
   const b = document.getElementById('o-abody');
   if(!b) return;
-
   if(!S.ontoSel) {
     b.innerHTML = `
       <div class="hint" style="margin-top:40px;">
@@ -2268,7 +2278,6 @@ window.renderOAb = () => {
                 <button class="del-btn" style="width:20px;height:20px;font-size:12px;padding:0;margin-right:2px;" onclick="window.removeOntoRelation('${e.id}', event)" title="연결 해제">×</button>
             </div>
       `;
-
       if(isExpanded) {
           rowHtml += `
             <div style="background:#f8fafc; border-radius:6px; padding:10px; margin-top:4px; display:flex; flex-direction:column; gap:8px;" onclick="event.stopPropagation()">
@@ -2324,7 +2333,7 @@ window.renderOAb = () => {
   b.innerHTML = html;
 };
 
-// D3 Logic (고정형 스윔레인 + 엣지 툴팁 적용)
+// D3 Logic
 window.initOG = () => {
   const wrap = document.getElementById('o-gwrap'); if(!wrap) return;
   const W = wrap.clientWidth, H = wrap.clientHeight;
@@ -2342,7 +2351,6 @@ window.initOG = () => {
          .attr('width', colWidth).attr('height', Math.max(H, 1000))
          .attr('fill', i % 2 === 0 ? '#f8fafc' : '#f1f5f9')
          .attr('opacity', 0.6);
-         
       bgG.append('text')
          .attr('x', i * colWidth + colWidth/2).attr('y', 24)
          .attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', '700').attr('fill', '#94a3b8')
@@ -2350,7 +2358,6 @@ window.initOG = () => {
   });
 
   const df = window.oSvg.append('defs');
-  // 세 가지 상태의 화살표 마커 생성 (기본, 필수, 충돌가능)
   df.append('marker').attr('id','oarr-gray').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#cbd5e1').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-blue').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#3B82F6').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-red').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#EF4444').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
@@ -2364,7 +2371,6 @@ window.initOG = () => {
 
   const depthCounts = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => { depthCounts[n.depth] = (depthCounts[n.depth] || 0) + 1; });
-  
   const depthCurrent = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => {
       n.x = (n.depth + 0.5) * colWidth; 
@@ -2383,7 +2389,6 @@ window.initOG = () => {
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
 
-  // 가시적 패스 (Visible Path)
   eS.append('path')
     .attr('class', 'visible-edge')
     .attr('fill','none')
@@ -2420,7 +2425,6 @@ window.initOG = () => {
         return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
     });
 
-  // 텍스트 라벨
   eS.append('text')
     .attr('text-anchor','middle')
     .attr('font-size','9px')
@@ -2431,7 +2435,6 @@ window.initOG = () => {
     .attr('y', d => (d.source.y + d.target.y) / 2 - 6)
     .text(d => d.rtype);
 
-  // 이벤트 수신용 투명 두꺼운 패스 (Hit Path)
   eS.append('path')
     .attr('class', 'hit-edge')
     .attr('fill', 'none')
@@ -2470,8 +2473,7 @@ window.initOG = () => {
         e.stopPropagation();
         window.selectedEdgeId = d.id;
         window.relSelectedEdgeId = d.id;
-        window.go('docs');
-        window.V.docs('rel');
+        window.goModule('rel', 'rel');
     });
 
   const nG = window.oGMain.append('g');
@@ -2535,7 +2537,6 @@ window.V.poc = () => {
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('pocs')">🔢 코드 순번 정렬</button>
     <button class="btn btn-o" onclick="window.addPoc()">+ PoC 추가</button>
   `;
-
   document.getElementById('content').innerHTML=`
     <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0;">
       <div class="g4" style="flex-shrink:0;">
@@ -2550,16 +2551,16 @@ window.V.poc = () => {
           <tbody>${S.pocs.map(p=>`
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'pocs', '${p.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'pocs', '${p.code}')" style="cursor:grab;">
             <td>${window.editableCode('pocs', p)}</td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.inputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','inputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','inputSpec','입력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.outputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','outputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','outputSpec','출력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.tsk||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.inputSpec||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','inputSpec',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','inputSpec','입력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.outputSpec||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','outputSpec',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','outputSpec','출력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><div style="display:flex;gap:4px;align-items:center"><div class="code-list">${window.fmtCodeList(p.contextDocs)}</div><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','contextDocs','DOC')" title="선택">🔍</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.promptDraft||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','promptDraft',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','promptDraft','프롬프트 초안')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.promptDraft||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','promptDraft',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','promptDraft','프롬프트 초안')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.logic||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.result||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${(p.issue||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.stateChanged()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
-            <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
+            <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.stateChanged()" style="width:76px"></td>
             <td><select onchange="window.pushHistory(); window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
             <td><button class="del-btn" onclick="window.pushHistory(); window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
           </tr>`).join('') || `<tr><td colspan="13" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
@@ -2588,16 +2589,13 @@ window.updateRagObj = (objName, field, val) => {
 
 window.V.rag = () => {
     document.getElementById('pg-actions').innerHTML = '';
-
     const currentDocCodes = new Set(S.docs.map(d => d.code));
     S.ragChunks = S.ragChunks.filter(c => currentDocCodes.has(c.docCode));
-
     S.docs.forEach(d => {
         if(!S.ragChunks.find(c => c.docCode === d.code)) {
             S.ragChunks.push({ docCode: d.code, chunkType: '문단 단위', chunkSize: '', overlap: '', note: '' });
         }
     });
-
     S.ragChunks.sort((a, b) => {
         return S.docs.findIndex(d => d.code === a.docCode) - S.docs.findIndex(d => d.code === b.docCode);
     });
@@ -2719,9 +2717,9 @@ window.V.aiext = () => {
       <div style="font-size:16px;font-weight:500; color:var(--color-text-primary)">용어 추출 AI</div>
       <div style="font-size:13px;color:var(--color-text-secondary); max-width:360px;line-height:1.8">
         Word, PDF, Excel 문서를 업로드하면<br>
-        Claude AI가 용어·객체 후보를 자동 추출하고<br>
+        사내망 LLM API가 용어·객체 후보를 자동 추출하고<br>
         사람이 검토 후 TRM 탭에 확정 등록하는 기능입니다.<br><br>
-        <strong>Phase 2 진입 후 순차 개발 예정입니다.</strong>
+        <strong>Phase 2 진입 후 미들웨어 연동과 함께 개발 예정입니다.</strong>
       </div>
       <div style="font-size:11px;padding:6px 14px;border-radius:20px; background:#FAEEDA;color:#633806;font-weight:500">
         개발 예정
@@ -2742,15 +2740,15 @@ window.V.team = () => {
               <div class="emoji-picker" id="ep-${i}">
                 <div class="emoji-btn" onclick="window.toggleEmoji(${i}, event)">${m.emoji||'👤'}</div>
                 <div class="emoji-grid" id="eg-${i}" style="display:none;">
-                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'].map(e=>`<div class="emoji-item" onclick="window.setEmoji(${i}, '${e}')">${e}</div>`).join('')}
+                   ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'].map(e=>`<div class="emoji-item" onclick="window.setEmoji(${i}, '${e}')">${e}</div>`).join('')}
                 </div>
               </div>
               <button class="del-btn" onclick="window.pushHistory(); S.team.splice(${i},1); window.stateChanged()">×</button>
             </div>
-            <input class="tci nm" placeholder="이름" value="${m.name||''}" onchange="window.pushHistory(); S.team[${i}].name=this.value; window.saveStateFn()">
-            <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" onchange="window.pushHistory(); S.team[${i}].role=this.value; window.saveStateFn()">
+            <input class="tci nm" placeholder="이름" value="${(m.name||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); S.team[${i}].name=this.value; window.stateChanged()">
+            <input class="tci rl" placeholder="역할 / 직무" value="${(m.role||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); S.team[${i}].role=this.value; window.stateChanged()">
             <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
-            <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" onchange="window.pushHistory(); S.team[${i}].note=this.value; window.saveStateFn()"></div>
+            <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${(m.note||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); S.team[${i}].note=this.value; window.stateChanged()"></div>
           </div>`).join('')}</div>
       </div>
     </div>`;
