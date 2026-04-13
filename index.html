@@ -267,7 +267,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div class="toast" id="toast"></div>
 
-<!-- Quality Check Modal -->
 <div id="quality-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
   <div class="ms-content" style="width:700px; max-width:95%;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -278,13 +277,12 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<!-- Upload Option Modal -->
 <div id="upload-modal">
   <div class="ms-content" style="width:380px;">
     <h3 style="font-weight:700;margin-bottom:12px">Excel 업로드 방식 선택</h3>
     <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6">
       업로드할 데이터를 어떻게 처리할까요?<br><br>
-      • <strong style="color:#E24B4A">덮어쓰기:</strong> 포털의 기존 데이터를 지우고 엑셀 파일의 내용으로 완전히 교체합니다.<br><br>
+      • <strong style="color:#E24B4A">덮어쓰기:</strong> 포털의 기존 데이터를 지문을 지우고 엑셀 파일의 내용으로 완전히 교체합니다.<br><br>
       • <strong style="color:#1D9E75">추가하기:</strong> 기존 데이터를 유지한 상태에서 엑셀 파일의 내용을 하단에 추가(병합)합니다.
     </p>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -295,7 +293,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<!-- Multi Select Modal -->
 <div id="ms-modal">
   <div class="ms-content">
     <h3 style="font-weight:700;margin-bottom:8px">항목 선택</h3>
@@ -308,7 +305,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<!-- Textarea Popup Modal -->
 <div id="text-modal">
   <div class="ms-content" style="width:600px; max-width:95%;">
     <h3 id="tm-title" style="font-weight:700;margin-bottom:8px">텍스트 입력</h3>
@@ -320,7 +316,6 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<!-- Add Rel Edge Modal -->
 <div id="add-rel-edge-modal">
   <div class="ms-content" style="width:420px;">
     <h3 style="font-weight:700;margin-bottom:12px">새로운 엣지 연결</h3>
@@ -392,7 +387,7 @@ window.S = {
   terms:[{code:'TRM-001',term:'핵심성과지표(KPI)',def:'목표 달성 여부를 측정하는 정량적 단위',otype:'기준값',parent:'',child:'',sim:'',docRef:'DOC-R-001',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'조직별 KPI 달성률 DB',dtype:'정형',src:'인사시스템',own:'보유',cycle:'월간',sens:'일반',trmRef:'TRM-001',docRef:'DOC-P-001',tskRef:'',note:''}],
   pocs:[{code:'POC-001',tsk:'TSK-001',logic:'목표 키워드 시맨틱 유사도 비교',result:'',issue:'',owner:'',date:'2026-05',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:''}],
-  ontoTask:'ALL', ontoNodes:{}, ontoEdges:{}, 
+  ontoTask:'ALL', ontoSel: null, ontoNodes:{}, ontoEdges:{}, 
   edgeDetails:{
       'E__TSK-001__DOC-R-001': {type:'필수 준수', clause:'', relevance:'필수', verbatim:''},
       'E__DOC-R-001__DOC-P-001': {type:'상/하위 종속', clause:'', relevance:'참고', verbatim:''},
@@ -561,13 +556,13 @@ window.getNColor = (d) => {
     if (!d) return '#CBD5E1';
     if (d.srcType === 'TSK') return '#60A5FA'; 
     if (d.srcType === 'DOC') {
-        if(d.dtype === '법령') return '#F87171'; 
+        if(d.dtype === '법령') return '#F87171';
         if(d.dtype === '사규') return '#FB923C'; 
         if(d.dtype === '지침') return '#FBBF24'; 
-        return '#A78BFA'; 
+        return '#A78BFA';
     }
     if (d.srcType === 'DAT') return '#34D399'; 
-    if (d.srcType === 'TRM') return '#2DD4BF'; 
+    if (d.srcType === 'TRM') return '#2DD4BF';
     if (d.srcType === 'EXP') return '#F472B6'; 
     return '#94A3B8';
 };
@@ -633,6 +628,7 @@ window.editableCode = (arrKey, row, hasWarning = false) => {
   const readonly = isLocked ? 'readonly' : '';
   const style = isLocked ? 'opacity:0.7;cursor:not-allowed;background:transparent!important;border:none;' : '';
   const warnIconHtml = hasWarning ? `<span title="필수 입력 항목 누락" style="color:#E24B4A;font-size:12px;margin-right:2px;cursor:help;">⚠️</span>` : '';
+  
   return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
             ${warnIconHtml}
             <button class="btn-sm" style="padding:0;background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" onclick="window.toggleLock('${arrKey}', '${code}')" title="${isLocked ? '코드 잠금 해제' : '코드 확정(잠금)'}">${lockIcon}</button>
@@ -685,7 +681,6 @@ window.replaceReferences = (oldCode, newCode) => {
   window.S.terms.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.parent = replaceRef(r.parent); r.child = replaceRef(r.child); });
   window.S.dats.forEach(r => { r.tskRef = replaceRef(r.tskRef); r.docRef = replaceRef(r.docRef); r.trmRef = replaceRef(r.trmRef); });
   window.S.pocs.forEach(r => { r.tsk = replaceRef(r.tsk); r.contextDocs = replaceRef(r.contextDocs); });
-  
   if (S.edgeDetails) {
       const newEdgeDetails = {};
       Object.keys(S.edgeDetails).forEach(key => {
@@ -706,6 +701,7 @@ window.rowDragStart = (e, arrKey, code) => {
     window.draggedRow = { arrKey, code };
     e.dataTransfer.effectAllowed = 'move';
 };
+
 window.rowDrop = (e, arrKey, targetCode) => {
     e.preventDefault();
     if(!window.draggedRow.code || window.draggedRow.arrKey !== arrKey || window.draggedRow.code === targetCode) return;
@@ -755,6 +751,7 @@ window.reorderCodes = (arrKey) => {
             }
         }
     });
+
     window.stateChanged();
     window.toast(`순차 정렬 완료 (${changedCount}건이 변경되었습니다.)`);
 };
@@ -780,7 +777,8 @@ window.detectOrphanRefs = () => {
         });
     };
     check('docs', 'tskRef'); check('docs', 'parentDoc');
-    check('exps', 'tskRef'); check('exps', 'docRef');
+    check('exps', 'tskRef');
+    check('exps', 'docRef');
     check('terms', 'tskRef'); check('terms', 'docRef'); check('terms', 'parent'); check('terms', 'child');
     check('dats', 'tskRef'); check('dats', 'docRef'); check('dats', 'trmRef');
     check('pocs', 'tsk'); check('pocs', 'contextDocs');
@@ -857,6 +855,7 @@ window.getAllEdges = () => {
             edges.push({ id, source: src, target: tgt, detail: det });
         }
     };
+
     S.docs.forEach(d => {
         window.parseRef(d.tskRef).forEach(c => addEdge(c, d.code, '단순 참조'));
         if(d.parentDoc) addEdge(d.parentDoc, d.code, '상/하위 종속');
@@ -874,6 +873,7 @@ window.getAllEdges = () => {
         window.parseRef(e.tskRef).forEach(c => addEdge(c, e.code, '예외 처리'));
         window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외 처리'));
     });
+
     return edges;
 };
 
@@ -899,10 +899,12 @@ window.createLinkCore = (pCode, cCode, relType) => {
     if(pType==='TSK' && cType==='TRM') return link(pCode, cCode, 'terms', 'tskRef');
     if(pType==='TSK' && cType==='DAT') return link(pCode, cCode, 'dats', 'tskRef');
     if(pType==='TSK' && cType==='EXP') return link(pCode, cCode, 'exps', 'tskRef');
+
     if(pType==='DOC' && cType==='DOC') return link(pCode, cCode, 'docs', 'parentDoc');
     if(pType==='DOC' && cType==='TRM') return link(pCode, cCode, 'terms', 'docRef');
     if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
     if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
+    
     if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
     
     return false;
@@ -1004,7 +1006,7 @@ window.renderMsList = () => {
   const q = document.getElementById('ms-search').value.toLowerCase();
   const filtered = msState.opts.filter(o => o.v.toLowerCase().includes(q) || o.l.toLowerCase().includes(q) || (o.sub||'').toLowerCase().includes(q));
   const listEl = document.getElementById('ms-list');
-  
+
   if (msState.type === 'DOC') {
     const rows = filtered.map(o => `
       <tr>
@@ -1036,6 +1038,7 @@ window.applyMs = () => {
 };
 
 let tmState = { arrKey:'', rowCode:'', field:'' };
+
 window.openTm = (arrKey, rowCode, field, title) => {
   const row = S[arrKey].find(x=>x.code===rowCode);
   tmState = { arrKey, rowCode, field };
@@ -1044,6 +1047,7 @@ window.openTm = (arrKey, rowCode, field, title) => {
   document.getElementById('text-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('tm-input').focus(), 50);
 };
+
 window.applyTm = () => {
   const val = document.getElementById('tm-input').value;
   const row = S[tmState.arrKey].find(x=>x.code===tmState.rowCode);
@@ -1059,12 +1063,12 @@ window.toggleEmoji = (idx, e) => {
   eg.style.display = eg.style.display === 'none' ? 'grid' : 'none';
 };
 window.setEmoji = (idx, emoji) => { window.pushHistory(); S.team[idx].emoji = emoji; window.stateChanged(); };
+
 document.addEventListener('click', (e) => { if(!e.target.closest('.emoji-picker')) document.querySelectorAll('.emoji-grid').forEach(el => el.style.display = 'none'); });
 
 window.goToItem = (arrKey, code) => {
     document.getElementById('quality-modal').style.display = 'none';
     document.getElementById('global-search-results')?.classList.remove('active');
-    
     const map = { tasks: 'tasks', docs: 'doc', exps: 'exp', terms: 'trm', dats: 'dat', pocs: 'poc' };
     const tab = map[arrKey];
 
@@ -1222,13 +1226,13 @@ const titles = {
   team: '팀원 R&R',
   aiext: '용어 추출 AI'
 };
+
 window.V = {};
 window.go = (v, el) => {
   window.currentView = v;
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   (el||document.getElementById('n-'+v))?.classList.add('active');
   document.getElementById('pg-title').textContent = titles[v] || '';
-  
   if (v === 'home') {
       document.getElementById('pg-actions').innerHTML = '';
   } else {
@@ -1342,7 +1346,6 @@ window.V.home = () => {
       .ph-step.wait .ph-card { border-left: 4px solid #cbd5e1; opacity: 0.8; }
     </style>
     <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
-      <!-- 상단 배너 -->
       <div style="background:linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         <div>
           <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 구축 파이프라인</div>
@@ -1359,7 +1362,6 @@ window.V.home = () => {
         </div>
       </div>
 
-      <!-- 파이프라인 스테퍼 -->
       <div class="ph-wrap">
         ${checks.map(p => {
             const isExp = window.phExpanded.has(p.phase);
@@ -1389,13 +1391,12 @@ window.V.home = () => {
                            </div>
                        `).join('')}
                     </div>
-                 </div>
+                  </div>
               </div>
             </div>`;
         }).join('')}
       </div>
 
-      <!-- 데이터 무결성 검증 -->
       <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">데이터 무결성 검증</div>
       <div class="g4" style="margin-bottom:24px">
           <div class="h-card" style="border-left:4px solid ${oCnt === 0 ? '#10B981' : '#EF4444'}; background:${oCnt === 0 ? '#F0FDF4' : '#FEF2F2'};" onclick="window.openOrphanModal()">
@@ -1410,7 +1411,6 @@ window.V.home = () => {
           </div>
       </div>
 
-      <!-- 시스템 바로가기 -->
       <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
       <div class="g3">
         <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3730A3'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('tasks')">
@@ -1432,9 +1432,9 @@ window.V.home = () => {
     </div>`;
 };
 
-window.kDrag = (e, code) => { draggedK = code; };
+window.kDrag = (e, code) => { window.draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
-window.kDrop = (e, col) => { if(draggedK) { window.pushHistory(); window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
+window.kDrop = (e, col) => { if(window.draggedK) { window.pushHistory(); window.upd('tasks', window.draggedK, 'status', col); window.stateChanged(); } };
 
 window.V.tasks = () => {
   document.getElementById('pg-actions').innerHTML=`
@@ -1503,7 +1503,7 @@ window.selectRelEdge = (edgeId) => {
 window.updateEdgeField = (edgeId, field, val) => {
     if(!S.edgeDetails[edgeId]) return;
     if(S.edgeDetails[edgeId][field] !== val) {
-        if(field === 'type') window.pushHistory(); // 유형 변경 시에만 히스토리 저장
+        if(field === 'type') window.pushHistory();
         S.edgeDetails[edgeId][field] = val;
         window.stateChanged();
     }
@@ -1536,7 +1536,6 @@ window.openAddRelEdgeModal = () => {
         const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
         return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
     }).join('');
-    
     document.getElementById('add-rel-edge-tgt').innerHTML = `<option value="">대상을 선택하세요</option>${opts}`;
     document.getElementById('add-rel-edge-modal').style.display = 'flex';
 };
@@ -1566,10 +1565,8 @@ window.applyAddRelEdge = () => {
 window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     if(e) e.stopPropagation();
     window.pushHistory();
-    
     const cRow = S[childArrKey].find(x => x.code === childCode);
     if (!cRow) return;
-
     const removeRef = (str, target) => {
         let arr = window.parseRef(str);
         return arr.filter(code => code !== target).join(', ');
@@ -1595,16 +1592,19 @@ window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     window.toast(`${parentCode} 와(과)의 연결이 해제되었습니다.`);
 };
 
+window.relDragOver = (e) => { e.preventDefault(); };
+window.relDragLeave = (e) => { };
+window.relDrop = (e, col, target) => { e.preventDefault(); };
+
 window.V.docs = (tab) => {
   if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
   else { window.dtab = tab || window.dtab; }
   
   document.getElementById('pg-actions').innerHTML=`
-    <button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : window.dtab === 'rel' ? '' : 'tasks'}')">🔢 코드 순번 정렬</button>
+    ${window.dtab !== 'rel' ? `<button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>` : ''}
     <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
     <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
   `;
-  
   const tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
   const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
 
@@ -1619,7 +1619,7 @@ window.V.docs = (tab) => {
     S.terms.forEach(t => nodeMap[t.code] = { ...t, arrKey: 'terms', children: [] });
     S.dats.forEach(d => nodeMap[d.code] = { ...d, arrKey: 'dats', children: [] });
     S.exps.forEach(e => nodeMap[e.code] = { ...e, arrKey: 'exps', children: [] });
-    
+
     S.docs.forEach(d => {
         if (d.parentDoc && nodeMap[d.parentDoc]) {
             nodeMap[d.parentDoc].children.push({...nodeMap[d.code]});
@@ -1631,7 +1631,7 @@ window.V.docs = (tab) => {
             root.children.push({...nodeMap[d.code]});
         }
     });
-    
+
     const linkNode = (item, possibleParents) => {
         let placedInTree = false;
         for (let pField of possibleParents) {
@@ -1654,13 +1654,12 @@ window.V.docs = (tab) => {
     S.tasks.forEach(t => root.children.push({...nodeMap[t.code]}));
 
     const renderTreeNode = (n, parentCode, parentArrKey, depth = 0) => {
-        if (depth > 15) return ''; 
+        if (depth > 15) return '';
         const hasChild = n.children && n.children.length > 0;
         const exp = window.relExpanded[n.code];
         const toggleIcon = hasChild ? (exp ? '▼' : '▶') : '<span style="display:inline-block;width:10px"></span>';
         const nameField = n.arrKey === 'tasks' || n.arrKey === 'docs' || n.arrKey === 'dats' ? 'name' : (n.arrKey === 'terms' ? 'term' : 'sit');
         const title = n[nameField] || '미입력';
-        
         const isNodeSel = window.relSelectedNode === n.code;
 
         return `
@@ -1808,7 +1807,6 @@ window.V.docs = (tab) => {
         </div>
         
         <div style="display:flex; flex:1; gap:14px; overflow:hidden; padding-bottom: 4px;">
-            <!-- 1열: 트리 -->
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
                 <div class="sec"><h3>데이터 연결 트리</h3></div>
                 <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
@@ -1820,7 +1818,6 @@ window.V.docs = (tab) => {
                 </div>
             </div>
             
-            <!-- 2열: 엣지 목록 -->
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px; background:#f8fafc;">
                 <div class="sec"><h3>선택 노드 연결망</h3></div>
                 <div style="flex:1; overflow-y:auto; padding-right:6px;">
@@ -1828,7 +1825,6 @@ window.V.docs = (tab) => {
                 </div>
             </div>
             
-            <!-- 3열: 엣지 상세 -->
             <div class="card" style="flex: 1; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
                 <div class="sec"><h3>엣지 속성 관리</h3></div>
                 <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding-right:4px;">
@@ -1839,7 +1835,7 @@ window.V.docs = (tab) => {
 
       </div>`;
     return;
-  }
+}
 
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
@@ -1848,7 +1844,7 @@ window.V.docs = (tab) => {
     trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
-  
+
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
 
@@ -1862,7 +1858,7 @@ window.V.docs = (tab) => {
     subTabsHtml = `<div style="display:flex; gap:6px; margin-bottom:4px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
       ${subs.map(s => `<button class="btn ${window.docSubTab === s ? 'btn-g' : 'btn-o'}" style="border-radius:20px; padding:4px 14px; font-weight:700;" onclick="window.docSubTab='${s}'; window.V.docs()">${s}</button>`).join('')}
     </div>`;
-    
+
     if (window.docSubTab === '관행/기타') {
        currentRows = currentRows.filter(r => r.dtype === '관행' || r.dtype === '기타');
     } else {
@@ -1902,13 +1898,12 @@ window.V.docs = (tab) => {
       else if(c.sl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${bg}">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
       else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
       else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
-
       return `<td style="${bg}">${inner}</td>`;
     }).join('');
     
     return `<tr draggable="true" 
                 ondragstart="window.rowDragStart(event, '${c.k}', '${row.code}')" 
-                ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" 
+                ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';"
                 ondragleave="this.style.backgroundColor='';" 
                 ondrop="this.style.backgroundColor=''; window.rowDrop(event, '${c.k}', '${row.code}')" 
                 style="cursor:grab;">
@@ -1936,7 +1931,7 @@ window.V.docs = (tab) => {
         <div class="note" style="margin:0;">※ 표의 <strong>행을 위아래로 드래그</strong>하여 목록 순서를 변경할 수 있습니다. <strong>자물쇠(🔓)</strong>를 눌러 코드를 잠그면 순번 정렬이나 수기 변환에서 보호됩니다.</div>
       </div>
     </div>`;
-    setTimeout(window.initResizers, 50);
+  setTimeout(window.initResizers, 50);
 };
 
 window.addDocRow = (tab) => {
@@ -1964,7 +1959,6 @@ window.addDocRow = (tab) => {
 };
 
 window.setDatFilter = (f) => { window.datFilter = f; window.V.data(); };
-
 window.V.data = () => {
   const dd=S.dats, o=dd.filter(d=>d.own==='보유').length, pa=dd.filter(d=>d.own==='일부보유').length, n=dd.filter(d=>d.own==='미보유').length, sens=dd.filter(d=>d.sens!=='일반').length;
   
@@ -1975,7 +1969,6 @@ window.V.data = () => {
   else if(window.datFilter === '민감') fdd = dd.filter(d=>d.sens!=='일반');
 
   const cardStyle = (f) => `card ${window.datFilter===f?'':'style="opacity:0.6"'}`;
-
   document.getElementById('pg-actions').innerHTML=`
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('dats')">🔢 코드 순번 정렬</button>
     <button class="btn btn-o btn-sm" onclick="window.go('docs');window.V.docs('dat')">+ 추가</button>
@@ -2009,7 +2002,7 @@ window.V.data = () => {
         </div>
       </div>
     </div>`;
-    setTimeout(window.initResizers, 50);
+  setTimeout(window.initResizers, 50);
 };
 
 // ── ONTO ──────────────────────────────────
@@ -2063,6 +2056,7 @@ window.V.onto = () => {
     </select>
     <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 중앙정렬</button>
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
+    
   document.getElementById('content').innerHTML=`
     <div class="onto-wrap">
       <div class="o-side" style="width:310px;">
@@ -2078,6 +2072,7 @@ window.V.onto = () => {
         </div>
       </div>
     </div>`;
+    
   window.buildOntoGraphData(); 
   window.renderOAb();
   setTimeout(window.initOG, 60);
@@ -2085,14 +2080,14 @@ window.V.onto = () => {
 
 window.switchOntoTask = (code) => { 
     S.ontoTask = code; 
-    S.ontoSel = null; 
+    S.ontoSel = null;
     window.ontoExpanded.clear();
     if(code !== 'ALL') window.ontoExpanded.add(code);
     window.V.onto(); 
 };
 
 window.oSelN = id => { 
-    S.ontoSel = id; 
+    S.ontoSel = id;
     if(window.oGMain) {
         window.oGMain.selectAll('.ong').select('circle')
             .attr('stroke', d=>d.id===id?'#334155':'#fff')
@@ -2106,8 +2101,7 @@ window.addOntoRelation = (srcCode) => {
     const relType = document.getElementById('new-rel-type').value || '단순 참조';
     if(!tgtCode || srcCode === tgtCode) return;
 
-    let success = window.createLinkCore(tgtCode, srcCode, relType); 
-
+    let success = window.createLinkCore(tgtCode, srcCode, relType);
     if(success) {
         window.pushHistory();
         window.stateChanged();
@@ -2128,7 +2122,7 @@ window.toggleOntoEdge = (edgeId, e) => {
 window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
   const edgeSet = new Set();
-
+  
   const addEdge = (src, tgt, defaultType) => {
       if(!src || !tgt) return;
       const id = `E__${src}__${tgt}`; 
@@ -2188,7 +2182,6 @@ window.buildOntoGraphData = () => {
       else if (n.srcType === 'DOC') n.depth = 2; 
       else n.depth = 3; 
   });
-
   const validNodes = new Set(nodes.map(n => n.id));
   edges = edges.filter(e => validNodes.has(e.source) && validNodes.has(e.target));
 
@@ -2199,6 +2192,7 @@ window.buildOntoGraphData = () => {
 window.renderOAb = () => {
   const b = document.getElementById('o-abody');
   if(!b) return;
+
   if(!S.ontoSel) {
     b.innerHTML = `
       <div class="hint" style="margin-top:40px;">
@@ -2213,7 +2207,6 @@ window.renderOAb = () => {
   const n = nodes.find(x=>x.id===S.ontoSel);
   if(!n) return;
   const edges = S.ontoEdges['CURRENT']||[];
-  
   const parents = edges.filter(e => e.target === n.id || (e.target.id && e.target.id === n.id));
   const children = edges.filter(e => e.source === n.id || (e.source.id && e.source.id === n.id));
   
@@ -2349,6 +2342,7 @@ window.initOG = () => {
          .attr('width', colWidth).attr('height', Math.max(H, 1000))
          .attr('fill', i % 2 === 0 ? '#f8fafc' : '#f1f5f9')
          .attr('opacity', 0.6);
+         
       bgG.append('text')
          .attr('x', i * colWidth + colWidth/2).attr('y', 24)
          .attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', '700').attr('fill', '#94a3b8')
@@ -2360,14 +2354,14 @@ window.initOG = () => {
   df.append('marker').attr('id','oarr-gray').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#cbd5e1').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-blue').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#3B82F6').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
   df.append('marker').attr('id','oarr-red').attr('viewBox','0 0 10 10').attr('refX',10).attr('refY',5).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M1 1 L9 5 L1 9').attr('fill','none').attr('stroke','#EF4444').attr('stroke-width',1.5).attr('stroke-linecap','round').attr('stroke-linejoin','round');
-  
+
   window.oGMain = window.oSvg.append('g');
   window.oZoom = d3.zoom().scaleExtent([0.2, 3]).on('zoom', e => window.oGMain.attr('transform', e.transform));
   window.oSvg.call(window.oZoom);
   
   const nodes = S.ontoNodes['CURRENT']||[];
   let links = S.ontoEdges['CURRENT']||[];
-  
+
   const depthCounts = {0:0, 1:0, 2:0, 3:0};
   nodes.forEach(n => { depthCounts[n.depth] = (depthCounts[n.depth] || 0) + 1; });
   
@@ -2378,18 +2372,17 @@ window.initOG = () => {
       const idx = depthCurrent[n.depth]++;
       n.y = (H / 2) + (idx - (count - 1) / 2) * 60; 
   });
-  
+
   const nodeById = new Map(nodes.map(n => [n.id, n]));
   links.forEach(l => {
       if (typeof l.source === 'string') l.source = nodeById.get(l.source);
       if (typeof l.target === 'string') l.target = nodeById.get(l.target);
   });
-  
   links = links.filter(l => l.source && l.target);
 
   const eG = window.oGMain.append('g');
   const eS = eG.selectAll('.oeg').data(links).join('g').attr('class','oeg');
-  
+
   // 가시적 패스 (Visible Path)
   eS.append('path')
     .attr('class', 'visible-edge')
@@ -2426,7 +2419,7 @@ window.initOG = () => {
         const ty = d.target.y;
         return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
     });
-  
+
   // 텍스트 라벨
   eS.append('text')
     .attr('text-anchor','middle')
@@ -2480,12 +2473,12 @@ window.initOG = () => {
         window.go('docs');
         window.V.docs('rel');
     });
-  
+
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
     .attr('transform', d => `translate(${d.x},${d.y})`)
     .on('click',(e,d)=>{ e.stopPropagation(); window.oSelN(d.id); });
-    
+
   nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
       tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
@@ -2503,20 +2496,20 @@ window.initOG = () => {
       nG.selectAll('.ong').classed('dimmed', n => !connectedIds.has(n.id));
       eG.selectAll('.oeg').classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id);
   });
-  
+
   nS.on('mouseleave', () => {
       document.getElementById('o-tip')?.classList.remove('on');
       nG.selectAll('.ong').classed('dimmed', false);
       eG.selectAll('.oeg').classed('dimmed', false);
   });
-    
+
   nS.append('circle')
     .attr('r', 12)
     .attr('fill', d => window.getNColor(d))
     .attr('stroke', d => d.id === S.ontoSel ? '#334155' : '#fff')
     .attr('stroke-width', d => d.id === S.ontoSel ? 4 : 2)
     .style('filter', 'drop-shadow(0px 3px 4px rgba(0,0,0,0.12))');
-  
+
   nS.append('text')
     .attr('text-anchor', 'middle')
     .attr('dy', '24px')
@@ -2526,7 +2519,7 @@ window.initOG = () => {
     .attr('pointer-events', 'none')
     .style('text-shadow', '0px 1px 2px #f8fafc, 0px -1px 2px #f8fafc, 1px 0px 2px #f8fafc, -1px 0px 2px #f8fafc')
     .text(d => d.label.length > 12 ? d.label.substring(0, 12) + '...' : d.label);
-  
+
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
   
   window.oSvg.call(window.oZoom.transform, d3.zoomIdentity.translate(0,30).scale(0.9));
@@ -2542,6 +2535,7 @@ window.V.poc = () => {
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('pocs')">🔢 코드 순번 정렬</button>
     <button class="btn btn-o" onclick="window.addPoc()">+ PoC 추가</button>
   `;
+
   document.getElementById('content').innerHTML=`
     <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0;">
       <div class="g4" style="flex-shrink:0;">
@@ -2597,6 +2591,7 @@ window.V.rag = () => {
 
     const currentDocCodes = new Set(S.docs.map(d => d.code));
     S.ragChunks = S.ragChunks.filter(c => currentDocCodes.has(c.docCode));
+
     S.docs.forEach(d => {
         if(!S.ragChunks.find(c => c.docCode === d.code)) {
             S.ragChunks.push({ docCode: d.code, chunkType: '문단 단위', chunkSize: '', overlap: '', note: '' });
@@ -2719,21 +2714,16 @@ window.V.rag = () => {
 window.V.aiext = () => {
   document.getElementById('pg-actions').innerHTML = '';
   document.getElementById('content').innerHTML = `
-    <div style="flex:1;display:flex;align-items:center;
-      justify-content:center;flex-direction:column;gap:16px;
-      padding:40px;text-align:center;">
+    <div style="flex:1;display:flex;align-items:center; justify-content:center;flex-direction:column;gap:16px; padding:40px;text-align:center;">
       <div style="font-size:48px;">🔍</div>
-      <div style="font-size:16px;font-weight:500;
-        color:var(--color-text-primary)">용어 추출 AI</div>
-      <div style="font-size:13px;color:var(--color-text-secondary);
-        max-width:360px;line-height:1.8">
+      <div style="font-size:16px;font-weight:500; color:var(--color-text-primary)">용어 추출 AI</div>
+      <div style="font-size:13px;color:var(--color-text-secondary); max-width:360px;line-height:1.8">
         Word, PDF, Excel 문서를 업로드하면<br>
         Claude AI가 용어·객체 후보를 자동 추출하고<br>
         사람이 검토 후 TRM 탭에 확정 등록하는 기능입니다.<br><br>
         <strong>Phase 2 진입 후 순차 개발 예정입니다.</strong>
       </div>
-      <div style="font-size:11px;padding:6px 14px;border-radius:20px;
-        background:#FAEEDA;color:#633806;font-weight:500">
+      <div style="font-size:11px;padding:6px 14px;border-radius:20px; background:#FAEEDA;color:#633806;font-weight:500">
         개발 예정
       </div>
     </div>`;
@@ -2833,8 +2823,34 @@ window.dlXlsx = () => {
    ['3_EXP_예외기준',['코드','예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.rule,r.ai,r.docRef,r.tskRef,r.note,window.mergeRef(r._trm)])],
    ['4_TRM_용어객체',['코드','용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.docRef,r.tskRef,r.note])],
    ['5_DAT_데이터셋',['코드','항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],S.dats.map(r=>[r.code,r.name,r.dtype,r.src,r.own,r.cycle,r.sens,r.trmRef,r.docRef,r.tskRef,r.note])]
-  ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]); ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
+  ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]);
+  ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
   XLSX.writeFile(wb,'AX_portal_template_v2_export.xlsx'); window.toast('Excel 다운로드 완료');
+};
+
+window.dlOnto = () => {
+  const wb = XLSX.utils.book_new();
+  const edges = window.getAllEdges();
+  const edgeRows = edges.map(e => [
+    e.source, e.target, e.detail.type, e.detail.clause, e.detail.relevance, e.detail.verbatim
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['출처(Source)', '대상(Target)', '관계 유형', '참조 위치', '중요도', '원문/발췌'],
+    ...edgeRows
+  ]);
+  ws['!cols'] = [20,20,16,20,10,40].map(wch => ({wch}));
+  XLSX.utils.book_append_sheet(wb, ws, '온톨로지_엣지');
+
+  const nodeRows = (S.ontoNodes['CURRENT'] || []).map(n => [n.id, n.srcType, n.label, n.def||'', n.dtype||'']);
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['코드', '유형', '이름/용어', '정의/설명', '세부구분'],
+    ...nodeRows
+  ]);
+  ws2['!cols'] = [14,8,24,36,12].map(wch => ({wch}));
+  XLSX.utils.book_append_sheet(wb, ws2, '온톨로지_노드');
+
+  XLSX.writeFile(wb, 'AX_ontology_export.xlsx');
+  window.toast('온톨로지 Excel 다운로드 완료');
 };
 
 </script>
