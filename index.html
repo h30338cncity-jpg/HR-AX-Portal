@@ -107,6 +107,7 @@ td select{cursor:pointer}
 .stab.on-exp{border-bottom-color:#633806;color:#633806;background:#FAEEDA}
 .stab.on-trm{border-bottom-color:#0C447C;color:#0C447C;background:#E6F1FB}
 .stab.on-dat{border-bottom-color:#712B13;color:#712B13;background:#FAECE7}
+.stab.on-prs{border-bottom-color:#0369A1;color:#0369A1;background:#E0F2FE}
 .stab.on-rel{border-bottom-color:#72243E;color:#72243E;background:#FBEAF0}
 
 /* Code badges */
@@ -115,6 +116,7 @@ td select{cursor:pointer}
 .ce{background:#FAEEDA;color:#633806}.cr{background:#E6F1FB;color:#0C447C}
 .ca{background:#FAECE7;color:#712B13}.cl{background:#FBEAF0;color:#72243E}
 .cp{background:#EAF3DE;color:#27500A}
+.cprs{background:#E0F2FE;color:#0369A1}
 .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
 .pd{background:#EAF3DE;color:#27500A}.pp{background:#FAEEDA;color:#633806}
 .pt{background:#F1EFE8;color:#444441}.pw{background:#FCEBEB;color:#791F1F}
@@ -225,7 +227,7 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="sb-item active" id="n-home" onclick="window.goModule('home', 'home', this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
     <div class="sb-sec">Phase 1 · 기준 확립</div>
     <div class="sb-item" id="n-tasks" onclick="window.goModule('tasks', 'tasks', this)"><span class="sb-ic">📋</span>업무 과제 관리</div>
-    <div class="sb-item" id="n-docs" onclick="window.goModule('standard', 'doc', this)"><span class="sb-ic">📄</span>표준문서 관리</div>
+    <div class="sb-item" id="n-docs" onclick="window.goModule('standard', 'doc', this)"><span class="sb-ic">📄</span>표준문서·프로세 관리</div>
     
     <div class="sb-sec">Phase 2 · 언어·개념 체계화</div>
     <div class="sb-item" id="n-aiext" onclick="window.goModule('aiext', 'aiext', this)"><span class="sb-ic">🔍</span>용어 추출 AI</div>
@@ -233,9 +235,9 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="sb-item" id="n-objects" onclick="window.goModule('objects', 'obj', this)"><span class="sb-ic">💎</span>확정 객체 (표준)</div>
     
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
-    <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>① 관계 정의 (문서·과제)</div>
-    <div class="sb-item" id="n-objrel" onclick="window.goModule('objrel', 'objrel', this)"><span class="sb-ic">🔀</span>② 객체 간 연결 (의미)</div>
-    <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>③ 온톨로지 맵</div>
+    <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의 (문서·과제)</div>
+    <div class="sb-item" id="n-objrel" onclick="window.goModule('objrel', 'objrel', this)"><span class="sb-ic">🔀</span>객체 간 연결 (의미)</div>
+    <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
     
     <div class="sb-sec">Phase 4 · 시스템 구현</div>
     <div class="sb-item" id="n-data" onclick="window.goModule('data', 'data', this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
@@ -1218,7 +1220,7 @@ window.saveStateFn = () => {
 const titles = {
   home: '홈 대시보드',
   tasks: '업무 과제 관리',
-  docs: '표준문서 및 자산 관리',
+  docs: '표준문서 및 프로세 관리',
   data: '데이터셋 현황',
   onto: '온톨로지 맵 & 연결 표',
   poc: 'PoC 현황',
@@ -1735,15 +1737,15 @@ window.V.docs = (tab) => {
   
   document.getElementById('pg-actions').innerHTML=`
     ${window.dtab === 'trm' ? `<button class="btn btn-g btn-sm" style="background:#534AB7; margin-right:8px;" onclick="window.runAiSynonymSuggest()">✨ AI 유의어 자동 추천</button>` : ''}
-    ${window.dtab !== 'rel' ? `<button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : (window.dtab === 'trm' || window.dtab === 'obj') ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>` : ''}
+    ${window.dtab !== 'rel' ? `<button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' || window.dtab === 'prs' ? 'docs' : window.dtab === 'exp' ? 'exps' : (window.dtab === 'trm' || window.dtab === 'obj') ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>` : ''}
     <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
     <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
   `;
   
   // 동적 탭 필터링 로직 (activeModule 기준)
-  let tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어 사전','cr'],['obj','OBJ 확정 객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
+  let tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['prs','PRS 프로세스','cprs'],['exp','EXP 예외기준','ce'],['trm','TRM 용어 사전','cr'],['obj','OBJ 확정 객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
   
-  if (window.activeModule === 'standard') tabs = tabs.filter(t => ['tsk', 'doc', 'exp'].includes(t[0]));
+  if (window.activeModule === 'standard') tabs = tabs.filter(t => ['tsk', 'doc', 'prs', 'exp'].includes(t[0]));
   else if (window.activeModule === 'terms') tabs = tabs.filter(t => t[0] === 'trm');
   else if (window.activeModule === 'objects') tabs = tabs.filter(t => t[0] === 'obj');
   else if (window.activeModule === 'rel') tabs = tabs.filter(t => t[0] === 'rel');
@@ -1968,7 +1970,8 @@ window.V.docs = (tab) => {
   // TRM과 OBJ의 컬럼 구성 분리
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    prs:{k:'docs',hd:['프로세스명','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
     trm:{k:'terms',hd:['단어/용어명','의미 정의','진행 상태(객체전환)','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{tskRef:'TSK',docRef:'DOC'},ro:[]},
     obj:{k:'terms',hd:['객체명(표준)','객체 타입','상위 객체','하위 객체','포함된 유의어','관련 DOC','관련 TSK','비고'],fl:['term','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:['sim']},
@@ -1982,6 +1985,10 @@ window.V.docs = (tab) => {
       currentRows = currentRows.filter(r => !r.otype || r.otype === '용어(대기중)' || r.otype === '용어');
   } else if (window.dtab === 'obj') {
       currentRows = currentRows.filter(r => r.otype && r.otype !== '용어(대기중)' && r.otype !== '용어');
+  } else if (window.dtab === 'doc') {
+      currentRows = currentRows.filter(r => r.dtype !== '프로세스(운영)');
+  } else if (window.dtab === 'prs') {
+      currentRows = currentRows.filter(r => r.dtype === '프로세스(운영)');
   }
 
   let filterHtml = '';
@@ -1990,7 +1997,7 @@ window.V.docs = (tab) => {
   
   if (window.dtab === 'doc') {
     window.docSubTab = window.docSubTab || '법령';
-    const subs = ['법령', '사규', '지침', '프로세스(운영)', '관행/기타'];
+    const subs = ['법령', '사규', '지침', '관행/기타'];
     subTabsHtml = `<div style="display:flex; gap:6px; margin-bottom:4px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
       ${subs.map(s => `<button class="btn ${window.docSubTab === s ? 'btn-g' : 'btn-o'}" style="border-radius:20px; padding:4px 14px; font-weight:700;" onclick="window.docSubTab='${s}'; window.V.docs()">${s}</button>`).join('')}
     </div>`;
@@ -2082,11 +2089,16 @@ window.addDocRow = (tab) => {
   if (tab === 'doc') {
     let dt = window.docSubTab || '법령';
     if (dt === '관행/기타') dt = '관행';
-    const pfxMap = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '프로세스(운영)':'DOC-P', '관행':'DOC-C', '기타':'DOC-E'};
+    const pfxMap = {'법령':'DOC-L', '사규':'DOC-R', '지침':'DOC-G', '관행':'DOC-C', '기타':'DOC-E'};
     const pfx = pfxMap[dt] || 'DOC';
     S.docs.push({
       code: window.nc('docs', pfx), _locked: false,
       dtype: dt, name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', parentDoc:'', _exp:[], _trm:[]
+    });
+  } else if (tab === 'prs') {
+    S.docs.push({
+      code: window.nc('docs', 'PRS'), _locked: false,
+      dtype: '프로세스(운영)', name:'', summary:'', dept:'', cur:'미확인', loc:'', tskRef:'', issueType:'', action:'', note:'', parentDoc:'', _exp:[], _trm:[]
     });
   } else {
     const m={tsk:['tasks','TSK'],exp:['exps','EXP'],trm:['terms','TRM'],dat:['dats','DAT']};
