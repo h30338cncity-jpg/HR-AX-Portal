@@ -2,7 +2,7 @@
 <html lang="ko">
 <head><meta charset="UTF-8">
 <style>
-/* 기존 CSS 모두 유지 */
+/* 기존 CSS 유지 */
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary);margin:0;height:100vh;overflow:hidden}
 #login-screen{display:flex;width:100%;height:100vh;align-items:center;justify-content:center;background:#F1F3F5;position:absolute;inset:0;z-index:9999}
@@ -28,9 +28,7 @@ body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-tex
 
 /* Global Search */
 .global-search-wrap { position:relative; display:flex; align-items:center; margin-left:14px; }
-.global-search-input { width:220px; padding:6px 12px 6px 30px; border-radius:20px; border:1px solid var(--color-border-secondary); font-size:12px; outline:none;
-background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 10px center;
-transition:border-color 0.2s; }
+.global-search-input { width:220px; padding:6px 12px 6px 30px; border-radius:20px; border:1px solid var(--color-border-secondary); font-size:12px; outline:none; background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 10px center; transition:border-color 0.2s; }
 .global-search-input:focus { border-color:#1D9E75; }
 .search-dropdown { position:absolute; top:36px; left:0; width:400px; max-height:400px; overflow-y:auto; background:#fff; border:1px solid var(--color-border-tertiary); border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:10000; display:none; flex-direction:column; }
 .search-dropdown.active { display:flex; }
@@ -163,7 +161,7 @@ input.code-input:focus { border-style: solid; border-color: #1D9E75; background:
 
 /* ONTO */
 .onto-wrap{display:flex;height:100%;overflow:hidden}
-.o-side{width:300px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;z-index:2;}
+.o-side{width:300px;flex-shrink:0;background:var(--color-background-primary);border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow:hidden;z-index:2; border-right: 1px solid var(--color-border-secondary);}
 .o-abody{flex:1;overflow-y:auto;padding:16px}
 .o-graph{flex:1;position:relative; background:#f8fafc; z-index:1;}
 #o-svg{position:absolute;inset:0;width:100%;height:100%;}
@@ -210,8 +208,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 <div id="login-screen">
   <div class="login-box">
     <h2 style="text-align:center;margin-bottom:10px">AX 포털 로그인</h2>
-    <input type="text" id="login-id" class="login-input" placeholder="아이디" onkeypress="if(event.key==='Enter') handleLogin()">
-    <input type="password" id="login-pw" class="login-input" placeholder="비밀번호" onkeypress="if(event.key==='Enter') handleLogin()">
+    <input type="text" id="login-id" class="login-input" placeholder="아이디 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
+    <input type="password" id="login-pw" class="login-input" placeholder="비밀번호 (admin)" onkeypress="if(event.key==='Enter') handleLogin()">
     <button class="login-btn" onclick="handleLogin()">로그인</button>
     <div id="login-err" style="color:#E24B4A;font-size:11px;text-align:center;display:none">아이디 또는 비밀번호를 확인해주세요.</div>
   </div>
@@ -386,10 +384,10 @@ window.S = {
       {code:'DOC-P-001',dtype:'지침',name:'부서별 MBO 가이드',summary:'부서 단위 세부 목표 할당 가이드',dept:'HR팀',cur:'최신',loc:'',tskRef:'',issueType:'',action:'',note:'',parentDoc:'DOC-R-001',_exp:[],_trm:[]}
   ],
   exps:[{code:'EXP-001',sit:'신설 조직 목표 설정 유예',hand:'HR팀장 전결',owner:'HR팀',rule:'명문화됨',ai:'조건부가능',docRef:'DOC-P-001',tskRef:'',note:'',_trm:[]}],
-  terms:[{code:'TRM-001',term:'핵심성과지표(KPI)',def:'목표 달성 여부를 측정하는 정량적 단위',otype:'기준값',parent:'',child:'',sim:'',docRef:'DOC-R-001',tskRef:'',note:'',_parent:[],_child:[]}],
+  terms:[{code:'TRM-001',term:'핵심성과지표(KPI)',def:'목표 달성 여부를 측정하는 정량적 단위',otype:'기준값',parent:'',child:'',sim:'KPI, 성과지표, 평가지표',docRef:'DOC-R-001',tskRef:'',note:'',_parent:[],_child:[]}],
   dats:[{code:'DAT-001',name:'조직별 KPI 달성률 DB',dtype:'정형',src:'인사시스템',own:'보유',cycle:'월간',sens:'일반',trmRef:'TRM-001',docRef:'DOC-P-001',tskRef:'',note:''}],
   pocs:[{code:'POC-001',tsk:'TSK-001',logic:'목표 키워드 시맨틱 유사도 비교',result:'',issue:'',owner:'',date:'2026-05',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:''}],
-  ontoTask:'ALL', ontoSel: null, ontoNodes:{}, ontoEdges:{}, 
+  ontoTask:'ALL', ontoSel: null, ontoNodes:{}, ontoEdges:{}, ontoViewMode: 'graph', // 'graph' or 'table'
   edgeDetails:{
       'E__TSK-001__DOC-R-001': {type:'필수 준수', clause:'', relevance:'필수', verbatim:''},
       'E__DOC-R-001__DOC-P-001': {type:'상/하위 종속', clause:'', relevance:'참고', verbatim:''},
@@ -660,7 +658,7 @@ window.th = (arrKey, label, defStyle='') => {
 
 window.changeCode = (arrKey, oldCode, newCode, el) => {
   newCode = newCode.trim();
-  if(!newCode) { window.toast('코드는 비워둘 수 없습니다.'); el.value = oldCode; return; }
+  if(!newCode) { window.toast('코드는 비워둘 수 কাশী.'); el.value = oldCode; return; }
   if(oldCode === newCode) return;
   const row = window.S[arrKey].find(x => x.code === oldCode);
   if(row && row._locked) { window.toast('확정된 코드는 변경할 수 없습니다.'); el.value = oldCode; return; }
@@ -1166,6 +1164,7 @@ const initAuth = async () => {
             S.edgeDetails = data.edgeDetails || {};
             S.manualChecks = data.manualChecks || {}; // 수동 체크 동기화
             S.aiCandidates = data.aiCandidates || []; // AI 추출 후보
+            if(data.ontoViewMode) S.ontoViewMode = data.ontoViewMode;
 
             if(!S.ragChunks) S.ragChunks = [];
             if(!S.ragRetrieval) S.ragRetrieval = {embedModel:'',topK:'',searchType:'Dense',rerankModel:'',filterStrategy:''};
@@ -1196,7 +1195,8 @@ window.buildDataToSave = () => {
     ragRetrieval: S.ragRetrieval,
     ragPrompt: S.ragPrompt,
     manualChecks: S.manualChecks || {},
-    aiCandidates: S.aiCandidates || []
+    aiCandidates: S.aiCandidates || [],
+    ontoViewMode: S.ontoViewMode
   };
 };
 
@@ -1214,7 +1214,7 @@ const titles = {
   tasks: '업무 과제 관리',
   docs: '표준문서 및 자산 관리',
   data: '데이터셋 현황',
-  onto: '온톨로지 맵',
+  onto: '온톨로지 맵 & 연결 표',
   poc: 'PoC 현황',
   rag: 'RAG 설계',
   team: '팀원 R&R',
@@ -1294,15 +1294,6 @@ window.V.home = () => {
               { label: '용어-문서 연결', key: 'p2_i1' },
               { label: '데이터셋 연결', key: 'p2_i2' },
               { label: '온톨로지 확정', key: 'p2_i3' }
-          ]
-      },
-      {
-          phase: 4, title: 'Phase 4 · 시스템 구현',
-          items: [
-              { label: '데이터셋 수집', key: 'p3_i0' },
-              { label: 'PoC 시나리오 등록', key: 'p3_i1' },
-              { label: 'PoC 완료', key: 'p3_i2' },
-              { label: '이슈 없음', key: 'p3_i3' }
           ]
       }
   ];
@@ -1846,7 +1837,7 @@ window.V.docs = (tab) => {
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
     doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
-    trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
+    trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
   const c=cfgs[window.dtab];
@@ -1900,7 +1891,7 @@ window.V.docs = (tab) => {
       else if(c.ms?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
       else if(c.sl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${bg}">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
       else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
-      else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+      else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}" placeholder="${f==='sim'?'예: 본봉, 기본연봉':''}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
       return `<td style="${bg}">${inner}</td>`;
     }).join('');
     
@@ -2004,6 +1995,12 @@ window.V.data = () => {
 };
 
 // ── ONTO ──────────────────────────────────
+window.setOntoMode = (mode) => {
+    window.pushHistory();
+    S.ontoViewMode = mode;
+    window.stateChanged();
+};
+
 window.updateEdgeType = (edgeId, newType) => {
     window.pushHistory();
     if(!S.edgeDetails[edgeId]) S.edgeDetails[edgeId] = { type: newType, clause:'', relevance:'참고', verbatim:'' };
@@ -2013,7 +2010,7 @@ window.updateEdgeType = (edgeId, newType) => {
 };
 
 window.removeOntoRelation = (edgeId, e) => {
-    e.stopPropagation();
+    if(e) e.stopPropagation();
     const parts = edgeId.split('__');
     if(parts.length < 3) return;
     const parentCode = parts[1];
@@ -2046,32 +2043,94 @@ window.V.onto = () => {
   }
   
   document.getElementById('pg-actions').innerHTML=`
+    <div style="display:flex; background:#e2e8f0; border-radius:6px; padding:2px; margin-right:8px;">
+        <button class="btn-sm" style="border:none; background:${S.ontoViewMode==='graph'?'#fff':'transparent'}; color:${S.ontoViewMode==='graph'?'#000':'#64748b'}; border-radius:4px; font-weight:700; cursor:pointer;" onclick="window.setOntoMode('graph')">🕸️ 그래프 뷰</button>
+        <button class="btn-sm" style="border:none; background:${S.ontoViewMode==='table'?'#fff':'transparent'}; color:${S.ontoViewMode==='table'?'#000':'#64748b'}; border-radius:4px; font-weight:700; cursor:pointer;" onclick="window.setOntoMode('table')">📋 테이블 뷰</button>
+    </div>
     <select class="topbar-sel" onchange="window.switchOntoTask(this.value)">
       <option value="ALL" ${S.ontoTask==='ALL'?'selected':''}>🌐 전체 데이터 관계망</option>
       <optgroup label="단일 과제(TSK) 중심 보기">
       ${S.tasks.map(t=>`<option value="${t.code}"${t.code===S.ontoTask?' selected':''}>${t.code}${t.name?' · '+t.name:''}</option>`).join('')}
       </optgroup>
     </select>
-    <button class="btn btn-o btn-sm" onclick="window.resetOLayout()">레이아웃 중앙정렬</button>
+    ${S.ontoViewMode==='graph' ? `<button class="btn btn-o btn-sm" onclick="window.resetOLayout()">중앙정렬</button>` : ''}
     <button class="btn btn-g btn-sm" onclick="window.dlOnto()">↓ Excel</button>`;
-  document.getElementById('content').innerHTML=`
-    <div class="onto-wrap">
-      <div class="o-side" style="width:310px;">
-        <div class="o-abody" id="o-abody"></div>
-      </div>
-      <div class="o-graph" id="o-gwrap">
-        <svg id="o-svg"></svg>
-        <div class="g-tip" id="o-tip"></div>
-        <div class="g-ctrls">
-          <button class="gcb" onclick="window.oZS(1.3)">+</button>
-          <button class="gcb" onclick="window.oZS(0.77)">−</button>
-          <button class="gcb" onclick="window.oZF()" style="font-size:11px">⊙</button>
-        </div>
-      </div>
-    </div>`;
+  
   window.buildOntoGraphData(); 
-  window.renderOAb();
-  setTimeout(window.initOG, 60);
+
+  if (S.ontoViewMode === 'table') {
+      const edges = S.ontoEdges['CURRENT'] || [];
+      const edgeRows = edges.map(e => {
+          const sObj = S.ontoNodes['CURRENT'].find(n => n.id === (typeof e.source === 'string' ? e.source : e.source.id)) || {label: 'Unknown', srcType: ''};
+          const tObj = S.ontoNodes['CURRENT'].find(n => n.id === (typeof e.target === 'string' ? e.target : e.target.id)) || {label: 'Unknown', srcType: ''};
+          
+          let typeBg = '#e2e8f0', typeColor = '#475569';
+          if (e.detail.relevance === '필수') { typeBg = '#EFF6FF'; typeColor = '#1D4ED8'; }
+          else if (e.detail.relevance === '충돌가능') { typeBg = '#FEF2F2'; typeColor = '#991B1B'; }
+
+          return `
+          <tr>
+              <td><div style="display:flex;align-items:center;gap:4px;">${window.badge(sObj.id)} <span>${sObj.label}</span></div></td>
+              <td style="text-align:center;"><span class="pill" style="background:#f1f5f9;color:#334155;">${e.rtype}</span></td>
+              <td><div style="display:flex;align-items:center;gap:4px;">${window.badge(tObj.id)} <span>${tObj.label}</span></div></td>
+              <td><input type="text" value="${(e.detail.clause||'').replace(/"/g,'&quot;')}" onchange="S.edgeDetails['${e.id}'].clause=this.value; window.stateChanged()" style="width:100%; border:1px solid transparent; background:transparent;" placeholder="참조 위치 입력"></td>
+              <td style="text-align:center;">
+                  <select onchange="S.edgeDetails['${e.id}'].relevance=this.value; window.stateChanged()" style="background:${typeBg}; color:${typeColor}; border-radius:10px; font-size:10px; font-weight:700; padding:2px 4px; outline:none; border:none; text-align:center; cursor:pointer; appearance:none;">
+                      <option value="참고" ${e.detail.relevance==='참고'?'selected':''}>참고</option>
+                      <option value="필수" ${e.detail.relevance==='필수'?'selected':''}>필수</option>
+                      <option value="충돌가능" ${e.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
+                  </select>
+              </td>
+              <td><button class="del-btn" onclick="window.removeOntoRelation('${e.id}', event)">×</button></td>
+          </tr>
+          `;
+      }).join('');
+
+      document.getElementById('content').innerHTML=`
+        <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:10px; min-width:0; min-height:0; background:#F1F5F9;">
+            <div class="banner" style="margin:0;">
+                트리플 스토어(Triple Store) 테이블 뷰입니다. AI 지식 그래프를 구성하는 <strong>[주어] - [관계(동사)] - [목적어]</strong> 데이터를 한눈에 관리할 수 있습니다.
+            </div>
+            <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
+                <div style="flex:1; overflow:auto;">
+                    <table style="width:100%; min-width:800px;">
+                        <thead>
+                            <tr>
+                                <th style="width:25%">주어 (출처 객체)</th>
+                                <th style="width:15%; text-align:center;">관계 유형 (동사)</th>
+                                <th style="width:25%">목적어 (대상 객체)</th>
+                                <th style="width:20%">참조 위치 (Clause)</th>
+                                <th style="width:10%; text-align:center;">중요도</th>
+                                <th style="width:5%">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${edgeRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:gray;">연결된 객체 데이터가 없습니다.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+      `;
+  } else {
+      document.getElementById('content').innerHTML=`
+        <div class="onto-wrap">
+          <div class="o-side" style="width:310px;">
+            <div class="o-abody" id="o-abody"></div>
+          </div>
+          <div class="o-graph" id="o-gwrap">
+            <svg id="o-svg"></svg>
+            <div class="g-tip" id="o-tip"></div>
+            <div class="g-ctrls">
+              <button class="gcb" onclick="window.oZS(1.3)">+</button>
+              <button class="gcb" onclick="window.oZS(0.77)">−</button>
+              <button class="gcb" onclick="window.oZF()" style="font-size:11px">⊙</button>
+            </div>
+          </div>
+        </div>`;
+      window.renderOAb();
+      setTimeout(window.initOG, 60);
+  }
 };
 
 window.switchOntoTask = (code) => { 
@@ -2464,7 +2523,39 @@ window.initOG = () => {
   const nG = window.oGMain.append('g');
   const nS = nG.selectAll('.ong').data(nodes,d=>d.id).join('g').attr('class','ong').style('cursor','pointer')
     .attr('transform', d => `translate(${d.x},${d.y})`)
+    .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended))
     .on('click',(e,d)=>{ e.stopPropagation(); window.oSelN(d.id); });
+
+  function dragstarted(e, d) {
+      d3.select(this).raise().attr("stroke", "black");
+  }
+
+  function dragged(e, d) {
+      d.x = e.x;
+      d.y = e.y;
+      d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
+      
+      eS.selectAll('.visible-edge').attr('d', d => {
+        const sx = d.source.x + 12; const sy = d.source.y;
+        const tx = d.target.x - 16; const ty = d.target.y;
+        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
+      });
+      eS.selectAll('.hit-edge').attr('d', d => {
+        const sx = d.source.x + 12; const sy = d.source.y;
+        const tx = d.target.x - 16; const ty = d.target.y;
+        return `M ${sx} ${sy} C ${sx + 60} ${sy}, ${tx - 60} ${ty}, ${tx} ${ty}`; 
+      });
+      eS.selectAll('text')
+        .attr('x', d => (d.source.x + d.target.x) / 2)
+        .attr('y', d => (d.source.y + d.target.y) / 2 - 6);
+  }
+
+  function dragended(e, d) {
+      d3.select(this).attr("stroke", null);
+  }
 
   nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
@@ -2829,7 +2920,7 @@ window.V.team = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addMember()">+ 팀원 추가</button>`;
   document.getElementById('content').innerHTML=`
     <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0;">
-      <div class="banner" style="flex-shrink:0; margin:0;">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 프로필 이모지를 직접 선택할 수 있으며 Tab 키로 입력칸 이동이 가능합니다.</div>
+      <div class="banner" style="flex-shrink:0; margin:0;">과제 현황판에서 담당자로 지정하면, 해당 팀원의 담당 과제에 자동으로 연계됩니다. 프로필 이모지를 직접 선택할 수 정 있으며 Tab 키로 입력칸 이동이 가능합니다.</div>
       <div style="flex:1; overflow-y:auto; padding-right:4px; min-height:0;">
         <div class="team-grid">${S.team.map((m,i)=>`
           <div class="team-card">
@@ -2905,7 +2996,7 @@ window.getKeyByHeader = (sheet, hdr) => {
     '과제명':'name', '담당자':'assignee', '과제 목적':'purpose', '진행상황':'status', '비고':'note',
     '구분':'dtype', '문서명/조항':'name', '핵심 내용':'summary', '소관 부서':'dept', '현행화':'cur', '위치':'loc', '관련 TSK':'tskRef', '문제유형':'issueType', '보완 방향':'action',
     '예외상황/기준명':'sit', '처리 방법':'hand', '판단 주체':'owner', '기준 유무':'rule', 'AI 처리':'ai', '관련 DOC':'docRef',
-    '용어명':'term', '정의':'def', '객체 유형':'otype', '상위 객체':'parent', '하위 객체':'child', '유사어':'sim',
+    '용어명':'term', '정의':'def', '객체 유형':'otype', '상위 객체':'parent', '하위 객체':'child', '유의어/유사어':'sim',
     '항목명':'name', '데이터 형태':'dtype', '출처':'src', '보유 여부':'own', '수집 주기':'cycle', '민감도':'sens', '관련 TRM':'trmRef', '비고(품질이슈 등)':'note'
   };
   return m[hdr] || hdr;
@@ -2916,7 +3007,7 @@ window.dlXlsx = () => {
   [['1_TSK_과제',['코드','과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.purpose,r.status,r.note,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),window.mergeRef(r._exp)])],
    ['2_DOC_기준문서',['코드','구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.dept,r.cur,r.loc,r.tskRef,r.issueType,r.action,r.note,window.mergeRef(r._exp),window.mergeRef(r._trm)])],
    ['3_EXP_예외기준',['코드','예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.rule,r.ai,r.docRef,r.tskRef,r.note,window.mergeRef(r._trm)])],
-   ['4_TRM_용어객체',['코드','용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.docRef,r.tskRef,r.note])],
+   ['4_TRM_용어객체',['코드','용어명','정의','객체 유형','상위 객체','하위 객체','유의어/유사어','관련 DOC','관련 TSK','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.docRef,r.tskRef,r.note])],
    ['5_DAT_데이터셋',['코드','항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],S.dats.map(r=>[r.code,r.name,r.dtype,r.src,r.own,r.cycle,r.sens,r.trmRef,r.docRef,r.tskRef,r.note])]
   ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]);
   ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
