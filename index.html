@@ -659,7 +659,7 @@ window.th = (arrKey, label, defStyle='') => {
 
 window.changeCode = (arrKey, oldCode, newCode, el) => {
   newCode = newCode.trim();
-  if(!newCode) { window.toast('코드는 비워둘 수 কাশী.'); el.value = oldCode; return; }
+  if(!newCode) { window.toast('코드는 비워둘 수 없습니다.'); el.value = oldCode; return; }
   if(oldCode === newCode) return;
   const row = window.S[arrKey].find(x => x.code === oldCode);
   if(row && row._locked) { window.toast('확정된 코드는 변경할 수 없습니다.'); el.value = oldCode; return; }
@@ -2090,7 +2090,7 @@ window.V.data = () => {
   else if(window.datFilter === '미보유') fdd = dd.filter(d=>d.own==='미보유');
   else if(window.datFilter === '민감') fdd = dd.filter(d=>d.sens!=='일반');
 
-  const cardStyle = (f) => `card ${window.datFilter===f?'':'style="opacity:0.6"'}`;
+  const cardStyle = (f) => window.datFilter===f ? 'card' : 'card" style="opacity:0.6"';
   document.getElementById('pg-actions').innerHTML=`
     <button class="btn btn-o btn-sm" onclick="window.reorderCodes('dats')">🔢 코드 순번 정렬</button>
     <button class="btn btn-o btn-sm" onclick="window.goModule('data', 'dat')">+ 추가</button>
