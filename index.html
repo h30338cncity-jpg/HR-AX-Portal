@@ -415,6 +415,7 @@ window.datFilter = 'all';
 window.colWidths = window.colWidths || {};
 window.relSelectedNode = null;
 window.relSelectedEdgeId = null;
+window.relShowAllEdges = false;
 let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
 
@@ -859,6 +860,18 @@ window.getAllEdges = () => {
         window.parseRef(e.docRef).forEach(c => addEdge(c, e.code, '예외 처리'));
     });
     return edges;
+};
+
+window.updateEdgeDetail = (id, field, val) => {
+    window.pushHistory();
+    if(!S.edgeDetails[id]) {
+        const allEdges = window.getAllEdges();
+        const edge = allEdges.find(e => e.id === id);
+        const implicitType = edge ? edge.detail.type : '단순 참조';
+        S.edgeDetails[id] = { type: implicitType, clause: '', relevance: '참고', verbatim: '' };
+    }
+    S.edgeDetails[id][field] = val;
+    window.stateChanged();
 };
 
 window.createLinkCore = (pCode, cCode, relType) => {
@@ -1403,23 +1416,6 @@ window.selectRelEdge = (edgeId) => {
     window.V.docs('rel');
 };
 
-window.saveEdgeDetailPanel = () => {
-    if(!window.relSelectedEdgeId) return;
-    const clause = document.getElementById('edge-edit-clause').value;
-    const rel = document.getElementById('edge-edit-rel').value;
-    const verb = document.getElementById('edge-edit-verb').value;
-    
-    window.pushHistory();
-    if(!S.edgeDetails[window.relSelectedEdgeId]) {
-        S.edgeDetails[window.relSelectedEdgeId] = { type:'단순 참조', clause:'', relevance:'참고', verbatim:'' };
-    }
-    S.edgeDetails[window.relSelectedEdgeId].clause = clause;
-    S.edgeDetails[window.relSelectedEdgeId].relevance = rel;
-    S.edgeDetails[window.relSelectedEdgeId].verbatim = verb;
-    window.stateChanged();
-    window.toast('엣지 속성이 저장되었습니다.');
-};
-
 window.openAddRelEdgeModal = () => {
     if(!window.relSelectedNode) return;
     const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
@@ -1550,7 +1546,8 @@ window.V.docs = (tab) => {
 
   if (window.dtab === 'rel') {
     const allEdges = window.getAllEdges();
-    
+    const selEdge = window.selectedEdgeId ? allEdges.find(e => e.id === window.selectedEdgeId) : null;
+
     const root = { children: [] };
     const nodeMap = {};
     
@@ -1691,6 +1688,18 @@ window.V.docs = (tab) => {
                     ${window.badge(e.target)} <span style="font-weight:600;">${window.getItemName(e.target).replace(/"/g,'&quot;')}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:16px; flex:1;">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:6px;">관계 유형</label>
+                        <select id="edge-edit-type" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; cursor:pointer; background:#fff; transition:border-color 0.2s;" onfocus="this.style.borderColor='#2563EB'" onblur="this.style.borderColor='#cbd5e1'" onchange="window.updateEdgeDetail('${e.id}', 'type', this.value)">
+                            <option value="상/하위 종속" ${e.detail.type==='상/하위 종속'?'selected':''}>상/하위 종속</option>
+                            <option value="단순 참조" ${e.detail.type==='단순 참조'?'selected':''}>단순 참조</option>
+                            <option value="필수 준수" ${e.detail.type==='필수 준수'?'selected':''}>필수 준수</option>
+                            <option value="데이터 활용" ${e.detail.type==='데이터 활용'?'selected':''}>데이터 활용</option>
+                            <option value="기준 정의" ${e.detail.type==='기준 정의'?'selected':''}>기준 정의</option>
+                            <option value="예외 처리" ${e.detail.type==='예외 처리'?'selected':''}>예외 처리</option>
+                            <option value="키워드 매칭(추론)" ${e.detail.type==='키워드 매칭(추론)'?'selected':''}>키워드 매칭(추론)</option>
+                        </select>
+                    </div>
                     <div>
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:6px;">참조 위치 (Clause)</label>
                         <input type="text" id="edge-edit-clause" value="${e.detail.clause.replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절, p.12" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='#2563EB'" onblur="this.style.borderColor='#cbd5e1'; window.updateEdgeDetail('${e.id}', 'clause', this.value)">
@@ -2193,7 +2202,7 @@ window.renderOAb = () => {
         <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed #e2e8f0; cursor:pointer; transition:background 0.1s; border-radius:4px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="window.oSelN('${relatedNodeId}')">
             <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-left:4px;"></div>
             <div style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155">${String(o?.label).replace(/"/g,'&quot;')}</div>
-            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeType('${e.id}', this.value)" onclick="event.stopPropagation()">
+            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeDetail('${e.id}', 'type', this.value)" onclick="event.stopPropagation()">
                 <option value="상/하위 종속" ${e.rtype==='상/하위 종속'?'selected':''}>상/하위 종속</option>
                 <option value="단순 참조" ${e.rtype==='단순 참조'?'selected':''}>단순 참조</option>
                 <option value="필수 준수" ${e.rtype==='필수 준수'?'selected':''}>필수 준수</option>
@@ -2489,91 +2498,4 @@ window.V.team = () => {
               <div class="emoji-picker" id="ep-${i}">
                 <div class="emoji-btn" onclick="window.toggleEmoji(${i}, event)">${m.emoji||'👤'}</div>
                 <div class="emoji-grid" id="eg-${i}" style="display:none;">
-                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤','🦆','🦉','🦄'].map(e=>`<div class="emoji-item" onclick="window.setEmoji(${i}, '${e}')">${e}</div>`).join('')}
-                </div>
-              </div>
-              <button class="del-btn" onclick="window.pushHistory(); S.team.splice(${i},1); window.stateChanged()">×</button>
-            </div>
-            <input class="tci nm" placeholder="이름" value="${m.name||''}" onchange="window.pushHistory(); S.team[${i}].name=this.value; window.saveStateFn()">
-            <input class="tci rl" placeholder="역할 / 직무" value="${m.role||''}" onchange="window.pushHistory(); S.team[${i}].role=this.value; window.saveStateFn()">
-            <div class="tc-field"><div class="tc-label">담당 과제 (자동)</div><div class="code-list" style="padding:4px 0">${m._tasks.length ? window.fmtCodeList(m._tasks):'<span style="font-size:11px;color:gray">없음</span>'}</div></div>
-            <div class="tc-field" style="border-top:none;padding-top:0;margin-top:0"><div class="tc-label">비고</div><input class="tci" style="font-size:11px" placeholder="메모" value="${m.note||''}" onchange="window.pushHistory(); S.team[${i}].note=this.value; window.saveStateFn()"></div>
-          </div>`).join('')}</div>
-      </div>
-    </div>`;
-};
-window.addMember = () => { window.pushHistory(); S.team.push({name:'',role:'',tasks:'',note:'',emoji:'👤',_tasks:[]}); window.stateChanged(); };
-
-// ── EXCEL ────────────────────────────────────────────
-window.closeUploadModal = () => {
-  document.getElementById('upload-modal').style.display = 'none';
-  pendingUploadData = null;
-};
-
-window.applyUpload = (mode) => {
-  if (!pendingUploadData) return;
-  window.pushHistory();
-  const wb = pendingUploadData;
-  const sm = {'1_TSK_과제':'tasks','2_DOC_기준문서':'docs','3_EXP_예외기준':'exps','4_TRM_용어객체':'terms','5_DAT_데이터셋':'dats'};
-  
-  if (mode === 'overwrite') {
-    for (let nm in sm) {
-      if (wb.Sheets[nm]) S[sm[nm]] = []; 
-    }
-  }
-
-  for (let nm in sm) {
-    if(wb.Sheets[nm]) {
-      let arr = XLSX.utils.sheet_to_json(wb.Sheets[nm]);
-      let target = S[sm[nm]];
-      arr.forEach(row => {
-        if(row['코드']) {
-          let existing = target.find(x => x.code === row['코드']);
-          if(!existing) { existing = {code: row['코드'], _locked: false}; target.push(existing); }
-          Object.keys(row).forEach(k => { if(k!=='코드' && !k.includes('자동')) existing[window.getKeyByHeader(nm, k)] = String(row[k]||''); });
-        }
-      });
-    }
-  }
-  window.stateChanged();
-  window.closeUploadModal();
-  window.toast(mode === 'overwrite' ? 'Excel 데이터 덮어쓰기 완료' : 'Excel 데이터 추가 완료');
-};
-
-window.handleExcelUpload = (e) => {
-  const f = e.target.files[0]; if(!f) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const data = new Uint8Array(evt.target.result);
-    pendingUploadData = XLSX.read(data, {type: 'array'});
-    document.getElementById('upload-modal').style.display = 'flex';
-    e.target.value = ''; 
-  };
-  reader.readAsArrayBuffer(f);
-};
-
-window.getKeyByHeader = (sheet, hdr) => {
-  const m = {
-    '과제명':'name', '담당자':'assignee', '과제 목적':'purpose', '진행상황':'status', '비고':'note',
-    '구분':'dtype', '문서명/조항':'name', '핵심 내용':'summary', '소관 부서':'dept', '현행화':'cur', '위치':'loc', '관련 TSK':'tskRef', '문제유형':'issueType', '보완 방향':'action',
-    '예외상황/기준명':'sit', '처리 방법':'hand', '판단 주체':'owner', '기준 유무':'rule', 'AI 처리':'ai', '관련 DOC':'docRef',
-    '용어명':'term', '정의':'def', '객체 유형':'otype', '상위 객체':'parent', '하위 객체':'child', '유사어':'sim',
-    '항목명':'name', '데이터 형태':'dtype', '출처':'src', '보유 여부':'own', '수집 주기':'cycle', '민감도':'sens', '관련 TRM':'trmRef', '비고(품질이슈 등)':'note'
-  };
-  return m[hdr] || hdr;
-};
-
-window.dlXlsx = () => {
-  const wb = XLSX.utils.book_new();
-  [['1_TSK_과제',['코드','과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],S.tasks.map(r=>[r.code,r.name,r.assignee,r.purpose,r.status,r.note,window.mergeRef(r._doc),window.mergeRef(r._trm),window.mergeRef(r._dat),window.mergeRef(r._exp)])],
-   ['2_DOC_기준문서',['코드','구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],S.docs.map(r=>[r.code,r.dtype,r.name,r.summary,r.dept,r.cur,r.loc,r.tskRef,r.issueType,r.action,r.note,window.mergeRef(r._exp),window.mergeRef(r._trm)])],
-   ['3_EXP_예외기준',['코드','예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],S.exps.map(r=>[r.code,r.sit,r.hand,r.owner,r.rule,r.ai,r.docRef,r.tskRef,r.note,window.mergeRef(r._trm)])],
-   ['4_TRM_용어객체',['코드','용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],S.terms.map(r=>[r.code,r.term,r.def,r.otype,r.parent,r.child,r.sim,r.docRef,r.tskRef,r.note])],
-   ['5_DAT_데이터셋',['코드','항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],S.dats.map(r=>[r.code,r.name,r.dtype,r.src,r.own,r.cycle,r.sens,r.trmRef,r.docRef,r.tskRef,r.note])]
-  ].forEach(([nm,hd,rows])=>{const ws=XLSX.utils.aoa_to_sheet([hd,...rows]); ws['!cols']=hd.map(()=>({wch:16})); XLSX.utils.book_append_sheet(wb,ws,nm);});
-  XLSX.writeFile(wb,'AX_portal_template_v2_export.xlsx'); window.toast('Excel 다운로드 완료');
-};
-
-</script>
-</body>
-</html>
+                  ${['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🐦','🐤
