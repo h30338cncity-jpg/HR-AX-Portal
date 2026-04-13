@@ -1604,26 +1604,133 @@ window.relDragOver = (e) => { e.preventDefault(); };
 window.relDragLeave = (e) => { };
 window.relDrop = (e, col, target) => { e.preventDefault(); };
 
+// --- AI 유의어 자동 추천 모달 및 로직 ---
+window.runAiSynonymSuggest = () => {
+    // 1. 현재 '용어(대기중)' 상태인 단어들만 필터링
+    const rawTerms = S.terms.filter(t => !t.otype || t.otype === '용어(대기중)' || t.otype === '용어');
+    if (rawTerms.length < 2) {
+        window.toast('분석할 용어가 부족합니다. (최소 2개 이상 필요)');
+        return;
+    }
+
+    // 2. 가상의 AI 추천 결과 (실제로는 LLM API 호출)
+    // 시뮬레이션을 위해 무작위로 2~3개를 묶어서 보여줍니다.
+    const mockGroups = [];
+    if (rawTerms.length >= 3) {
+        mockGroups.push({
+            main: rawTerms[0],
+            synonyms: [rawTerms[1], rawTerms[2]]
+        });
+    } else if (rawTerms.length === 2) {
+        mockGroups.push({
+            main: rawTerms[0],
+            synonyms: [rawTerms[1]]
+        });
+    }
+
+    // 3. 모달 UI 생성 및 렌더링
+    let modal = document.getElementById('ai-suggest-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'ai-suggest-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+    }
+
+    let groupHtml = mockGroups.map((g, idx) => `
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:11px; color:#534AB7; font-weight:700; margin-bottom:8px;">✨ AI 추천 그룹 ${idx + 1}</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="flex:1; background:#fff; border:2px solid #1D4ED8; border-radius:6px; padding:10px; text-align:center;">
+                    <div style="font-size:10px; color:gray; margin-bottom:4px;">기준 단어 (유지됨)</div>
+                    <strong style="font-size:14px; color:#1D4ED8;">${g.main.term}</strong>
+                </div>
+                <div style="font-size:20px; color:gray;">←</div>
+                <div style="flex:2; background:#fff; border:1px dashed #E24B4A; border-radius:6px; padding:10px;">
+                    <div style="font-size:10px; color:gray; margin-bottom:4px;">유의어로 병합 (삭제됨)</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        ${g.synonyms.map(s => `<span style="background:#FEE2E2; color:#991B1B; padding:2px 8px; border-radius:10px; font-size:12px;">${s.term}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+            <div style="font-size:11px; color:gray; margin-top:8px;">💡 AI 분석: 두 개념의 문서 내 사용 문맥이 94% 일치합니다.</div>
+        </div>
+    `).join('');
+
+    modal.innerHTML = `
+        <div class="ms-content" style="width:600px; max-width:95%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-weight:800; font-size:16px; color:#334155;">✨ AI 유의어 자동 추천 결과</h3>
+                <span style="background:#EEEDFE; color:#3C3489; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700;">추천 ${mockGroups.length}건</span>
+            </div>
+            <div style="max-height:400px; overflow-y:auto; padding-right:4px;">
+                ${groupHtml || '<div style="text-align:center; padding:20px; color:gray;">현재 추천할 만한 유의어 그룹이 없습니다.</div>'}
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <button class="btn btn-o" onclick="document.getElementById('ai-suggest-modal').style.display='none'">취소</button>
+                <button class="btn btn-g" style="background:#534AB7;" onclick="window.applyAiSynonyms()">전체 일괄 병합 (Merge)</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+
+    // 전역 변수에 그룹 데이터 임시 저장
+    window.pendingSynonymGroups = mockGroups;
+};
+
+window.applyAiSynonyms = () => {
+    window.pushHistory();
+    const groups = window.pendingSynonymGroups || [];
+    
+    groups.forEach(g => {
+        const mainItem = S.terms.find(t => t.code === g.main.code);
+        if (mainItem) {
+            // 1. 유의어 배열 가져오기 (기존 텍스트 포함)
+            let syns = window.parseRef(mainItem.sim);
+            
+            // 2. 삭제될 항목들의 이름을 유의어에 추가
+            g.synonyms.forEach(s => {
+                syns.push(s.term);
+                // 3. 배열에서 완전히 삭제
+                const delIdx = S.terms.findIndex(t => t.code === s.code);
+                if (delIdx > -1) S.terms.splice(delIdx, 1);
+            });
+            
+            // 4. 다시 문자열로 저장
+            mainItem.sim = [...new Set(syns)].join(', ');
+        }
+    });
+
+    document.getElementById('ai-suggest-modal').style.display = 'none';
+    window.pendingSynonymGroups = null;
+    window.stateChanged();
+    window.toast('유의어 자동 병합이 완료되었습니다.');
+};
+
+
 window.V.docs = (tab) => {
   if (tab && window.dtab !== tab) { window.docFilterVal = ''; window.docSearchQuery = ''; window.dtab = tab; } 
   else { window.dtab = tab || window.dtab; }
   
   document.getElementById('pg-actions').innerHTML=`
-    ${window.dtab !== 'rel' ? `<button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : window.dtab === 'trm' ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>` : ''}
+    ${window.dtab === 'trm' ? `<button class="btn btn-g btn-sm" style="background:#534AB7; margin-right:8px;" onclick="window.runAiSynonymSuggest()">✨ AI 유의어 자동 추천</button>` : ''}
+    ${window.dtab !== 'rel' ? `<button class="btn btn-o btn-sm" onclick="window.reorderCodes('${window.dtab === 'doc' ? 'docs' : window.dtab === 'exp' ? 'exps' : (window.dtab === 'trm' || window.dtab === 'obj') ? 'terms' : window.dtab === 'dat' ? 'dats' : 'tasks'}')">🔢 코드 순번 정렬</button>` : ''}
     <button class="btn btn-o btn-sm" onclick="document.getElementById('excel-upload').click()">+ Excel 업로드</button>
     <button class="btn btn-g btn-sm" onclick="window.dlXlsx()">↓ Excel 다운로드</button>
   `;
   
   // 동적 탭 필터링 로직 (activeModule 기준)
-  let tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어·객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
+  let tabs=[['tsk','TSK 과제','ct'],['doc','DOC 기준문서','cd'],['exp','EXP 예외기준','ce'],['trm','TRM 용어 사전','cr'],['obj','OBJ 확정 객체','cr'],['dat','DAT 데이터셋','ca'],['rel','REL 연결 대시보드','cl']];
   
   if (window.activeModule === 'standard') tabs = tabs.filter(t => ['tsk', 'doc', 'exp'].includes(t[0]));
   else if (window.activeModule === 'terms') tabs = tabs.filter(t => t[0] === 'trm');
+  else if (window.activeModule === 'objects') tabs = tabs.filter(t => t[0] === 'obj');
   else if (window.activeModule === 'rel') tabs = tabs.filter(t => t[0] === 'rel');
   
   const stH=tabs.map(([id,lb,cl])=>`<div class="stab${window.dtab===id?' on-'+id:''}" onclick="window.V.docs('${id}')">${lb}</div>`).join('');
   
   if (window.dtab === 'rel') {
+    // [REL 탭 로직 기존 유지...]
     const allEdges = window.getAllEdges();
     const root = { children: [] };
     const nodeMap = {};
@@ -1837,15 +1944,24 @@ window.V.docs = (tab) => {
     return;
   }
 
+  // TRM과 OBJ의 컬럼 구성 분리
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
     doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
-    trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
+    trm:{k:'terms',hd:['단어/용어명','의미 정의','진행 상태(객체전환)','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{tskRef:'TSK',docRef:'DOC'},ro:[]},
+    obj:{k:'terms',hd:['객체명(표준)','객체 타입','상위 객체','하위 객체','포함된 유의어','관련 DOC','관련 TSK','비고'],fl:['term','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:['sim']},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
   const c=cfgs[window.dtab];
   let currentRows = S[c.k];
+
+  // TRM 탭과 OBJ 탭 필터링 로직
+  if (window.dtab === 'trm') {
+      currentRows = currentRows.filter(r => !r.otype || r.otype === '용어(대기중)' || r.otype === '용어');
+  } else if (window.dtab === 'obj') {
+      currentRows = currentRows.filter(r => r.otype && r.otype !== '용어(대기중)' && r.otype !== '용어');
+  }
 
   let filterHtml = '';
   let primaryFilterKey = '';
@@ -1891,9 +2007,22 @@ window.V.docs = (tab) => {
       const warn = isMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : '';
 
       let inner = '';
-      if(c.ro?.includes(f)) inner = `<div class="code-list">${window.fmtCodeList(row[f])}${warn}</div>`;
+      if(c.ro?.includes(f)) {
+          // 객체 탭에서 '유의어(sim)'을 보기 전용 태그로 표시
+          if (f === 'sim' && window.dtab === 'obj') {
+             const simArr = window.parseRef(row[f]);
+             inner = `<div style="display:flex; gap:4px; flex-wrap:wrap;">${simArr.length ? simArr.map(s => `<span style="background:#f1f5f9; color:#64748b; padding:2px 6px; border-radius:4px; font-size:11px;">${s}</span>`).join('') : '<span style="color:gray;font-size:11px;">-</span>'}</div>`;
+          } else {
+             inner = `<div class="code-list">${window.fmtCodeList(row[f])}${warn}</div>`;
+          }
+      }
       else if(c.ms?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
-      else if(c.sl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${bg}">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
+      else if(c.sl?.[f]) {
+          // 상태(otype) 변경 셀에 색상 하이라이트 추가
+          const isObjTab = window.dtab === 'obj';
+          const selectBg = isObjTab ? 'background:#F0FDF4; border:1px solid #10B981; color:#047857;' : bg;
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${selectBg} border-radius:4px; padding:2px 4px;">${c.sl[f].map(o=>`<option value="${o}" ${o===row[f]?'selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
+      }
       else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
       else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}" placeholder="${f==='sim'?'예: 본봉, 기본연봉':''}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
       return `<td style="${bg}">${inner}</td>`;
@@ -2788,7 +2917,7 @@ window.V.rag = () => {
     `;
 };
 
-// ── AI EXTRACTOR (Workflow Implemented) ───────────────────────
+// ── AI EXTRACTOR (Simplified Pipeline) ───────────────────────
 window.runMockAI = () => {
     const txt = document.getElementById('ai-text-input').value;
     if(!txt.trim()) { window.toast('추출할 텍스트를 입력해주세요.'); return; }
@@ -2796,12 +2925,14 @@ window.runMockAI = () => {
     document.getElementById('ai-run-btn').innerText = '추출 중...';
     setTimeout(() => {
         window.pushHistory();
-        // 유의어(synonyms) 데이터가 추가된 모의 AI 결과입니다.
+        // 유의어 묶음 없이, 단순히 AI가 문서를 읽고 뽑아낸 순수 단어 목록입니다.
         S.aiCandidates = [
-            { term: '다면평가', def: '여러 직급의 평가자가 대상자를 다각도로 평가하는 제도', synonyms: ['360도 평가', '다면피드백'], score: 98, checked: true },
-            { term: '기본급', def: '직급, 호봉 등에 따라 기본적으로 지급되는 급여', synonyms: ['본봉', 'Base Salary', '기본연봉'], score: 95, checked: true },
-            { term: '리더십', def: '조직의 목표 달성을 위해 구성원을 이끄는 역량', synonyms: ['솔선수범', '통솔력'], score: 88, checked: false },
-            { term: 'KPI 달성률', def: '핵심성과지표의 목표 대비 실제 달성 비율', synonyms: ['성과달성률', '목표달성도'], score: 85, checked: false }
+            { term: '다면평가', def: '여러 직급의 평가자가 대상자를 다각도로 평가하는 제도', score: 98, checked: true },
+            { term: '기본급', def: '직급, 호봉 등에 따라 기본적으로 지급되는 급여', score: 95, checked: true },
+            { term: '본봉', def: '기본급과 동일한 의미로 쓰이는 용어', score: 92, checked: false },
+            { term: '리더십', def: '조직의 목표 달성을 위해 구성원을 이끄는 역량', score: 88, checked: false },
+            { term: 'KPI', def: '핵심성과지표 (Key Performance Indicator)', score: 85, checked: false },
+            { term: '핵심성과지표', def: '조직의 목표 달성 정도를 측정하는 지표', score: 82, checked: false }
         ];
         window.stateChanged();
     }, 800);
@@ -2812,64 +2943,32 @@ window.toggleAiCandidate = (idx) => {
     window.stateChanged();
 };
 
-// 유의어 삭제 기능
-window.removeAiSynonym = (cIdx, synIdx, e) => {
-    if(e) e.stopPropagation();
-    window.pushHistory();
-    S.aiCandidates[cIdx].synonyms.splice(synIdx, 1);
-    window.stateChanged();
-};
-
-// 유의어 추가 기능 (Enter 입력 시)
-window.addAiSynonym = (cIdx, e) => {
-    if(e && e.key !== 'Enter') return;
-    const input = document.getElementById(`ai-syn-input-${cIdx}`);
-    const val = input.value.trim();
-    if(!val) return;
-    window.pushHistory();
-    if(!S.aiCandidates[cIdx].synonyms) S.aiCandidates[cIdx].synonyms = [];
-    S.aiCandidates[cIdx].synonyms.push(val);
-    window.stateChanged();
-};
-
-// 사전(TRM)으로 승인 및 객체화
+// 3. 용어 사전(TRM)으로 단순 전송
 window.approveToGlossary = () => {
     const selected = S.aiCandidates.filter(c => c.checked);
-    if(selected.length === 0) { window.toast('승인할 후보 용어를 선택해주세요.'); return; }
+    if(selected.length === 0) { window.toast('사전으로 전송할 용어를 선택해주세요.'); return; }
     
     window.pushHistory();
     selected.forEach(c => {
         S.terms.push({
             code: window.nc('terms', 'TRM'), _locked: false,
-            term: c.term, def: c.def, otype: '객체', 
-            parent: '', child: '', sim: (c.synonyms||[]).join(', '), // 유의어 배열을 쉼표로 연결하여 저장
-            docRef: '', tskRef: '', note: 'AI 자동 추출됨'
+            term: c.term, def: c.def, 
+            otype: '용어(대기중)', // 객체가 아닌 순수 용어로 등록
+            parent: '', child: '', sim: '', docRef: '', tskRef: '', note: 'AI 자동 추출됨'
         });
     });
-    // 승인된 항목은 후보 리스트에서 제거
+    // 전송된 항목은 후보 리스트에서 제거
     S.aiCandidates = S.aiCandidates.filter(c => !c.checked);
     window.stateChanged();
-    window.toast(`${selected.length}건이 사전(TRM)에 등록되었습니다.`);
-};
-
-window.promoteObject = (code, selectEl) => {
-    const newType = selectEl.value;
-    window.pushHistory();
-    const term = S.terms.find(t => t.code === code);
-    if(term) {
-        term.otype = newType;
-        window.toast(`[${term.term}] 객체 유형이 '${newType}'(으)로 변경되었습니다.`);
-    }
-    window.stateChanged();
+    window.toast(`${selected.length}건이 [용어 사전]으로 전송되었습니다. 탭을 이동하여 확인하세요.`);
 };
 
 window.V.aiext = () => {
   document.getElementById('pg-actions').innerHTML = `
-    <button class="btn btn-o btn-sm" onclick="window.goModule('terms', 'trm')">전체 TRM 사전 보기</button>
+    <button class="btn btn-o btn-sm" onclick="window.goModule('terms', 'trm')">용어 사전으로 이동 ➔</button>
   `;
   
   const cands = S.aiCandidates || [];
-  const approvedTerms = S.terms.slice().reverse().slice(0, 15); // 최근 등록된 15개만 보여줌
 
   document.getElementById('content').innerHTML = `
     <div style="flex:1; display:flex; padding:18px; gap:16px; background:#F1F5F9; overflow:hidden;">
@@ -2877,85 +2976,43 @@ window.V.aiext = () => {
         <div class="card" style="flex:1; display:flex; flex-direction:column; padding:0; overflow:hidden;">
             <div style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
                 <span>1. 문서 텍스트 입력</span>
-                <span style="font-size:11px; color:gray;">임시 AI 추출기</span>
+                <span style="font-size:11px; color:gray;">AI 용어 추출기</span>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; padding:16px;">
-                <textarea id="ai-text-input" placeholder="HR 관련 규정이나 공지사항 텍스트를 붙여넣으세요.\n(예: 2026년 다면평가 실시 안내. 대상: 정규직. 평가항목: 리더십, KPI 달성률...)" style="flex:1; width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; font-family:inherit; outline:none; resize:none; margin-bottom:12px; line-height:1.6;"></textarea>
+                <textarea id="ai-text-input" placeholder="HR 관련 규정이나 공지사항 텍스트를 붙여넣으세요.\n(예: 2026년 다면평가 실시 안내...)" style="flex:1; width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; font-family:inherit; outline:none; resize:none; margin-bottom:12px; line-height:1.6;"></textarea>
                 <button id="ai-run-btn" class="btn btn-g" style="justify-content:center; padding:12px; font-size:14px; border-radius:6px;" onclick="window.runMockAI()">AI 용어 추출 실행</button>
             </div>
         </div>
 
         <div class="card" style="flex:1.2; display:flex; flex-direction:column; padding:0; overflow:hidden;">
-            <div style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
-                <span>2. AI 추출 후보 & 유의어 묶음</span>
-                <span style="background:#e2e8f0; padding:2px 8px; border-radius:10px; font-size:11px;">${cands.length}건</span>
+            <div style="background:#EEEDFE; padding:12px 16px; border-bottom:1px solid #c7d2fe; font-weight:700; color:#3C3489; display:flex; justify-content:space-between; align-items:center;">
+                <span>2. 추출된 용어 확인 및 사전 전송</span>
+                <span style="background:#fff; padding:2px 8px; border-radius:10px; font-size:11px;">${cands.length}건 대기중</span>
             </div>
-            <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; background:#fafafa;">
+            <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:#fafafa;">
                 ${cands.length === 0 ? `<div style="text-align:center; color:gray; font-size:12px; margin-top:40px;">좌측에서 텍스트를 입력하고<br>AI 추출을 실행하세요.</div>` : 
                   cands.map((c, i) => `
-                    <div style="background:#fff; border:1px solid ${c.checked ? '#1D4ED8' : '#e2e8f0'}; border-radius:6px; padding:12px; display:flex; gap:10px; cursor:pointer; transition:all 0.2s; box-shadow:${c.checked ? '0 2px 8px rgba(29,78,216,0.1)' : 'none'};" onclick="window.toggleAiCandidate(${i})">
+                    <div style="background:#fff; border:1px solid ${c.checked ? '#1D4ED8' : '#e2e8f0'}; border-radius:6px; padding:14px; display:flex; gap:12px; cursor:pointer; transition:all 0.2s; box-shadow:${c.checked ? '0 2px 8px rgba(29,78,216,0.1)' : 'none'};" onclick="window.toggleAiCandidate(${i})">
                         <input type="checkbox" ${c.checked ? 'checked' : ''} style="margin-top:2px;" onclick="event.stopPropagation(); window.toggleAiCandidate(${i})">
-                        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                        <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <strong style="color:${c.checked ? '#1D4ED8' : '#334155'}; font-size:14px;">${c.term}</strong>
                                 <span style="font-size:10px; color:${c.score > 90 ? '#10B981' : '#F59E0B'}">신뢰도 ${c.score}%</span>
                             </div>
                             <div style="font-size:11px; color:gray; line-height:1.4;">${c.def}</div>
-                            
-                            <div style="background:#f8fafc; padding:8px; border-radius:4px; border:1px dashed #cbd5e1;" onclick="event.stopPropagation()">
-                                <div style="font-size:10px; font-weight:700; color:#64748b; margin-bottom:6px;">유의어 / 유사어 묶음</div>
-                                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;">
-                                    ${(c.synonyms||[]).map((syn, synIdx) => `
-                                        <span style="background:#e0e7ff; color:#3730a3; font-size:11px; padding:2px 6px; border-radius:10px; display:flex; align-items:center; gap:4px;">
-                                            ${syn}
-                                            <span style="cursor:pointer; color:#818cf8; font-weight:bold;" onclick="window.removeAiSynonym(${i}, ${synIdx}, event)">&times;</span>
-                                        </span>
-                                    `).join('')}
-                                </div>
-                                <input type="text" id="ai-syn-input-${i}" placeholder="+ 유의어 추가 후 Enter" style="width:100%; border:1px solid #cbd5e1; border-radius:4px; padding:4px 6px; font-size:11px; outline:none;" onkeydown="window.addAiSynonym(${i}, event)">
-                            </div>
                         </div>
                     </div>
                   `).join('')
                 }
             </div>
             <div style="padding:12px 16px; border-top:1px solid #e2e8f0; background:#fff;">
-                <button class="btn btn-o" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:700; border-color:#1D4ED8; color:#1D4ED8;" onclick="window.approveToGlossary()">사전(TRM)으로 승인 및 객체화 ➔</button>
-            </div>
-        </div>
-
-        <div class="card" style="flex:1.2; display:flex; flex-direction:column; padding:0; overflow:hidden;">
-            <div style="background:#EEEDFE; padding:12px 16px; border-bottom:1px solid #c7d2fe; font-weight:700; color:#3C3489; display:flex; justify-content:space-between; align-items:center;">
-                <span>3. 확정 용어 & 객체 모델링</span>
-                <span style="font-size:11px; font-weight:500;">최근 등록 항목</span>
-            </div>
-            <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px;">
-                ${approvedTerms.length === 0 ? `<div style="text-align:center; color:gray; font-size:12px; margin-top:40px;">등록된 용어가 없습니다.</div>` : 
-                  approvedTerms.map(t => {
-                      const isObj = t.otype !== '객체';
-                      return `
-                      <div style="background:#fff; border:1px solid #e2e8f0; border-left:4px solid ${isObj ? '#10B981' : '#94a3b8'}; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
-                          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                              <div style="display:flex; align-items:center; gap:6px;">
-                                  ${window.badge(t.code)}
-                                  <strong style="font-size:13px;">${t.term}</strong>
-                              </div>
-                              <select style="font-size:11px; padding:2px 6px; border-radius:4px; border:1px solid ${isObj ? '#10B981' : '#cbd5e1'}; background:${isObj ? '#F0FDF4' : '#fff'}; color:${isObj ? '#047857' : '#333'}; outline:none; cursor:pointer;" onchange="window.promoteObject('${t.code}', this)">
-                                  ${['객체', '속성', '기준값', '프로세스'].map(o => `<option value="${o}" ${t.otype === o ? 'selected' : ''}>${o}</option>`).join('')}
-                              </select>
-                          </div>
-                          <div style="font-size:11px; color:gray; line-height:1.4;">${t.def}</div>
-                          ${t.sim ? `<div style="font-size:10px; color:#64748b; background:#f1f5f9; padding:4px 6px; border-radius:4px; display:inline-block; margin-top:2px;">🔗 유의어 묶음: ${t.sim}</div>` : ''}
-                      </div>
-                      `
-                  }).join('')
-                }
+                <button class="btn btn-o" style="width:100%; justify-content:center; padding:12px; font-size:13px; font-weight:700; border-color:#1D4ED8; color:#1D4ED8;" onclick="window.approveToGlossary()">선택한 용어를 [용어 사전]으로 전송 ➔</button>
             </div>
         </div>
 
     </div>`;
 };
-
+  
 // ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
   document.getElementById('pg-actions').innerHTML=`<button class="btn btn-o" onclick="window.addMember()">+ 팀원 추가</button>`;
