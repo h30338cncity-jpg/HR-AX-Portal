@@ -353,7 +353,42 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
   </div>
 </div>
 
-<input type="file" id="excel-upload" accept=".xlsx" style="display:none" onchange="handleExcelUpload(event)">
+<div id="otype-help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2000;align-items:center;justify-content:center">
+  <div class="ms-content" style="width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-weight:800;font-size:15px;">객체 유형 안내</h3>
+      <button onclick="document.getElementById('otype-help-modal').style.display='none'" style="border:none;background:none;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+      <div style="background:#F1F5F9;border-radius:8px;padding:12px;">
+        <strong style="color:#3C3489;">용어(대기중)</strong>
+        <div style="color:#64748b;margin-top:4px;">AI가 추출했지만 아직 검토 전인 상태. 용어 사전에만 존재합니다.</div>
+        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">예) 다면평가, 본봉</div>
+      </div>
+      <div style="background:#F1F5F9;border-radius:8px;padding:12px;">
+        <strong style="color:#085041;">객체</strong>
+        <div style="color:#64748b;margin-top:4px;">독립적으로 존재하는 핵심 개념. 확정 시 OBJ 코드로 승격됩니다.</div>
+        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">예) 직원, 부서, 계약</div>
+      </div>
+      <div style="background:#F1F5F9;border-radius:8px;padding:12px;">
+        <strong style="color:#633806;">속성</strong>
+        <div style="color:#64748b;margin-top:4px;">객체에 딸려있는 특성·값. 객체 없이는 단독으로 의미가 없습니다.</div>
+        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">예) 입사일, 직급, 연봉</div>
+      </div>
+      <div style="background:#F1F5F9;border-radius:8px;padding:12px;">
+        <strong style="color:#0C447C;">기준값</strong>
+        <div style="color:#64748b;margin-top:4px;">판단의 기준이 되는 고정된 값이나 지표입니다.</div>
+        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">예) KPI, 최저임금, 평가등급</div>
+      </div>
+      <div style="background:#F1F5F9;border-radius:8px;padding:12px;">
+        <strong style="color:#712B13;">프로세스</strong>
+        <div style="color:#64748b;margin-top:4px;">절차·흐름을 나타내는 개념입니다.</div>
+        <div style="color:#94a3b8;font-size:11px;margin-top:4px;">예) 채용절차, 성과평가 사이클</div>
+      </div>
+    </div>
+  </div>
+</div>
+  <input type="file" id="excel-upload" accept=".xlsx" style="display:none" onchange="handleExcelUpload(event)">
 <datalist id="dl-dtype">
   <option value="정형"></option>
   <option value="반정형"></option>
@@ -1973,7 +2008,7 @@ window.V.docs = (tab) => {
     doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     prs:{k:'docs',hd:['프로세스명','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
-    trm:{k:'terms',hd:['단어/용어명','의미 정의','진행 상태(객체전환)','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{tskRef:'TSK',docRef:'DOC'},ro:[]},
+    trm:{k:'terms',hd:['단어/용어명','의미 정의','진행 상태(객체전환) <button onclick="document.getElementById(\'otype-help-modal\').style.display=\'flex\'" style="width:16px;height:16px;border-radius:50%;border:1px solid #94a3b8;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;cursor:pointer;padding:0;line-height:1;margin-left:4px;" title="유형 설명 보기">?</button>','유의어/유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{tskRef:'TSK',docRef:'DOC'},ro:[]},
     obj:{k:'terms',hd:['객체명(표준)','객체 타입','상위 객체','하위 객체','포함된 유의어','관련 DOC','관련 TSK','비고'],fl:['term','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['용어(대기중)','객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:['sim']},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
   };
