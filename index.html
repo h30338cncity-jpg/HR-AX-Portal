@@ -228,8 +228,9 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="sb-item" id="n-docs" onclick="window.goModule('standard', 'doc', this)"><span class="sb-ic">📄</span>표준문서 관리</div>
     
     <div class="sb-sec">Phase 2 · 언어·개념 체계화</div>
-    <div class="sb-item" id="n-terms" onclick="window.goModule('terms', 'trm', this)"><span class="sb-ic">📝</span>용어·객체 정의</div>
     <div class="sb-item" id="n-aiext" onclick="window.goModule('aiext', 'aiext', this)"><span class="sb-ic">🔍</span>용어 추출 AI</div>
+    <div class="sb-item" id="n-terms" onclick="window.goModule('terms', 'trm', this)"><span class="sb-ic">📝</span>용어 사전 (유의어)</div>
+    <div class="sb-item" id="n-objects" onclick="window.goModule('objects', 'obj', this)"><span class="sb-ic">💎</span>확정 객체 (표준)</div>
     
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
     <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
@@ -1218,7 +1219,9 @@ const titles = {
   poc: 'PoC 현황',
   rag: 'RAG 설계',
   team: '팀원 R&R',
-  aiext: '용어 추출 AI 워크벤치'
+  aiext: '1. 용어 추출 AI',
+  terms: '2. 용어 사전 및 유의어 관리',
+  objects: '3. 확정 객체 및 타입 관리'
 };
 
 window.V = {};
@@ -1227,7 +1230,8 @@ window.goModule = (mod, tab, el) => {
     window.activeModule = mod;
     window.dtab = tab;
     let viewMap = {
-        'home': 'home', 'tasks': 'tasks', 'standard': 'docs', 'terms': 'docs', 
+        'home': 'home', 'tasks': 'tasks', 'standard': 'docs', 
+        'terms': 'docs', 'objects': 'docs', // terms와 objects 모두 docs 뷰 엔진 사용
         'rel': 'docs', 'onto': 'onto', 'data': 'data', 'poc': 'poc', 'rag': 'rag', 
         'team': 'team', 'aiext': 'aiext'
     };
