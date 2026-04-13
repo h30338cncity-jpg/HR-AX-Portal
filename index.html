@@ -2933,13 +2933,22 @@ window.V.rag = () => {
 // ── AI EXTRACTOR (Simplified Pipeline) ───────────────────────
 window.loadTextFile = (e) => {
     const f = e.target.files[0]; if(!f) return;
+    const ext = f.name.split('.').pop().toLowerCase();
+    const ta = document.getElementById('ai-text-input');
     const reader = new FileReader();
-    reader.onload = (evt) => {
-        const ta = document.getElementById('ai-text-input');
-        if(ta) ta.value = evt.target.result;
-        window.toast('파일을 불러왔습니다. 이제 AI 추출을 실행하세요.');
-    };
-    reader.readAsText(f, 'UTF-8');
+
+    if (['txt', 'md', 'csv', 'json', 'xml', 'html', 'js', 'py'].includes(ext)) {
+        // 텍스트 계열 파일: 그대로 읽기
+        reader.onload = (evt) => {
+            if(ta) ta.value = evt.target.result;
+            window.toast('파일을 불러왔습니다. 이제 AI 추출을 실행하세요.');
+        };
+        reader.readAsText(f, 'UTF-8');
+    } else {
+        // 바이너리 파일 (docx, pdf, xlsx, hwp 등): 직접 읽기 불가
+        if(ta) ta.value = '';
+        window.toast('⚠️ ' + ext.toUpperCase() + ' 파일은 텍스트를 직접 추출할 수 없습니다. 파일에서 텍스트를 복사해서 붙여넣기 해주세요.');
+    }
     e.target.value = '';
 };
   
@@ -3098,7 +3107,7 @@ window.addObjRelation = () => {
                 <textarea id="ai-text-input" placeholder="HR 관련 규정이나 공지사항 텍스트를 붙여넣으세요.\n(예: 2026년 다면평가 실시 안내...)" style="flex:1; width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; font-family:inherit; outline:none; resize:none; margin-bottom:12px; line-height:1.6;"></textarea>
                 <div style="display:flex; gap:8px; margin-bottom:12px;">
                     <button class="btn btn-o" style="flex:1; justify-content:center; padding:10px; font-size:13px;" onclick="document.getElementById('ai-file-upload').click()">📎 .txt 파일 업로드</button>
-                    <input type="file" id="ai-file-upload" accept=".txt" style="display:none" onchange="window.loadTextFile(event)">
+                    <input type="file" id="ai-file-upload" accept="*" style="display:none" onchange="window.loadTextFile(event)">
                 </div>
                 <button id="ai-run-btn" class="btn btn-g" style="justify-content:center; padding:12px; font-size:14px; border-radius:6px;" onclick="window.runMockAI()">AI 용어 추출 실행</button>
             </div>
