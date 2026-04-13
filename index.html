@@ -418,6 +418,7 @@ let msState = { arrKey:'', rowCode:'', field:'', type:'', opts:[] };
 let pendingUploadData = null; 
 
 window.ontoExpanded = window.ontoExpanded || new Set();
+window.ontoExpandedEdge = null;
 
 window.undoStack = [];
 window.redoStack = [];
@@ -1364,10 +1365,29 @@ window.selectRelEdge = (edgeId) => {
 window.updateEdgeField = (edgeId, field, val) => {
     if(!S.edgeDetails[edgeId]) return;
     if(S.edgeDetails[edgeId][field] !== val) {
-        window.pushHistory();
+        if(field === 'type') window.pushHistory(); // 유형 변경 시에만 히스토리 저장
         S.edgeDetails[edgeId][field] = val;
         window.stateChanged();
     }
+};
+
+window.saveEdgeDetailPanel = () => {
+    if(!window.relSelectedEdgeId) return;
+    const type = document.getElementById('edge-edit-type').value;
+    const clause = document.getElementById('edge-edit-clause').value;
+    const rel = document.getElementById('edge-edit-rel').value;
+    const verb = document.getElementById('edge-edit-verb').value;
+    
+    window.pushHistory();
+    if(!S.edgeDetails[window.relSelectedEdgeId]) {
+        S.edgeDetails[window.relSelectedEdgeId] = { type:'단순 참조', clause:'', relevance:'참고', verbatim:'' };
+    }
+    S.edgeDetails[window.relSelectedEdgeId].type = type;
+    S.edgeDetails[window.relSelectedEdgeId].clause = clause;
+    S.edgeDetails[window.relSelectedEdgeId].relevance = rel;
+    S.edgeDetails[window.relSelectedEdgeId].verbatim = verb;
+    window.stateChanged();
+    window.toast('엣지 속성이 저장되었습니다.');
 };
 
 window.openAddRelEdgeModal = () => {
@@ -1556,6 +1576,10 @@ window.V.docs = (tab) => {
                 const srcHtml = `<div style="display:flex;align-items:center;gap:4px;">${srcBadge} <span style="font-size:12px; ${isSource ? 'font-weight:700;' : ''}">${srcName}</span></div>`;
                 const tgtHtml = `<div style="display:flex;align-items:center;gap:4px;">${tgtBadge} <span style="font-size:12px; ${!isSource ? 'font-weight:700;' : ''}">${tgtName}</span></div>`;
 
+                let typeBg = '#e2e8f0', typeColor = '#475569';
+                if (e.detail.relevance === '필수') { typeBg = '#EFF6FF'; typeColor = '#1D4ED8'; }
+                else if (e.detail.relevance === '충돌가능') { typeBg = '#FEF2F2'; typeColor = '#991B1B'; }
+
                 const relClass = e.detail.relevance === '필수' ? 'pw' : (e.detail.relevance === '충돌가능' ? 'pp' : 'pt');
                 const relText = e.detail.relevance;
 
@@ -1570,6 +1594,7 @@ window.V.docs = (tab) => {
                         ${tgtHtml}
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;text-align:right;">
+                        <span class="pill" style="background:${typeBg};color:${typeColor};font-size:10px;">${e.detail.type}</span>
                         ${e.detail.clause ? `<span style="font-size:10px;color:gray;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${e.detail.clause.replace(/"/g,'&quot;')}">${e.detail.clause.replace(/"/g,'&quot;')}</span>` : ''}
                         <span class="pill ${relClass}">${relText}</span>
                     </div>
@@ -1601,12 +1626,24 @@ window.V.docs = (tab) => {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; flex:1; overflow-y:auto; padding-right:4px;">
                     <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">관계 유형 (Type)</label>
+                        <select id="edge-edit-type" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;" onchange="window.updateEdgeField('${e.id}', 'type', this.value)">
+                            <option value="상/하위 종속" ${e.detail.type==='상/하위 종속'?'selected':''}>상/하위 종속</option>
+                            <option value="단순 참조" ${e.detail.type==='단순 참조'?'selected':''}>단순 참조</option>
+                            <option value="필수 준수" ${e.detail.type==='필수 준수'?'selected':''}>필수 준수</option>
+                            <option value="데이터 활용" ${e.detail.type==='데이터 활용'?'selected':''}>데이터 활용</option>
+                            <option value="기준 정의" ${e.detail.type==='기준 정의'?'selected':''}>기준 정의</option>
+                            <option value="예외 처리" ${e.detail.type==='예외 처리'?'selected':''}>예외 처리</option>
+                            <option value="키워드 매칭(추론)" ${e.detail.type==='키워드 매칭(추론)'?'selected':''}>키워드 매칭(추론)</option>
+                        </select>
+                    </div>
+                    <div>
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">참조 위치 (Clause)</label>
-                        <input type="text" value="${e.detail.clause.replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절, p.12" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;" onblur="window.updateEdgeField('${e.id}', 'clause', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
+                        <input type="text" id="edge-edit-clause" value="${e.detail.clause.replace(/"/g,'&quot;')}" placeholder="예: 제50조 1항, 3장 2절, p.12" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none;" onblur="window.updateEdgeField('${e.id}', 'clause', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">중요도 (Relevance)</label>
-                        <select style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;" onchange="window.updateEdgeField('${e.id}', 'relevance', this.value)">
+                        <select id="edge-edit-rel" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; outline:none; cursor:pointer; background:#fff;" onchange="window.updateEdgeField('${e.id}', 'relevance', this.value)">
                             <option value="참고" ${e.detail.relevance==='참고'?'selected':''}>참고 (기본값)</option>
                             <option value="필수" ${e.detail.relevance==='필수'?'selected':''}>필수</option>
                             <option value="충돌가능" ${e.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
@@ -1614,10 +1651,11 @@ window.V.docs = (tab) => {
                     </div>
                     <div style="display:flex; flex-direction:column; flex:1;">
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">원문/발췌 (Verbatim)</label>
-                        <textarea placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; min-height:120px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:vertical;" onblur="window.updateEdgeField('${e.id}', 'verbatim', this.value)">${e.detail.verbatim.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        <textarea id="edge-edit-verb" placeholder="해당 위치의 원문이나 핵심 발췌 텍스트를 입력하세요..." style="flex:1; width:100%; min-height:120px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; outline:none; resize:vertical;" onblur="window.updateEdgeField('${e.id}', 'verbatim', this.value)">${e.detail.verbatim.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
                     </div>
                 </div>
                 <div style="margin-top:14px; padding-top:14px; border-top:1px dashed #e2e8f0; flex-shrink:0;">
+                    <button class="btn btn-g" style="width:100%; justify-content:center; padding:10px; font-size:13px; margin-bottom:8px;" onclick="window.saveEdgeDetailPanel()">엣지 정보 저장</button>
                     <button class="btn" style="width:100%; justify-content:center; padding:10px; font-size:13px; background:transparent; border:1px solid #EF4444; color:#EF4444; transition:all 0.2s;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'" onclick="window.deleteEdge('${e.id}', '${e.source}', '${e.target}')">연결 해제</button>
                 </div>
              `;
@@ -1943,6 +1981,12 @@ window.addOntoRelation = (srcCode) => {
     }
 };
 
+window.toggleOntoEdge = (edgeId, e) => {
+    if(e) e.stopPropagation();
+    window.ontoExpandedEdge = window.ontoExpandedEdge === edgeId ? null : edgeId;
+    window.renderOAb();
+};
+
 window.buildOntoGraphData = () => {
   let nodes = [], edges = [];
   const edgeSet = new Set();
@@ -2077,21 +2121,59 @@ window.renderOAb = () => {
 
   const renderEdgeRow = (e, relatedNodeId) => {
       const o = nodes.find(x=>x.id===relatedNodeId) || {label: relatedNodeId, srcType: relatedNodeId.split('-')[0]};
-      return `
-        <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed #e2e8f0; cursor:pointer; transition:background 0.1s; border-radius:4px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="window.oSelN('${relatedNodeId}')">
-            <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-left:4px;"></div>
-            <div style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155">${String(o?.label).replace(/"/g,'&quot;')}</div>
-            <select style="font-size:10px;padding:2px;border:1px solid #cbd5e1;border-radius:4px;color:#64748b;background:transparent;outline:none;cursor:pointer;width:90px;" onchange="window.updateEdgeType('${e.id}', this.value)" onclick="event.stopPropagation()">
-                <option value="상/하위 종속" ${e.rtype==='상/하위 종속'?'selected':''}>상/하위 종속</option>
-                <option value="단순 참조" ${e.rtype==='단순 참조'?'selected':''}>단순 참조</option>
-                <option value="필수 준수" ${e.rtype==='필수 준수'?'selected':''}>필수 준수</option>
-                <option value="데이터 활용" ${e.rtype==='데이터 활용'?'selected':''}>데이터 활용</option>
-                <option value="기준 정의" ${e.rtype==='기준 정의'?'selected':''}>기준 정의</option>
-                <option value="예외 처리" ${e.rtype==='예외 처리'?'selected':''}>예외 처리</option>
-                <option value="키워드 매칭(추론)" ${e.rtype==='키워드 매칭(추론)'?'selected':''}>키워드 매칭(추론)</option>
-            </select>
-            <button class="del-btn" style="width:20px;height:20px;font-size:12px;padding:0;margin-right:2px;" onclick="window.removeOntoRelation('${e.id}', event)" title="연결 해제">×</button>
-        </div>`;
+      
+      let typeBg = '#e2e8f0', typeColor = '#475569';
+      if (e.detail.relevance === '필수') { typeBg = '#EFF6FF'; typeColor = '#1D4ED8'; }
+      else if (e.detail.relevance === '충돌가능') { typeBg = '#FEF2F2'; typeColor = '#991B1B'; }
+
+      const isExpanded = window.ontoExpandedEdge === e.id;
+
+      let rowHtml = `
+        <div style="padding:6px 0; border-bottom:1px dashed #e2e8f0;">
+            <div style="display:flex;align-items:center;gap:6px;cursor:pointer; transition:background 0.1s; border-radius:4px; padding:4px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="window.toggleOntoEdge('${e.id}', event)">
+                <div style="width:6px;height:6px;border-radius:50%;background:${window.getNColor(o)};flex-shrink:0;margin-left:4px;"></div>
+                <div style="font-size:11px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#334155">${String(o?.label).replace(/"/g,'&quot;')}</div>
+                <span class="pill" style="background:${typeBg};color:${typeColor};font-size:10px;">${e.rtype}</span>
+                <button class="del-btn" style="width:20px;height:20px;font-size:12px;padding:0;margin-right:2px;" onclick="window.removeOntoRelation('${e.id}', event)" title="연결 해제">×</button>
+            </div>
+      `;
+
+      if(isExpanded) {
+          rowHtml += `
+            <div style="background:#f8fafc; border-radius:6px; padding:10px; margin-top:4px; display:flex; flex-direction:column; gap:8px;" onclick="event.stopPropagation()">
+                <div>
+                    <label style="font-size:10px; font-weight:700; color:gray; display:block; margin-bottom:2px;">관계 유형</label>
+                    <select style="width:100%; padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none; cursor:pointer;" onchange="window.updateEdgeType('${e.id}', this.value)">
+                        <option value="상/하위 종속" ${e.rtype==='상/하위 종속'?'selected':''}>상/하위 종속</option>
+                        <option value="단순 참조" ${e.rtype==='단순 참조'?'selected':''}>단순 참조</option>
+                        <option value="필수 준수" ${e.rtype==='필수 준수'?'selected':''}>필수 준수</option>
+                        <option value="데이터 활용" ${e.rtype==='데이터 활용'?'selected':''}>데이터 활용</option>
+                        <option value="기준 정의" ${e.rtype==='기준 정의'?'selected':''}>기준 정의</option>
+                        <option value="예외 처리" ${e.rtype==='예외 처리'?'selected':''}>예외 처리</option>
+                        <option value="키워드 매칭(추론)" ${e.rtype==='키워드 매칭(추론)'?'selected':''}>키워드 매칭(추론)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:10px; font-weight:700; color:gray; display:block; margin-bottom:2px;">참조 위치</label>
+                    <input type="text" value="${(e.detail.clause||'').replace(/"/g,'&quot;')}" style="width:100%; padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none;" onblur="S.edgeDetails['${e.id}'].clause=this.value; window.stateChanged();">
+                </div>
+                <div>
+                    <label style="font-size:10px; font-weight:700; color:gray; display:block; margin-bottom:2px;">중요도</label>
+                    <select style="width:100%; padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none; cursor:pointer;" onchange="S.edgeDetails['${e.id}'].relevance=this.value; window.stateChanged();">
+                        <option value="참고" ${e.detail.relevance==='참고'?'selected':''}>참고</option>
+                        <option value="필수" ${e.detail.relevance==='필수'?'selected':''}>필수</option>
+                        <option value="충돌가능" ${e.detail.relevance==='충돌가능'?'selected':''}>충돌가능</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:10px; font-weight:700; color:gray; display:block; margin-bottom:2px;">원문/발췌</label>
+                    <textarea style="width:100%; min-height:80px; padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; outline:none; resize:vertical; font-family:inherit;" onblur="S.edgeDetails['${e.id}'].verbatim=this.value; window.stateChanged();">${(e.detail.verbatim||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                </div>
+            </div>
+          `;
+      }
+      rowHtml += `</div>`;
+      return rowHtml;
   };
 
   if(parents.length > 0) {
