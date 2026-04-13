@@ -2,6 +2,7 @@
 <html lang="ko">
 <head><meta charset="UTF-8">
 <style>
+/* 기존 CSS 모두 유지 */
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary);margin:0;height:100vh;overflow:hidden}
 #login-screen{display:flex;width:100%;height:100vh;align-items:center;justify-content:center;background:#F1F3F5;position:absolute;inset:0;z-index:9999}
@@ -64,8 +65,6 @@ mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
 .sys-card:hover{border-color:var(--color-border-secondary);transform:translateY(-1px)}
 .sys-ic{font-size:20px;margin-bottom:8px}.sys-nm{font-size:13px;font-weight:700;margin-bottom:3px}
 .sys-ds{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
-
-/* New Home Cards */
 .h-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer; }
 .h-card:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.05); }
 
@@ -232,7 +231,7 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     
     <div class="sb-sec">Phase 2 · 언어·개념 체계화</div>
     <div class="sb-item" id="n-terms" onclick="window.goModule('terms', 'trm', this)"><span class="sb-ic">📝</span>용어·객체 정의</div>
-    <div class="sb-item" id="n-aiext" onclick="window.goModule('aiext', 'aiext', this)"><span class="sb-ic">🔍</span>용어 추출 AI<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:#FAEEDA;color:#633806;margin-left:auto;">예정</span></div>
+    <div class="sb-item" id="n-aiext" onclick="window.goModule('aiext', 'aiext', this)"><span class="sb-ic">🔍</span>용어 추출 AI</div>
     
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
     <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
@@ -402,7 +401,9 @@ window.S = {
   ragChunks: [],
   ragRetrieval: { embedModel:'', topK:'', searchType:'Dense', rerankModel:'', filterStrategy:'' },
   ragPrompt: { systemRole:'', contextFormat:'단순 나열', outputFormat:'자유 텍스트', citation:'인용 필요', memo:''},
-  manualChecks: {} // 수동 체크 상태 저장 (추가됨)
+  manualChecks: {},
+  // AI 추출 후보 용어 저장소
+  aiCandidates: [] 
 };
 
 window.REQ_FIELDS = {
@@ -458,6 +459,7 @@ window.undo = () => {
   Object.assign(window.S, JSON.parse(window.undoStack.pop()));
   if(!window.S.edgeDetails) window.S.edgeDetails = {};
   if(!window.S.manualChecks) window.S.manualChecks = {};
+  if(!window.S.aiCandidates) window.S.aiCandidates = [];
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('실행 취소했습니다.');
@@ -470,6 +472,7 @@ window.redo = () => {
   Object.assign(window.S, JSON.parse(window.redoStack.pop()));
   if(!window.S.edgeDetails) window.S.edgeDetails = {};
   if(!window.S.manualChecks) window.S.manualChecks = {};
+  if(!window.S.aiCandidates) window.S.aiCandidates = [];
   window.stateChanged();
   window.isHistoryAction = false;
   window.toast('다시 실행했습니다.');
@@ -1162,6 +1165,7 @@ const initAuth = async () => {
             
             S.edgeDetails = data.edgeDetails || {};
             S.manualChecks = data.manualChecks || {}; // 수동 체크 동기화
+            S.aiCandidates = data.aiCandidates || []; // AI 추출 후보
 
             if(!S.ragChunks) S.ragChunks = [];
             if(!S.ragRetrieval) S.ragRetrieval = {embedModel:'',topK:'',searchType:'Dense',rerankModel:'',filterStrategy:''};
@@ -1191,7 +1195,8 @@ window.buildDataToSave = () => {
     ragChunks: S.ragChunks,
     ragRetrieval: S.ragRetrieval,
     ragPrompt: S.ragPrompt,
-    manualChecks: S.manualChecks || {}
+    manualChecks: S.manualChecks || {},
+    aiCandidates: S.aiCandidates || []
   };
 };
 
@@ -1213,7 +1218,7 @@ const titles = {
   poc: 'PoC 현황',
   rag: 'RAG 설계',
   team: '팀원 R&R',
-  aiext: '용어 추출 AI'
+  aiext: '용어 추출 AI 워크벤치'
 };
 
 window.V = {};
@@ -1236,7 +1241,6 @@ window.go = (v, el) => {
   if(el) {
       el.classList.add('active');
   } else {
-      // Find matching active sidebar item (Fallback)
       const matchingEl = Array.from(document.querySelectorAll('.sb-item')).find(item => {
           return item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${window.activeModule}'`);
       });
@@ -1438,25 +1442,6 @@ window.V.home = () => {
               <div class="stat-n" style="color:${rCnt === 0 ? '#10B981' : '#F59E0B'}; margin-top:4px;">${rCnt === 0 ? '✅ 정상' : `⚠️ ${rCnt}건`}</div>
               <div style="font-size:11px; color:${rCnt === 0 ? '#047857' : '#B45309'}; opacity:0.8; margin-top:8px;">RAG 품질을 위한 필수 데이터 확인</div>
           </div>
-      </div>
-
-      <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
-      <div class="g3">
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3730A3'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('tasks', 'tasks')">
-           <div style="font-size:28px; margin-bottom:12px;">📋</div>
-           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">과제 현황판</div>
-           <div style="font-size:11px; color:#64748b;">진행중 ${prog}건 · 완료 ${done}건</div>
-        </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#1D4ED8'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('standard', 'doc')">
-           <div style="font-size:28px; margin-bottom:12px;">📄</div>
-           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">기준문서 관리</div>
-           <div style="font-size:11px; color:#64748b;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건 · 갱신필요 ${S.docs.filter(d=>d.cur==='갱신필요').length}건</div>
-        </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#0369A1'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.goModule('onto', 'onto')">
-           <div style="font-size:28px; margin-bottom:12px;">🔗</div>
-           <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">온톨로지·관계</div>
-           <div style="font-size:11px; color:#64748b;">전체 연결 엣지 ${window.getAllEdges().length}건</div>
-        </div>
       </div>
     </div>`;
 };
@@ -2700,7 +2685,7 @@ window.V.rag = () => {
                     </div>
                     <div style="grid-column: 1 / -1;">
                         <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">기타 설계 메모 (Memo)</label>
-                        <textarea placeholder="기타 설계 메모" style="width:100%;min-height:60px;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;resize:vertical;font-family:inherit;" onblur="window.updateRagObj('ragPrompt', 'memo', this.value)">${(S.ragPrompt.memo||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        <textarea placeholder="기타 설계 메모" style="width:100%;min-height:60px;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;resize:vertical;font-family:inherit;" onblur="window.updateRagPrompt('ragPrompt', 'memo', this.value)">${(S.ragPrompt.memo||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
                     </div>
                 </div>
             </div>
@@ -2708,22 +2693,134 @@ window.V.rag = () => {
     `;
 };
 
-// ── AI EXTRACTOR (Placeholder) ───────────────────────
+// ── AI EXTRACTOR (Workflow Implemented) ───────────────────────
+window.runMockAI = () => {
+    const txt = document.getElementById('ai-text-input').value;
+    if(!txt.trim()) { window.toast('추출할 텍스트를 입력해주세요.'); return; }
+    
+    document.getElementById('ai-run-btn').innerText = '추출 중...';
+    setTimeout(() => {
+        window.pushHistory();
+        S.aiCandidates = [
+            { term: '다면평가', def: '여러 직급의 평가자가 대상자를 다각도로 평가하는 제도', score: 98, checked: true },
+            { term: '정규직', def: '기간의 정함이 없는 근로계약을 체결한 근로자', score: 95, checked: true },
+            { term: '리더십', def: '조직의 목표 달성을 위해 구성원을 이끄는 역량', score: 88, checked: false },
+            { term: 'KPI 달성률', def: '핵심성과지표의 목표 대비 실제 달성 비율', score: 85, checked: false }
+        ];
+        window.stateChanged();
+    }, 800);
+};
+
+window.toggleAiCandidate = (idx) => {
+    S.aiCandidates[idx].checked = !S.aiCandidates[idx].checked;
+    window.stateChanged();
+};
+
+window.approveToGlossary = () => {
+    const selected = S.aiCandidates.filter(c => c.checked);
+    if(selected.length === 0) { window.toast('승인할 후보 용어를 선택해주세요.'); return; }
+    
+    window.pushHistory();
+    selected.forEach(c => {
+        S.terms.push({
+            code: window.nc('terms', 'TRM'), _locked: false,
+            term: c.term, def: c.def, otype: '객체', 
+            parent: '', child: '', sim: '', docRef: '', tskRef: '', note: 'AI 자동 추출됨'
+        });
+    });
+    // Remove approved from candidates
+    S.aiCandidates = S.aiCandidates.filter(c => !c.checked);
+    window.stateChanged();
+    window.toast(`${selected.length}건이 사전(TRM)에 등록되었습니다.`);
+};
+
+window.promoteObject = (code, selectEl) => {
+    const newType = selectEl.value;
+    window.pushHistory();
+    const term = S.terms.find(t => t.code === code);
+    if(term) {
+        term.otype = newType;
+        window.toast(`[${term.term}] 객체 유형이 '${newType}'(으)로 변경되었습니다.`);
+    }
+    window.stateChanged();
+};
+
 window.V.aiext = () => {
-  document.getElementById('pg-actions').innerHTML = '';
+  document.getElementById('pg-actions').innerHTML = `
+    <button class="btn btn-o btn-sm" onclick="window.goModule('terms', 'trm')">전체 TRM 사전 보기</button>
+  `;
+  
+  const cands = S.aiCandidates || [];
+  const approvedTerms = S.terms.slice().reverse().slice(0, 15); // 최근 등록된 15개만 보여줌
+
   document.getElementById('content').innerHTML = `
-    <div style="flex:1;display:flex;align-items:center; justify-content:center;flex-direction:column;gap:16px; padding:40px;text-align:center;">
-      <div style="font-size:48px;">🔍</div>
-      <div style="font-size:16px;font-weight:500; color:var(--color-text-primary)">용어 추출 AI</div>
-      <div style="font-size:13px;color:var(--color-text-secondary); max-width:360px;line-height:1.8">
-        Word, PDF, Excel 문서를 업로드하면<br>
-        사내망 LLM API가 용어·객체 후보를 자동 추출하고<br>
-        사람이 검토 후 TRM 탭에 확정 등록하는 기능입니다.<br><br>
-        <strong>Phase 2 진입 후 미들웨어 연동과 함께 개발 예정입니다.</strong>
-      </div>
-      <div style="font-size:11px;padding:6px 14px;border-radius:20px; background:#FAEEDA;color:#633806;font-weight:500">
-        개발 예정
-      </div>
+    <div style="flex:1; display:flex; padding:18px; gap:16px; background:#F1F5F9; overflow:hidden;">
+        
+        <div class="card" style="flex:1; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+            <div style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                <span>1. 문서 텍스트 입력</span>
+                <span style="font-size:11px; color:gray;">임시 AI 추출기</span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; padding:16px;">
+                <textarea id="ai-text-input" placeholder="HR 관련 규정이나 공지사항 텍스트를 붙여넣으세요.\n(예: 2026년 다면평가 실시 안내. 대상: 정규직. 평가항목: 리더십, KPI 달성률...)" style="flex:1; width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; font-family:inherit; outline:none; resize:none; margin-bottom:12px; line-height:1.6;"></textarea>
+                <button id="ai-run-btn" class="btn btn-g" style="justify-content:center; padding:12px; font-size:14px; border-radius:6px;" onclick="window.runMockAI()">AI 용어 추출 실행</button>
+            </div>
+        </div>
+
+        <div class="card" style="flex:1; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+            <div style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                <span>2. AI 추출 후보 용어</span>
+                <span style="background:#e2e8f0; padding:2px 8px; border-radius:10px; font-size:11px;">${cands.length}건</span>
+            </div>
+            <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px; background:#fafafa;">
+                ${cands.length === 0 ? `<div style="text-align:center; color:gray; font-size:12px; margin-top:40px;">좌측에서 텍스트를 입력하고<br>AI 추출을 실행하세요.</div>` : 
+                  cands.map((c, i) => `
+                    <div style="background:#fff; border:1px solid ${c.checked ? '#1D4ED8' : '#e2e8f0'}; border-radius:6px; padding:10px; display:flex; gap:10px; cursor:pointer; transition:all 0.2s; box-shadow:${c.checked ? '0 2px 8px rgba(29,78,216,0.1)' : 'none'};" onclick="window.toggleAiCandidate(${i})">
+                        <input type="checkbox" ${c.checked ? 'checked' : ''} style="margin-top:2px;" onclick="event.stopPropagation(); window.toggleAiCandidate(${i})">
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <strong style="color:${c.checked ? '#1D4ED8' : '#334155'}; font-size:14px;">${c.term}</strong>
+                                <span style="font-size:10px; color:${c.score > 90 ? '#10B981' : '#F59E0B'}">신뢰도 ${c.score}%</span>
+                            </div>
+                            <div style="font-size:11px; color:gray; line-height:1.4;">${c.def}</div>
+                        </div>
+                    </div>
+                  `).join('')
+                }
+            </div>
+            <div style="padding:12px 16px; border-top:1px solid #e2e8f0; background:#fff;">
+                <button class="btn btn-o" style="width:100%; justify-content:center; padding:10px; font-size:13px; font-weight:700; border-color:#1D4ED8; color:#1D4ED8;" onclick="window.approveToGlossary()">사전(TRM)으로 승인 ➔</button>
+            </div>
+        </div>
+
+        <div class="card" style="flex:1.2; display:flex; flex-direction:column; padding:0; overflow:hidden;">
+            <div style="background:#EEEDFE; padding:12px 16px; border-bottom:1px solid #c7d2fe; font-weight:700; color:#3C3489; display:flex; justify-content:space-between; align-items:center;">
+                <span>3. 확정 용어 & 객체 모델링</span>
+                <span style="font-size:11px; font-weight:500;">최근 등록 항목</span>
+            </div>
+            <div style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px;">
+                ${approvedTerms.length === 0 ? `<div style="text-align:center; color:gray; font-size:12px; margin-top:40px;">등록된 용어가 없습니다.</div>` : 
+                  approvedTerms.map(t => {
+                      const isObj = t.otype !== '객체'; // 기본값이 아닌 경우 하이라이트
+                      return `
+                      <div style="background:#fff; border:1px solid #e2e8f0; border-left:4px solid ${isObj ? '#10B981' : '#94a3b8'}; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+                          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                              <div style="display:flex; align-items:center; gap:6px;">
+                                  ${window.badge(t.code)}
+                                  <strong style="font-size:13px;">${t.term}</strong>
+                              </div>
+                              <select style="font-size:11px; padding:2px 6px; border-radius:4px; border:1px solid ${isObj ? '#10B981' : '#cbd5e1'}; background:${isObj ? '#F0FDF4' : '#fff'}; color:${isObj ? '#047857' : '#333'}; outline:none; cursor:pointer;" onchange="window.promoteObject('${t.code}', this)">
+                                  ${['객체', '속성', '기준값', '프로세스'].map(o => `<option value="${o}" ${t.otype === o ? 'selected' : ''}>${o}</option>`).join('')}
+                              </select>
+                          </div>
+                          <div style="font-size:11px; color:gray; line-height:1.4;">${t.def}</div>
+                      </div>
+                      `
+                  }).join('')
+                }
+            </div>
+        </div>
+
     </div>`;
 };
 
