@@ -420,6 +420,13 @@ let pendingUploadData = null;
 window.ontoExpanded = window.ontoExpanded || new Set();
 window.ontoExpandedEdge = null;
 
+window.phExpanded = window.phExpanded || new Set();
+window.togglePhase = (id) => {
+    if(window.phExpanded.has(id)) window.phExpanded.delete(id);
+    else window.phExpanded.add(id);
+    window.V.home();
+};
+
 window.undoStack = [];
 window.redoStack = [];
 window.isHistoryAction = false;
@@ -1203,28 +1210,116 @@ window.go = (v, el) => {
 
 // ── VIEWS ────────────────────────────────────────────
 window.V.home = () => {
-  const t=S.tasks, done=t.filter(x=>x.status==='완료').length, prog=t.filter(x=>x.status==='진행중').length;
-  const dd=S.dats, own=dd.filter(x=>x.own==='보유').length;
-  const pd=S.pocs, pdone=pd.filter(x=>x.status==='완료').length;
-  
+  const edges = window.getAllEdges ? window.getAllEdges() : [];
+  const t = S.tasks;
+  const done = t.filter(x=>x.status==='완료').length;
+  const prog = t.filter(x=>x.status==='진행중').length;
+  const checks = [
+      {
+          phase: 1, title: 'Phase 1 · 기준 확립',
+          items: [
+              { label: '업무 과제 등록', done: S.tasks.length > 0 },
+              { label: '표준문서 수집', done: S.docs.length > 0 },
+              { label: '현행화 확인', done: S.docs.filter(d => d.cur === '최신').length > 0 }
+          ]
+      },
+      {
+          phase: 2, title: 'Phase 2 · 언어·개념 체계화',
+          items: [
+              { label: '핵심 용어 초안 추출', done: S.terms.length > 0 },
+              { label: '용어 정의 확정', done: S.terms.length > 0 && S.terms.filter(t => t.def).length === S.terms.length },
+              { label: '객체 정의', done: S.terms.length > 0 && S.terms.filter(t => t.otype).length === S.terms.length },
+              { label: '동의어·유사어 정리', done: S.terms.filter(t => t.sim).length > 0 }
+          ]
+      },
+      {
+          phase: 3, title: 'Phase 3 · 관계·구조 설계',
+          items: [
+              { label: '문서 간 관계 정의', done: edges.filter(e => e.source.startsWith('DOC') && e.target.startsWith('DOC')).length > 0 },
+              { label: '용어-문서 연결', done: edges.filter(e => e.source.startsWith('TRM') || e.target.startsWith('TRM')).length > 0 },
+              { label: '데이터셋 연결', done: edges.filter(e => e.source.startsWith('DAT') || e.target.startsWith('DAT')).length > 0 },
+              { label: '온톨로지 확정', done: edges.length >= 5 }
+          ]
+      },
+      {
+          phase: 4, title: 'Phase 4 · 시스템 구현',
+          items: [
+              { label: '데이터셋 수집', done: S.dats.filter(d => d.own === '보유').length > 0 },
+              { label: 'PoC 시나리오 등록', done: S.pocs.length > 0 },
+              { label: 'PoC 완료', done: S.pocs.filter(p => p.status === '완료').length > 0 },
+              { label: '이슈 없음', done: S.pocs.length > 0 && S.pocs.filter(p => p.status === '이슈').length === 0 }
+          ]
+      }
+  ];
+
+  let activePhaseIdx = checks.findIndex(p => p.items.filter(i => i.done).length < p.items.length);
+  if (activePhaseIdx === -1) activePhaseIdx = 999;
+
+  let totalItems = 0;
+  let compItems = 0;
+
+  checks.forEach((p, idx) => {
+      p.doneCount = p.items.filter(i => i.done).length;
+      p.totalCount = p.items.length;
+      totalItems += p.totalCount;
+      compItems += p.doneCount;
+
+      if (idx < activePhaseIdx) p.status = 'done';
+      else if (idx === activePhaseIdx) p.status = 'active';
+      else p.status = 'wait';
+  });
+
+  if (typeof window.phExpandedInitialized === 'undefined') {
+      window.phExpanded = new Set();
+      if (activePhaseIdx !== 999) window.phExpanded.add(checks[activePhaseIdx].phase);
+      else window.phExpanded.add(4);
+      window.phExpandedInitialized = true;
+  }
+
+  const compRate = window.pct(compItems, totalItems);
   const oCnt = window.orphanRefs.length;
   const rCnt = window.missingRequired.length;
 
-  const totalItems = S.tasks.length + S.docs.length + S.exps.length + S.terms.length + S.dats.length;
-  const compItems = totalItems > 0 ? totalItems - window.missingRequired.length : 0;
-  const compRate = window.pct(compItems, totalItems);
-
   document.getElementById('content').innerHTML=`
+    <style>
+      .ph-wrap { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+      .ph-step { display: flex; gap: 16px; }
+      .ph-left { display: flex; flex-direction: column; align-items: center; width: 24px; }
+      .ph-circle { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 2; transition: all 0.3s; }
+      .ph-line { flex: 1; width: 2px; background: #e2e8f0; margin-top: 4px; margin-bottom: 4px; transition: background 0.3s; }
+      .ph-step:last-child .ph-line { display: none; }
+      .ph-right { flex: 1; padding-bottom: 20px; }
+      .ph-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; transition: all 0.2s; }
+      .ph-header { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; user-select: none; transition: background 0.15s; }
+      .ph-header:hover { background: #f8fafc; }
+      .ph-body { padding: 0 18px 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed #e2e8f0; margin-top: 4px; padding-top: 14px; }
+      .ph-chk { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+      .ph-chk.done { color: #94a3b8; text-decoration: line-through; }
+      .ph-chk-ic { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; background: #fff; transition: all 0.2s; }
+      .ph-chk.done .ph-chk-ic { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+
+      .ph-step.done .ph-circle { background: #1D9E75; color: #fff; }
+      .ph-step.done .ph-line { background: #1D9E75; }
+      .ph-step.done .ph-card { border-left: 4px solid #1D9E75; }
+
+      .ph-step.active .ph-circle { background: #534AB7; color: #fff; box-shadow: 0 0 0 3px #EEEDFE; }
+      .ph-step.active .ph-card { border-left: 4px solid #534AB7; border-color: #534AB7; box-shadow: 0 4px 12px rgba(83,74,183,0.1); }
+      .ph-step.active .ph-header { background: #EEEDFE; color: #3C3489; }
+      .ph-step.active .ph-header:hover { background: #e0dffd; }
+
+      .ph-step.wait .ph-circle { background: #e2e8f0; color: #94a3b8; }
+      .ph-step.wait .ph-card { border-left: 4px solid #cbd5e1; opacity: 0.8; }
+    </style>
     <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
       <!-- 상단 배너 -->
       <div style="background:linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         <div>
-          <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 포털 대시보드</div>
+          <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 구축 파이프라인</div>
           <div style="font-size:13px; opacity:0.9;">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</div>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
           <div style="text-align:right;">
-            <div style="font-size:12px; opacity:0.9; margin-bottom:4px;">필수 데이터 완성도</div>
+            <div style="font-size:12px; opacity:0.9; margin-bottom:4px;">전체 완성도</div>
             <div style="font-size:28px; font-weight:800;">${compRate}%</div>
           </div>
           <div style="width:54px; height:54px; border-radius:50%; background:conic-gradient(#fff ${compRate}%, rgba(255,255,255,0.2) 0); display:flex; align-items:center; justify-content:center;">
@@ -1233,28 +1328,40 @@ window.V.home = () => {
         </div>
       </div>
 
-      <!-- 핵심 지표 카드 -->
-      <div class="g4" style="margin-bottom:24px">
-        <div class="h-card hc-tsk" onclick="window.go('tasks')">
-           <div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div>
-           <div style="font-size:11px; color:gray; margin-top:8px;">완료 ${done} · 진행중 ${prog}</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#3730A3"></div></div>
-        </div>
-        <div class="h-card hc-doc" onclick="window.go('docs')">
-           <div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div>
-           <div style="font-size:11px; color:gray; margin-top:8px;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#1D4ED8"></div></div>
-        </div>
-        <div class="h-card hc-dat" onclick="window.go('data')">
-           <div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:#94a3b8"> / ${dd.length}</span></div>
-           <div style="font-size:11px; color:gray; margin-top:8px;">수집 완료 비율</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#0369A1"></div></div>
-        </div>
-        <div class="h-card hc-poc" onclick="window.go('poc')">
-           <div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:#94a3b8"> / ${pd.length}</span></div>
-           <div style="font-size:11px; color:gray; margin-top:8px;">검증 달성률</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#0F766E"></div></div>
-        </div>
+      <!-- 파이프라인 스테퍼 -->
+      <div class="ph-wrap">
+        ${checks.map(p => {
+            const isExp = window.phExpanded.has(p.phase);
+            return `
+            <div class="ph-step ${p.status}">
+              <div class="ph-left">
+                 <div class="ph-circle">${p.status === 'done' ? '✓' : p.phase}</div>
+                 <div class="ph-line"></div>
+              </div>
+              <div class="ph-right">
+                 <div class="ph-card">
+                    <div class="ph-header" onclick="window.togglePhase(${p.phase})">
+                       <div style="display:flex; align-items:center; gap:8px;">
+                           ${p.title}
+                           ${p.status === 'active' ? '<span style="font-size:11px; font-weight:500; color:#534AB7; background:#fff; padding:2px 6px; border-radius:10px;">← 현재</span>' : ''}
+                       </div>
+                       <div style="font-size:12px; font-weight:500; display:flex; align-items:center; gap:8px;">
+                           ${p.doneCount}/${p.totalCount} 완료
+                           <span style="display:inline-block; transition:transform 0.2s; transform:${isExp ? 'rotate(90deg)' : 'rotate(0deg)'}">▶</span>
+                       </div>
+                    </div>
+                    <div class="ph-body" style="display: ${isExp ? 'flex' : 'none'}">
+                       ${p.items.map(item => `
+                           <div class="ph-chk ${item.done ? 'done' : ''}">
+                               <div class="ph-chk-ic">${item.done ? '✓' : ''}</div>
+                               <div>${item.label}</div>
+                           </div>
+                       `).join('')}
+                    </div>
+                 </div>
+              </div>
+            </div>`;
+        }).join('')}
       </div>
 
       <!-- 데이터 무결성 검증 -->
