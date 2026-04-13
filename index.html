@@ -5,11 +5,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-sans,system-ui);font-size:13px;color:var(--color-text-primary);background:var(--color-background-tertiary);margin:0;height:100vh;overflow:hidden}
 #login-screen{display:flex;width:100%;height:100vh;align-items:center;justify-content:center;background:#F1F3F5;position:absolute;inset:0;z-index:9999}
-.login-box{background:#fff;padding:32px 28px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.08);width:320px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--color-border-tertiary)}
+.login-box{background:#fff;padding:32px 28px;border-radius:4px 4px 12px 12px;box-shadow:0 4px 16px rgba(0,0,0,0.08);width:320px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--color-border-tertiary);border-top:4px solid #2563EB;}
 .login-input{padding:10px 12px;border:1px solid var(--color-border-secondary);border-radius:6px;font-size:13px;outline:none;transition:border-color 0.2s}
-.login-input:focus{border-color:#1D9E75}
-.login-btn{background:#1D9E75;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;transition:opacity 0.2s;margin-top:4px}
-.login-btn:hover{opacity:0.85}
+.login-input:focus{border-color:#2563EB}
+.login-btn{background:#2563EB;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;transition:opacity 0.2s;margin-top:4px}
+.login-btn:hover{opacity:0.88}
 #app-container{display:none;width:100%;height:100%;flex-direction:row}
 .sb{width:212px;flex-shrink:0;background:#F1F3F5;border-right:1px solid var(--color-border-tertiary);display:flex;flex-direction:column;overflow-y:auto;transition:width 0.2s, padding 0.2s;}
 .sb.collapsed{width:0;padding:0;border-right:none;overflow:hidden}
@@ -42,7 +42,7 @@ mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
 .btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:opacity .12s;white-space:nowrap}
 .btn:hover{opacity:.85}.btn-g{background:#1D9E75;color:#fff}
 .btn-o{background:var(--color-background-primary);border:1px solid var(--color-border-secondary);color:var(--color-text-primary)}
-.btn-sm{padding:4px 9px;font-size:11px}
+.btn-sm{padding:4px 6px;font-size:11px}
 .add-row{display:flex;align-items:center;gap:5px;padding:5px 11px;background:transparent;border:1px dashed var(--color-border-secondary);border-radius:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer}
 .add-row:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
 .del-btn{width:22px;height:22px;border:none;border-radius:4px;background:transparent;color:var(--color-text-secondary);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
@@ -66,10 +66,10 @@ mark { background:#FEF08A; color:#000; padding:0 2px; border-radius:2px; }
 /* New Home Cards */
 .h-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; transition:transform 0.2s, box-shadow 0.2s; cursor:pointer; }
 .h-card:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,0.05); }
-.hc-tsk { border-left:4px solid #3C3489; }
-.hc-doc { border-left:4px solid #085041; }
-.hc-dat { border-left:4px solid #185FA5; }
-.hc-poc { border-left:4px solid #639922; }
+.hc-tsk { border-left:4px solid #3730A3; }
+.hc-doc { border-left:4px solid #1D4ED8; }
+.hc-dat { border-left:4px solid #0369A1; }
+.hc-poc { border-left:4px solid #0F766E; }
 
 /* Table */
 .tw{border-radius:8px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
@@ -248,8 +248,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
       <div style="flex:1"></div>
       <div class="topbar-r">
-        <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소 (Ctrl+Z)">↩️ 취소</button>
-        <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행 (Ctrl+Y)">↪️ 복구</button>
+        <button class="btn btn-o btn-sm" onclick="window.undo()" title="실행 취소 Ctrl+Z">↩️</button>
+        <button class="btn btn-o btn-sm" onclick="window.redo()" title="다시 실행 Ctrl+Y">↪️</button>
         <div id="pg-actions" style="display:flex;gap:6px;margin-left:6px;"></div>
       </div>
     </div>
@@ -1078,7 +1078,7 @@ window.goToItem = (arrKey, code) => {
 };
 
 window.openOrphanModal = () => {
-    document.getElementById('qm-title').innerText = '깨진 참조 (고아 참조) 목록';
+    document.getElementById('qm-title').innerText = '깨진 참조 목록';
     const rows = window.orphanRefs.map(o => `
         <tr>
             <td>${window.badge(o.ownerCode)}</td>
@@ -1190,7 +1190,13 @@ window.go = (v, el) => {
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   (el||document.getElementById('n-'+v))?.classList.add('active');
   document.getElementById('pg-title').textContent = titles[v] || '';
-  document.getElementById('pg-actions').innerHTML = '';
+  
+  if (v === 'home') {
+      document.getElementById('pg-actions').innerHTML = '';
+  } else {
+      document.getElementById('pg-actions').innerHTML = '';
+  }
+
   document.getElementById('content').style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--color-background-tertiary); min-width:0; min-height:0;';
   if(window.V[v]) window.V[v]();
 };
@@ -1211,7 +1217,7 @@ window.V.home = () => {
   document.getElementById('content').innerHTML=`
     <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
       <!-- 상단 배너 -->
-      <div style="background:linear-gradient(135deg, #085041 0%, #1D9E75 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+      <div style="background:linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); border-radius:12px; padding:24px 30px; color:#fff; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         <div>
           <div style="font-size:22px; font-weight:800; margin-bottom:6px;">AX 포털 대시보드</div>
           <div style="font-size:13px; opacity:0.9;">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</div>
@@ -1222,7 +1228,7 @@ window.V.home = () => {
             <div style="font-size:28px; font-weight:800;">${compRate}%</div>
           </div>
           <div style="width:54px; height:54px; border-radius:50%; background:conic-gradient(#fff ${compRate}%, rgba(255,255,255,0.2) 0); display:flex; align-items:center; justify-content:center;">
-             <div style="width:42px; height:42px; background:#16805b; border-radius:50%;"></div>
+             <div style="width:42px; height:42px; background:#1E40AF; border-radius:50%;"></div>
           </div>
         </div>
       </div>
@@ -1232,32 +1238,32 @@ window.V.home = () => {
         <div class="h-card hc-tsk" onclick="window.go('tasks')">
            <div class="stat-l">전체 과제</div><div class="stat-n">${t.length}</div>
            <div style="font-size:11px; color:gray; margin-top:8px;">완료 ${done} · 진행중 ${prog}</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#3C3489"></div></div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(done,t.length)}%;background:#3730A3"></div></div>
         </div>
         <div class="h-card hc-doc" onclick="window.go('docs')">
            <div class="stat-l">기준문서</div><div class="stat-n">${S.docs.length}</div>
            <div style="font-size:11px; color:gray; margin-top:8px;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#085041"></div></div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(S.docs.filter(d=>d.cur==='최신').length,S.docs.length)}%;background:#1D4ED8"></div></div>
         </div>
         <div class="h-card hc-dat" onclick="window.go('data')">
            <div class="stat-l">데이터셋 보유</div><div class="stat-n">${own}<span style="font-size:14px;color:#94a3b8"> / ${dd.length}</span></div>
            <div style="font-size:11px; color:gray; margin-top:8px;">수집 완료 비율</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#185FA5"></div></div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(own,dd.length)}%;background:#0369A1"></div></div>
         </div>
         <div class="h-card hc-poc" onclick="window.go('poc')">
            <div class="stat-l">PoC 완료</div><div class="stat-n">${pdone}<span style="font-size:14px;color:#94a3b8"> / ${pd.length}</span></div>
            <div style="font-size:11px; color:gray; margin-top:8px;">검증 달성률</div>
-           <div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#639922"></div></div>
+           <div class="bar"><div class="bar-f" style="width:${window.pct(pdone,pd.length)}%;background:#0F766E"></div></div>
         </div>
       </div>
 
       <!-- 데이터 무결성 검증 -->
-      <div style="background:#1E293B; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">데이터 무결성 검증</div>
+      <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">데이터 무결성 검증</div>
       <div class="g4" style="margin-bottom:24px">
           <div class="h-card" style="border-left:4px solid ${oCnt === 0 ? '#10B981' : '#EF4444'}; background:${oCnt === 0 ? '#F0FDF4' : '#FEF2F2'};" onclick="window.openOrphanModal()">
-              <div class="stat-l" style="color:${oCnt === 0 ? '#047857' : '#991B1B'};">깨진 참조 (고아 참조)</div>
+              <div class="stat-l" style="color:${oCnt === 0 ? '#047857' : '#991B1B'};">깨진 참조</div>
               <div class="stat-n" style="color:${oCnt === 0 ? '#10B981' : '#EF4444'}; margin-top:4px;">${oCnt === 0 ? '✅ 정상' : `🔴 ${oCnt}건`}</div>
-              <div style="font-size:11px; color:${oCnt === 0 ? '#047857' : '#991B1B'}; opacity:0.8; margin-top:8px;">존재하지 않는 코드 참조 확인</div>
+              <div style="font-size:11px; color:${oCnt === 0 ? '#047857' : '#991B1B'}; opacity:0.8; margin-top:8px;">연결이 끊어진 코드 참조 확인</div>
           </div>
           <div class="h-card" style="border-left:4px solid ${rCnt === 0 ? '#10B981' : '#F59E0B'}; background:${rCnt === 0 ? '#F0FDF4' : '#FFFBEB'};" onclick="window.openReqModal()">
               <div class="stat-l" style="color:${rCnt === 0 ? '#047857' : '#B45309'};">필수 필드 미입력</div>
@@ -1267,19 +1273,19 @@ window.V.home = () => {
       </div>
 
       <!-- 시스템 바로가기 -->
-      <div style="background:#1E293B; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
+      <div style="background:#1E3A8A; color:#fff; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:700; margin-bottom:14px;">시스템 바로가기</div>
       <div class="g3">
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3C3489'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('tasks')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#3730A3'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('tasks')">
            <div style="font-size:28px; margin-bottom:12px;">📋</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">과제 현황판</div>
            <div style="font-size:11px; color:#64748b;">진행중 ${prog}건 · 완료 ${done}건</div>
         </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#085041'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('docs')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#1D4ED8'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('docs')">
            <div style="font-size:28px; margin-bottom:12px;">📄</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">기준문서 관리</div>
            <div style="font-size:11px; color:#64748b;">최신 ${S.docs.filter(d=>d.cur==='최신').length}건 · 갱신필요 ${S.docs.filter(d=>d.cur==='갱신필요').length}건</div>
         </div>
-        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#72243E'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('onto')">
+        <div class="h-card" style="border-color:transparent; border-top:1px solid #e2e8f0; border-left:1px solid #e2e8f0;" onmouseover="this.style.borderColor='#0369A1'" onmouseout="this.style.borderColor='transparent'; this.style.borderTop='1px solid #e2e8f0'; this.style.borderLeft='1px solid #e2e8f0';" onclick="window.go('onto')">
            <div style="font-size:28px; margin-bottom:12px;">🔗</div>
            <div style="font-size:14px; font-weight:700; margin-bottom:6px; color:#1e293b;">온톨로지·관계</div>
            <div style="font-size:11px; color:#64748b;">전체 연결 엣지 ${window.getAllEdges().length}건</div>
@@ -1624,7 +1630,10 @@ window.V.docs = (tab) => {
             <!-- 1열: 트리 -->
             <div class="card" style="flex: 0 0 240px; display:flex; flex-direction:column; overflow:hidden; padding:12px;">
                 <div class="sec"><h3>데이터 트리</h3></div>
-                <div style="flex:1; overflow-y:auto; padding-right:6px;">
+                <div style="flex:1; overflow-y:auto; padding-right:10px; padding-bottom:30px;"
+                     ondragover="window.relDragOver(event)"
+                     ondragleave="window.relDragLeave(event)"
+                     ondrop="window.relDrop(event, 'root', 'root')">
                     ${tasksHtml || '<div style="color:gray;font-size:11px;">과제가 없습니다.</div>'}
                     ${orphansHtml ? `<div class="o-sec" style="margin-top:20px; color:#E24B4A;">미연결 항목 (고립)</div>${orphansHtml}` : ''}
                 </div>
