@@ -222,18 +222,27 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
 
 <div id="app-container">
   <div class="sb">
-    <div class="sb-top"><h1>AX 포털</h1><p>AI Transformation 통합 관리</p></div>
+    <div class="sb-top">
+      <h1>AX 포털</h1>
+      <p>AI Transformation 통합 관리</p>
+    </div>
     <div class="sb-sec">메인</div>
-    <div class="sb-item active" id="n-home" onclick="go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
-    <div class="sb-sec">AX 관리</div>
-    <div class="sb-item" id="n-tasks" onclick="go('tasks',this)"><span class="sb-ic">📋</span>과제 현황판</div>
-    <div class="sb-item" id="n-docs" onclick="go('docs',this)"><span class="sb-ic">📄</span>기준문서 관리</div>
-    <div class="sb-item" id="n-data" onclick="go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
-    <div class="sb-sec">분석 · 설계</div>
-    <div class="sb-item" id="n-onto" onclick="go('onto',this)"><span class="sb-ic">🔗</span>온톨로지 · 관계</div>
-    <div class="sb-item" id="n-poc" onclick="go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
+    <div class="sb-item active" id="n-home" onclick="window.go('home',this)"><span class="sb-ic">🏠</span>홈 대시보드</div>
+    <div class="sb-sec">Phase 1 · 기준 확립</div>
+    <div class="sb-item" id="n-tasks" onclick="window.go('tasks',this)"><span class="sb-ic">📋</span>업무 과제 관리</div>
+    <div class="sb-item" id="n-docs" onclick="window.go('docs',this)"><span class="sb-ic">📄</span>표준문서 관리</div>
+    <div class="sb-sec">Phase 2 · 언어·개념 체계화</div>
+    <div class="sb-item" id="n-terms" onclick="window.currentView='docs'; window.dtab='trm'; window.go('docs',this)"><span class="sb-ic">📝</span>용어·객체 정의</div>
+    <div class="sb-item" id="n-aiext" onclick="window.go('aiext',this)"><span class="sb-ic">🔍</span>용어 추출 AI<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:#FAEEDA;color:#633806;margin-left:auto;">예정</span></div>
+    <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
+    <div class="sb-item" id="n-rel" onclick="window.currentView='docs'; window.dtab='rel'; window.go('docs',this)"><span class="sb-ic">🔗</span>관계 정의</div>
+    <div class="sb-item" id="n-onto" onclick="window.go('onto',this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
+    <div class="sb-sec">Phase 4 · 시스템 구현</div>
+    <div class="sb-item" id="n-data" onclick="window.go('data',this)"><span class="sb-ic">💾</span>데이터셋 현황</div>
+    <div class="sb-item" id="n-poc" onclick="window.go('poc',this)"><span class="sb-ic">🧪</span>PoC 현황</div>
+    <div class="sb-item" id="n-rag" onclick="window.go('rag',this)"><span class="sb-ic">📐</span>RAG 설계</div>
     <div class="sb-sec">팀</div>
-    <div class="sb-item" id="n-team" onclick="go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
+    <div class="sb-item" id="n-team" onclick="window.go('team',this)"><span class="sb-ic">👥</span>팀원 R&R</div>
   </div>
   <div class="main">
     <div class="topbar">
@@ -391,7 +400,10 @@ window.S = {
       'E__DOC-P-001__DAT-001': {type:'데이터 활용', clause:'', relevance:'참고', verbatim:''},
       'E__DOC-P-001__EXP-001': {type:'예외 처리', clause:'', relevance:'충돌가능', verbatim:''},
       'E__TRM-001__DAT-001': {type:'키워드 매칭(추론)', clause:'', relevance:'참고', verbatim:''}
-  }
+  },
+  ragChunks: [],
+  ragRetrieval: { embedModel:'', topK:'', searchType:'Dense', rerankModel:'', filterStrategy:'' },
+  ragPrompt: { systemRole:'', contextFormat:'단순 나열', outputFormat:'자유 텍스트', citation:'인용 필요', memo:''}
 };
 
 window.REQ_FIELDS = {
@@ -828,6 +840,8 @@ window.stateChanged = () => {
   if (window.currentView === 'tasks') window.V.tasks();
   if (window.currentView === 'onto') window.V.onto();
   if (window.currentView === 'data') window.V.data();
+  if (window.currentView === 'rag') window.V.rag();
+  if (window.currentView === 'aiext') window.V.aiext();
 };
 
 // --- EDGE LOGIC FOR REL TAB & ONTO TAB ---
@@ -1156,6 +1170,10 @@ const initAuth = async () => {
                 });
                 S.edgeTypes = {};
             }
+
+            if(!S.ragChunks) S.ragChunks = [];
+            if(!S.ragRetrieval) S.ragRetrieval = {embedModel:'',topK:'',searchType:'Dense',rerankModel:'',filterStrategy:''};
+            if(!S.ragPrompt) S.ragPrompt = {systemRole:'',contextFormat:'단순 나열',outputFormat:'자유 텍스트',citation:'인용 필요',memo:''};
         } else {
             await setDoc(userDocRef, window.buildDataToSave());
         }
@@ -1177,7 +1195,10 @@ window.buildDataToSave = () => {
   return {
     team: cleanData(S.team), tasks: cleanData(S.tasks), docs: cleanData(S.docs),
     exps: cleanData(S.exps), terms: cleanData(S.terms), dats: cleanData(S.dats), pocs: cleanData(S.pocs),
-    edgeDetails: S.edgeDetails || {}
+    edgeDetails: S.edgeDetails || {},
+    ragChunks: S.ragChunks,
+    ragRetrieval: S.ragRetrieval,
+    ragPrompt: S.ragPrompt
   };
 };
 
@@ -1190,7 +1211,17 @@ window.saveStateFn = () => {
 };
 
 // ── NAVIGATION ───────────────────────────────────────
-const titles={home:'홈 대시보드',tasks:'과제 현황판',docs:'기준문서 관리',data:'데이터셋 현황',onto:'온톨로지 · 관계',poc:'PoC 현황',team:'팀원 R&R'};
+const titles = {
+  home: '홈 대시보드',
+  tasks: '업무 과제 관리',
+  docs: '표준문서 관리',
+  data: '데이터셋 현황',
+  onto: '온톨로지 맵',
+  poc: 'PoC 현황',
+  rag: 'RAG 설계',
+  team: '팀원 R&R',
+  aiext: '용어 추출 AI'
+};
 window.V = {};
 window.go = (v, el) => {
   window.currentView = v;
@@ -2544,6 +2575,169 @@ window.V.poc = () => {
     setTimeout(window.initResizers, 50);
 };
 window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:'',_locked:false}); window.stateChanged(); };
+
+// ── RAG ──────────────────────────────────────────────
+window.updateRagChunk = (docCode, field, val) => {
+    window.pushHistory();
+    let chunk = S.ragChunks.find(c => c.docCode === docCode);
+    if(chunk) {
+        chunk[field] = val;
+    }
+    window.saveStateFn();
+};
+
+window.updateRagObj = (objName, field, val) => {
+    window.pushHistory();
+    S[objName][field] = val;
+    window.saveStateFn();
+};
+
+window.V.rag = () => {
+    document.getElementById('pg-actions').innerHTML = '';
+
+    const currentDocCodes = new Set(S.docs.map(d => d.code));
+    S.ragChunks = S.ragChunks.filter(c => currentDocCodes.has(c.docCode));
+    S.docs.forEach(d => {
+        if(!S.ragChunks.find(c => c.docCode === d.code)) {
+            S.ragChunks.push({ docCode: d.code, chunkType: '문단 단위', chunkSize: '', overlap: '', note: '' });
+        }
+    });
+
+    S.ragChunks.sort((a, b) => {
+        return S.docs.findIndex(d => d.code === a.docCode) - S.docs.findIndex(d => d.code === b.docCode);
+    });
+
+    const tbodyHtml = S.ragChunks.map(c => {
+        const doc = S.docs.find(d => d.code === c.docCode) || {};
+        return `
+        <tr>
+            <td style="text-align:center;">${window.badge(c.docCode)}</td>
+            <td><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${(doc.name||'').replace(/"/g,'&quot;')}">${doc.name||'이름 없음'}</div></td>
+            <td>
+                <select style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;cursor:pointer;" onchange="window.updateRagChunk('${c.docCode}', 'chunkType', this.value)">
+                    ${['문단 단위', '조항 단위', '고정 토큰', '슬라이딩 윈도우', '하이브리드'].map(o => `<option ${c.chunkType === o ? 'selected' : ''}>${o}</option>`).join('')}
+                </select>
+            </td>
+            <td><input type="text" placeholder="예: 512" value="${(c.chunkSize||'').replace(/"/g,'&quot;')}" style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagChunk('${c.docCode}', 'chunkSize', this.value)" onkeydown="if(event.key==='Enter') this.blur()"></td>
+            <td><input type="text" placeholder="예: 50" value="${(c.overlap||'').replace(/"/g,'&quot;')}" style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagChunk('${c.docCode}', 'overlap', this.value)" onkeydown="if(event.key==='Enter') this.blur()"></td>
+            <td><input type="text" placeholder="비고" value="${(c.note||'').replace(/"/g,'&quot;')}" style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagChunk('${c.docCode}', 'note', this.value)" onkeydown="if(event.key==='Enter') this.blur()"></td>
+        </tr>
+        `;
+    }).join('');
+
+    document.getElementById('content').innerHTML = `
+        <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow-y:auto; gap:16px; background:#F1F5F9;">
+            <div class="banner" style="margin-bottom:0;">
+                RAG(Retrieval-Augmented Generation) 설계는 PoC 검증이 완료된 후 문서 청킹 전략과 검색 구조를 확정하는 단계입니다.
+            </div>
+
+            <div class="card rag-card" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="sec" style="margin-bottom:0;"><h3>카드 1 - 청킹 전략 (Chunking Strategy)</h3></div>
+                <div class="tw" style="overflow-x:auto;">
+                    <table style="width:100%; min-width:800px;">
+                        <thead>
+                            <tr>
+                                <th style="width:100px;text-align:center;">문서코드</th>
+                                <th style="width:180px;">문서명</th>
+                                <th style="width:140px;">청킹 방식</th>
+                                <th style="width:100px;">청크 크기</th>
+                                <th style="width:100px;">오버랩</th>
+                                <th>비고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tbodyHtml || '<tr><td colspan="6" style="text-align:center;padding:15px;color:gray;">등록된 표준문서가 없습니다.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card rag-card" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="sec" style="margin-bottom:0;"><h3>카드 2 - 검색 전략 (Retrieval Strategy)</h3></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">임베딩 모델 (Embed Model)</label>
+                        <input type="text" placeholder="예: text-embedding-3-small" value="${(S.ragRetrieval.embedModel||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagObj('ragRetrieval', 'embedModel', this.value)">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">검색 상위 K (Top K)</label>
+                        <input type="text" placeholder="예: 5" value="${(S.ragRetrieval.topK||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagObj('ragRetrieval', 'topK', this.value)">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">검색 방식 (Search Type)</label>
+                        <select style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;cursor:pointer;" onchange="window.updateRagObj('ragRetrieval', 'searchType', this.value)">
+                            ${['Dense', 'Sparse', 'Hybrid'].map(o => `<option ${S.ragRetrieval.searchType === o ? 'selected' : ''}>${o}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">재랭킹 모델 (Rerank Model)</label>
+                        <input type="text" placeholder="예: cross-encoder, 없으면 공란" value="${(S.ragRetrieval.rerankModel||'').replace(/"/g,'&quot;')}" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;" onblur="window.updateRagObj('ragRetrieval', 'rerankModel', this.value)">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">필터링 기준 메모 (Filter Strategy)</label>
+                        <textarea placeholder="필터링 기준 메모" style="width:100%;min-height:60px;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;resize:vertical;font-family:inherit;" onblur="window.updateRagObj('ragRetrieval', 'filterStrategy', this.value)">${(S.ragRetrieval.filterStrategy||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card rag-card" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="sec" style="margin-bottom:0;"><h3>카드 3 - 프롬프트 구조 설계 (Prompt Architecture)</h3></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">시스템 역할 정의 (System Role)</label>
+                        <textarea placeholder="시스템 역할 정의" style="width:100%;min-height:60px;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;resize:vertical;font-family:inherit;" onblur="window.updateRagObj('ragPrompt', 'systemRole', this.value)">${(S.ragPrompt.systemRole||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">컨텍스트 포맷 (Context Format)</label>
+                        <select style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;cursor:pointer;" onchange="window.updateRagObj('ragPrompt', 'contextFormat', this.value)">
+                            ${['단순 나열', '출처 명시', '구조화 XML'].map(o => `<option ${S.ragPrompt.contextFormat === o ? 'selected' : ''}>${o}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">출력 포맷 (Output Format)</label>
+                        <select style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;cursor:pointer;" onchange="window.updateRagObj('ragPrompt', 'outputFormat', this.value)">
+                            ${['자유 텍스트', '구조화 JSON', '표 형식'].map(o => `<option ${S.ragPrompt.outputFormat === o ? 'selected' : ''}>${o}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">인용 (Citation)</label>
+                        <select style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;cursor:pointer;" onchange="window.updateRagObj('ragPrompt', 'citation', this.value)">
+                            ${['인용 필요', '불필요'].map(o => `<option ${S.ragPrompt.citation === o ? 'selected' : ''}>${o}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-size:11px; font-weight:700; color:gray; display:block; margin-bottom:4px;">기타 설계 메모 (Memo)</label>
+                        <textarea placeholder="기타 설계 메모" style="width:100%;min-height:60px;padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;outline:none;resize:vertical;font-family:inherit;" onblur="window.updateRagObj('ragPrompt', 'memo', this.value)">${(S.ragPrompt.memo||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+// ── AI EXTRACTOR (Placeholder) ───────────────────────
+window.V.aiext = () => {
+  document.getElementById('pg-actions').innerHTML = '';
+  document.getElementById('content').innerHTML = `
+    <div style="flex:1;display:flex;align-items:center;
+      justify-content:center;flex-direction:column;gap:16px;
+      padding:40px;text-align:center;">
+      <div style="font-size:48px;">🔍</div>
+      <div style="font-size:16px;font-weight:500;
+        color:var(--color-text-primary)">용어 추출 AI</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);
+        max-width:360px;line-height:1.8">
+        Word, PDF, Excel 문서를 업로드하면<br>
+        Claude AI가 용어·객체 후보를 자동 추출하고<br>
+        사람이 검토 후 TRM 탭에 확정 등록하는 기능입니다.<br><br>
+        <strong>Phase 2 진입 후 순차 개발 예정입니다.</strong>
+      </div>
+      <div style="font-size:11px;padding:6px 14px;border-radius:20px;
+        background:#FAEEDA;color:#633806;font-weight:500">
+        개발 예정
+      </div>
+    </div>`;
+};
 
 // ── TEAM ─────────────────────────────────────────────
 window.V.team = () => {
