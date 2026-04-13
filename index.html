@@ -2108,7 +2108,7 @@ window.V.docs = (tab) => {
       </div>
       <div class="tw" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0;">
         <div style="flex:1; overflow:auto;">
-          <table><thead><tr>${window.th(c.k, '코드', 'width:100px; min-width:100px; text-align:center;')}${c.hd.map(h=> window.th(c.k, h === '진행 상태(객체전환)' ? '진행 상태(객체전환) <button onclick="document.getElementById(\'otype-help-modal\').style.display=\'flex\'" style="width:16px;height:16px;border-radius:50%;border:1px solid #94a3b8;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;cursor:pointer;padding:0;line-height:1;margin-left:4px;">?</button>' : h)).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
+        <table><thead><tr>${window.th(c.k, '코드', 'width:100px; min-width:100px; text-align:center;')}${c.hd.map(h=>window.th(c.k, h)).join('')}<th style="width:30px"></th></tr></thead><tbody>${tbody || '<tr><td colspan="15" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>'}</tbody></table>
         </div>
       </div>
       <div style="flex-shrink:0; display:flex; align-items:center; gap:10px;">
