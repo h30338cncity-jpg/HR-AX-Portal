@@ -2963,6 +2963,32 @@ window.approveToGlossary = () => {
     window.toast(`${selected.length}건이 [용어 사전]으로 전송되었습니다. 탭을 이동하여 확인하세요.`);
 };
 
+  window.promoteObject = (oldCode, selectEl) => {
+    const newType = selectEl.value;
+    window.pushHistory();
+    const term = S.terms.find(t => t.code === oldCode);
+    
+    if(term) {
+        term.otype = newType;
+        
+        // 1. 용어(TRM) -> 객체(OBJ)로 승격되는 경우
+        if (oldCode.startsWith('TRM-') && newType !== '용어(대기중)' && newType !== '용어') {
+            const newCode = window.nc('terms', 'OBJ');
+            window.replaceReferences(oldCode, newCode); 
+            term.code = newCode;
+            window.toast(`[${term.term}] 객체로 승격되어 코드가 ${newCode}로 변경되었습니다.`);
+        } 
+        // 2. 객체(OBJ) -> 용어(TRM)로 다시 내리는 경우
+        else if (oldCode.startsWith('OBJ-') && (newType === '용어(대기중)' || newType === '용어')) {
+            const newCode = window.nc('terms', 'TRM');
+            window.replaceReferences(oldCode, newCode);
+            term.code = newCode;
+            window.toast(`[${term.term}] 용어(대기)로 변경되어 코드가 ${newCode}로 복구되었습니다.`);
+        }
+    }
+    window.stateChanged();
+};
+
 window.V.aiext = () => {
   document.getElementById('pg-actions').innerHTML = `
     <button class="btn btn-o btn-sm" onclick="window.goModule('terms', 'trm')">용어 사전으로 이동 ➔</button>
