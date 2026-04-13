@@ -233,7 +233,8 @@ input::-webkit-calendar-picker-indicator { opacity:0.6; cursor:pointer; }
     <div class="sb-item" id="n-objects" onclick="window.goModule('objects', 'obj', this)"><span class="sb-ic">💎</span>확정 객체 (표준)</div>
     
     <div class="sb-sec">Phase 3 · 관계·구조 설계</div>
-    <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
+   <div class="sb-item" id="n-rel" onclick="window.goModule('rel', 'rel', this)"><span class="sb-ic">🔗</span>관계 정의</div>
+    <div class="sb-item" id="n-objrel" onclick="window.goModule('objrel', 'objrel', this)"><span class="sb-ic">🔀</span>객체 간 연결</div>
     <div class="sb-item" id="n-onto" onclick="window.goModule('onto', 'onto', this)"><span class="sb-ic">🕸️</span>온톨로지 맵</div>
     
     <div class="sb-sec">Phase 4 · 시스템 구현</div>
@@ -601,12 +602,12 @@ window.mergeRef = arr => [...new Set(arr)].join(', ');
 window.badge = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
-  const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
-  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', DAT:'name', POC:'tsk'};
+ const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', OBJ:'terms', DAT:'dats', POC:'pocs'};
+  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', OBJ:'term', DAT:'name', POC:'tsk'};
   const arr = S[m[pfx]];
   const item = arr ? arr.find(x => x.code === c) : null;
   if (!item && m[pfx]) return `<span class="code" style="color:#E24B4A; text-decoration:line-through; background:#FCEBEB; border:1px solid #F7C1C1" title="삭제된 항목">${c}</span>`;
-  const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
+  const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',OBJ:'cp',DAT:'ca',POC:'cp'}[pfx] || 'pt';
   const titleText = item && nm[pfx] && item[nm[pfx]] ? `${c} : ${String(item[nm[pfx]]).replace(/"/g, '&quot;')}` : c;
   return `<span class="code ${cls}" title="${titleText}">${c}</span>`;
 };
@@ -614,8 +615,8 @@ window.badge = (c) => {
 window.getItemName = (c) => {
   if(!c) return '';
   const pfx = c.split('-')[0];
-  const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats', POC:'pocs'};
-  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', DAT:'name', POC:'tsk'};
+  const m = {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', OBJ:'terms', DAT:'dats', POC:'pocs'};
+  const nm = {TSK:'name', DOC:'name', EXP:'sit', TRM:'term', OBJ:'term', DAT:'name', POC:'tsk'};
   const arr = S[m[pfx]];
   const item = arr ? arr.find(x => x.code === c) : null;
   return item && nm[pfx] && item[nm[pfx]] ? String(item[nm[pfx]]) : '이름 없음';
@@ -630,7 +631,7 @@ window.editableCode = (arrKey, row, hasWarning = false) => {
   const code = row.code;
   const isLocked = row._locked;
   const pfx = code.split('-')[0];
-  const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',DAT:'ca',POC:'cp'}[pfx] || 'pt';
+ const cls = {TSK:'ct',DOC:'cd',EXP:'ce',TRM:'cr',OBJ:'cp',DAT:'ca',POC:'cp'}[pfx] || 'pt';
   const lockIcon = isLocked ? '🔒' : '🔓';
   const readonly = isLocked ? 'readonly' : '';
   const style = isLocked ? 'opacity:0.7;cursor:not-allowed;background:transparent!important;border:none;' : '';
@@ -847,6 +848,7 @@ window.stateChanged = () => {
   if (window.currentView === 'data') window.V.data();
   if (window.currentView === 'rag') window.V.rag();
   if (window.currentView === 'aiext') window.V.aiext();
+  if (window.currentView === 'objrel') window.V.objrel();
 };
 
 // --- EDGE LOGIC FOR REL TAB & ONTO TAB ---
@@ -908,12 +910,15 @@ window.createLinkCore = (pCode, cCode, relType) => {
     if(pType==='DOC' && cType==='DAT') return link(pCode, cCode, 'dats', 'docRef');
     if(pType==='DOC' && cType==='EXP') return link(pCode, cCode, 'exps', 'docRef');
     if(pType==='TRM' && cType==='DAT') return link(pCode, cCode, 'dats', 'trmRef');
+    if(pType==='OBJ' && cType==='OBJ') return link(pCode, cCode, 'terms', 'child');
+    if(pType==='OBJ' && cType==='TRM') return link(pCode, cCode, 'terms', 'child');
+    if(pType==='TRM' && cType==='OBJ') return link(pCode, cCode, 'terms', 'parent');
     
     return false;
 };
 window.parseType = (code) => {
     const pfx = code.split('-')[0];
-    return {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', DAT:'dats'}[pfx];
+    return {TSK:'tasks', DOC:'docs', EXP:'exps', TRM:'terms', OBJ:'terms', DAT:'dats'}[pfx];
 };
 window.deleteEdge = (id, src, tgt) => {
     const srcArrKey = window.parseType(src);
@@ -1231,9 +1236,9 @@ window.goModule = (mod, tab, el) => {
     window.dtab = tab;
     let viewMap = {
         'home': 'home', 'tasks': 'tasks', 'standard': 'docs', 
-        'terms': 'docs', 'objects': 'docs', // terms와 objects 모두 docs 뷰 엔진 사용
+        'terms': 'docs', 'objects': 'docs',
         'rel': 'docs', 'onto': 'onto', 'data': 'data', 'poc': 'poc', 'rag': 'rag', 
-        'team': 'team', 'aiext': 'aiext'
+        'team': 'team', 'aiext': 'aiext', 'objrel': 'objrel'
     };
     window.go(viewMap[mod] || 'docs', el);
 };
@@ -1540,7 +1545,7 @@ window.openAddRelEdgeModal = () => {
     const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
     const opts = allItems.filter(x => x.code !== window.relSelectedNode).map(x => {
         const pfx = x.code.split('-')[0];
-        const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (pfx==='TRM'?'term':'sit');
+       const nmField = ['TSK','DOC','DAT'].includes(pfx) ? 'name' : (['TRM','OBJ'].includes(pfx)?'term':'sit');
         return `<option value="${x.code}">[${pfx}] ${x[nmField]||x.code}</option>`;
     }).join('');
     document.getElementById('add-rel-edge-tgt').innerHTML = `<option value="">대상을 선택하세요</option>${opts}`;
@@ -1697,14 +1702,22 @@ window.applyAiSynonyms = () => {
             });
             
             // 4. 다시 문자열로 저장
-            mainItem.sim = [...new Set(syns)].join(', ');
+           mainItem.sim = [...new Set(syns)].join(', ');
+            // 유의어 병합된 기준 단어를 자동으로 OBJ로 승격
+            if (mainItem.code.startsWith('TRM-') && (!mainItem.otype || mainItem.otype === '용어(대기중)' || mainItem.otype === '용어')) {
+                const newCode = window.nc('terms', 'OBJ');
+                window.replaceReferences(mainItem.code, newCode);
+                mainItem.code = newCode;
+                mainItem.otype = '객체';
+            }
         }
     });
 
     document.getElementById('ai-suggest-modal').style.display = 'none';
     window.pendingSynonymGroups = null;
     window.stateChanged();
-    window.toast('유의어 자동 병합이 완료되었습니다.');
+    window.goModule('objects', 'obj');
+    window.toast('유의어 병합 완료! 확정 객체로 승격되었습니다.');
 };
 
 
@@ -2918,7 +2931,19 @@ window.V.rag = () => {
 };
 
 // ── AI EXTRACTOR (Simplified Pipeline) ───────────────────────
-window.runMockAI = () => {
+window.loadTextFile = (e) => {
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const ta = document.getElementById('ai-text-input');
+        if(ta) ta.value = evt.target.result;
+        window.toast('파일을 불러왔습니다. 이제 AI 추출을 실행하세요.');
+    };
+    reader.readAsText(f, 'UTF-8');
+    e.target.value = '';
+};
+  
+  window.runMockAI = () => {
     const txt = document.getElementById('ai-text-input').value;
     if(!txt.trim()) { window.toast('추출할 텍스트를 입력해주세요.'); return; }
     
@@ -2989,7 +3014,72 @@ window.approveToGlossary = () => {
     window.stateChanged();
 };
 
-window.V.aiext = () => {
+window.V.objrel = () => {
+  const objs = S.terms.filter(t => t.otype && t.otype !== '용어(대기중)' && t.otype !== '용어');
+  document.getElementById('pg-actions').innerHTML = `
+    <button class="btn btn-g btn-sm" onclick="window.goModule('objects','obj')">확정 객체 목록 ➔</button>
+  `;
+  const relTypes = ['포함한다','포함하지 않는다','상위 개념','하위 개념','동등 개념','속성','반의어'];
+  document.getElementById('content').innerHTML = `
+    <div style="flex:1; display:flex; flex-direction:column; padding:18px; overflow:hidden; gap:14px; min-width:0; min-height:0; background:#F1F5F9;">
+      <div class="banner" style="flex-shrink:0; margin:0;">
+        확정된 OBJ 객체 간의 의미 관계를 정의합니다. 예: <strong>복리후생</strong> → <strong>포함하지 않는다</strong> → <strong>계약직</strong>
+      </div>
+      <div class="card" style="flex-shrink:0; padding:16px;">
+        <div class="sec"><h3>새로운 객체 관계 추가</h3></div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="objrel-src" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; min-width:160px;">
+            <option value="">주어 객체 선택</option>
+            ${objs.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+          </select>
+          <select id="objrel-type" style="padding:8px; border:1px solid #534AB7; border-radius:6px; font-size:13px; outline:none; color:#3C3489; font-weight:700; min-width:150px;">
+            ${relTypes.map(r => `<option value="${r}">${r}</option>`).join('')}
+          </select>
+          <select id="objrel-tgt" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; min-width:160px;">
+            <option value="">대상 객체 선택</option>
+            ${objs.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+          </select>
+          <button class="btn btn-g" onclick="window.addObjRelation()">+ 관계 추가</button>
+        </div>
+      </div>
+      <div class="tw" style="flex:1; overflow:auto;">
+        <table>
+          <thead><tr><th>주어 (Subject)</th><th style="text-align:center;">관계 유형 (Predicate)</th><th>대상 (Object)</th><th style="width:30px"></th></tr></thead>
+          <tbody>
+            ${objs.flatMap(o => window.parseRef(o.child).filter(c=>c).map(childCode => {
+              const childObj = S.terms.find(t=>t.code===childCode);
+              if(!childObj) return '';
+              return `<tr>
+                <td>${window.badge(o.code)} <span style="font-size:12px;">${o.term}</span></td>
+                <td style="text-align:center;"><span class="pill" style="background:#EEEDFE;color:#3C3489;">하위 개념</span></td>
+                <td>${window.badge(childCode)} <span style="font-size:12px;">${childObj.term||''}</span></td>
+                <td><button class="del-btn" onclick="window.pushHistory(); const p=S.terms.find(t=>t.code==='${o.code}'); if(p){p.child=window.parseRef(p.child).filter(c=>c!=='${childCode}').join(', ');} window.stateChanged();">×</button></td>
+              </tr>`;
+            })).join('') || `<tr><td colspan="4" style="text-align:center;padding:20px;color:gray;">등록된 객체 관계가 없습니다.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+};
+
+window.addObjRelation = () => {
+  const src = document.getElementById('objrel-src').value;
+  const tgt = document.getElementById('objrel-tgt').value;
+  const type = document.getElementById('objrel-type').value;
+  if(!src || !tgt || src === tgt) { window.toast('주어와 대상 객체를 모두 선택하세요.'); return; }
+  window.pushHistory();
+  const srcObj = S.terms.find(t => t.code === src);
+  if(srcObj) {
+    const children = window.parseRef(srcObj.child);
+    if(!children.includes(tgt)) { children.push(tgt); srcObj.child = children.join(', '); }
+    const edgeId = `E__${src}__${tgt}`;
+    S.edgeDetails[edgeId] = { type, clause:'', relevance:'참고', verbatim:'' };
+  }
+  window.stateChanged();
+  window.toast('객체 관계가 추가되었습니다.');
+};
+  
+  window.V.aiext = () => {
   document.getElementById('pg-actions').innerHTML = `
     <button class="btn btn-o btn-sm" onclick="window.goModule('terms', 'trm')">용어 사전으로 이동 ➔</button>
   `;
@@ -3006,6 +3096,10 @@ window.V.aiext = () => {
             </div>
             <div style="flex:1; display:flex; flex-direction:column; padding:16px;">
                 <textarea id="ai-text-input" placeholder="HR 관련 규정이나 공지사항 텍스트를 붙여넣으세요.\n(예: 2026년 다면평가 실시 안내...)" style="flex:1; width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:12px; font-size:13px; font-family:inherit; outline:none; resize:none; margin-bottom:12px; line-height:1.6;"></textarea>
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <button class="btn btn-o" style="flex:1; justify-content:center; padding:10px; font-size:13px;" onclick="document.getElementById('ai-file-upload').click()">📎 .txt 파일 업로드</button>
+                    <input type="file" id="ai-file-upload" accept=".txt" style="display:none" onchange="window.loadTextFile(event)">
+                </div>
                 <button id="ai-run-btn" class="btn btn-g" style="justify-content:center; padding:12px; font-size:14px; border-radius:6px;" onclick="window.runMockAI()">AI 용어 추출 실행</button>
             </div>
         </div>
