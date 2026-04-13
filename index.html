@@ -82,6 +82,7 @@ tbody tr:nth-child(even){background:#fafafa}
 tbody tr:hover{background:#f1f5f9}
 tr:last-child td{border-bottom:none}
 td input[type="text"],td select{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;color:var(--color-text-primary);font-family:inherit;outline:none;transition:border-color 0.1s}
+td input[type="text"] { overflow-x: auto; text-overflow: clip; white-space: nowrap; }
 td input[type="text"]:focus,td select:focus{border-color:#1D9E75;background:var(--color-background-primary)}
 td input[type="text"]:hover:not(:focus){border-color:var(--color-border-tertiary)}
 td select{cursor:pointer}
@@ -681,6 +682,11 @@ window.replaceReferences = (oldCode, newCode) => {
   if(window.relSelectedNode === oldCode) window.relSelectedNode = newCode;
 };
 
+window.draggedK = null;
+window.kDrag = (e, code) => { window.draggedK = code; };
+window.kAllow = (e) => { e.preventDefault(); };
+window.kDrop = (e, col) => { if(window.draggedK) { window.pushHistory(); window.upd('tasks', window.draggedK, 'status', col); window.stateChanged(); window.draggedK = null; } };
+
 window.draggedRow = { arrKey: null, code: null };
 window.rowDragStart = (e, arrKey, code) => {
     if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
@@ -1201,6 +1207,30 @@ window.go = (v, el) => {
   if(window.V[v]) window.V[v]();
 };
 
+window.dlOnto = () => {
+    const nodes = (S.ontoNodes['CURRENT'] || []).map(n => [n.id, n.label, n.srcType, n.dtype||'', n.def || '']);
+    const edges = (S.ontoEdges['CURRENT'] || []).map(e => {
+        const src = e.source.id || e.source;
+        const tgt = e.target.id || e.target;
+        const rtype = e.rtype;
+        const rel = e.detail?.relevance || '참고';
+        const clause = e.detail?.clause || '';
+        const verb = e.detail?.verbatim || '';
+        return [src, tgt, rtype, rel, clause, verb];
+    });
+    
+    const wb = XLSX.utils.book_new();
+    const wsNodes = XLSX.utils.aoa_to_sheet([['코드', '이름', '유형', '상세구분', '설명'], ...nodes]);
+    const wsEdges = XLSX.utils.aoa_to_sheet([['Source', 'Target', '유형', '중요도', '참조위치', '원문/발췌'], ...edges]);
+    wsNodes['!cols'] = [{wch:15},{wch:30},{wch:10},{wch:15},{wch:50}];
+    wsEdges['!cols'] = [{wch:15},{wch:15},{wch:15},{wch:10},{wch:20},{wch:50}];
+    
+    XLSX.utils.book_append_sheet(wb, wsNodes, '노드_목록');
+    XLSX.utils.book_append_sheet(wb, wsEdges, '엣지_목록');
+    XLSX.writeFile(wb, 'Ontology_Export.xlsx');
+    window.toast('온톨로지 데이터 다운로드 완료');
+};
+
 // ── VIEWS ────────────────────────────────────────────
 window.V.home = () => {
   const t=S.tasks, done=t.filter(x=>x.status==='완료').length, prog=t.filter(x=>x.status==='진행중').length;
@@ -1213,6 +1243,10 @@ window.V.home = () => {
   const totalItems = S.tasks.length + S.docs.length + S.exps.length + S.terms.length + S.dats.length;
   const compItems = totalItems > 0 ? totalItems - window.missingRequired.length : 0;
   const compRate = window.pct(compItems, totalItems);
+
+  const ringStyle = compRate === 0 
+      ? 'background:rgba(255,255,255,0.2);' 
+      : `background:conic-gradient(#fff ${compRate}%, rgba(255,255,255,0.2) 0);`;
 
   document.getElementById('content').innerHTML=`
     <div style="flex:1; overflow-y:auto; padding:24px; min-width:0; min-height:0; background:#F1F5F9;">
@@ -1227,7 +1261,7 @@ window.V.home = () => {
             <div style="font-size:12px; opacity:0.9; margin-bottom:4px;">필수 데이터 완성도</div>
             <div style="font-size:28px; font-weight:800;">${compRate}%</div>
           </div>
-          <div style="width:54px; height:54px; border-radius:50%; background:conic-gradient(#fff ${compRate}%, rgba(255,255,255,0.2) 0); display:flex; align-items:center; justify-content:center;">
+          <div style="width:54px; height:54px; border-radius:50%; ${ringStyle} display:flex; align-items:center; justify-content:center;">
              <div style="width:42px; height:42px; background:#1E40AF; border-radius:50%;"></div>
           </div>
         </div>
@@ -1294,9 +1328,10 @@ window.V.home = () => {
     </div>`;
 };
 
-window.kDrag = (e, code) => { draggedK = code; };
+window.draggedK = null;
+window.kDrag = (e, code) => { window.draggedK = code; };
 window.kAllow = (e) => { e.preventDefault(); };
-window.kDrop = (e, col) => { if(draggedK) { window.pushHistory(); window.upd('tasks', draggedK, 'status', col); window.stateChanged(); } };
+window.kDrop = (e, col) => { if(window.draggedK) { window.pushHistory(); window.upd('tasks', window.draggedK, 'status', col); window.stateChanged(); window.draggedK = null; } };
 
 window.V.tasks = () => {
   document.getElementById('pg-actions').innerHTML=`
@@ -1315,11 +1350,12 @@ window.V.tasks = () => {
               ${S.tasks.filter(t=>t.status===col).map(t=>{
                 const rowHasWarning = window.missingRequired.some(m => m.code === t.code);
                 const nameMissing = !t.name || String(t.name).trim() === '';
+                const valStr = String(t.name||'').replace(/"/g,'&quot;');
                 return `
                 <div class="kcard" draggable="true" ondragstart="window.kDrag(event, '${t.code}')" style="${rowHasWarning ? 'background-color:#FFFBEA;' : ''}">
                   <div class="kcard-code">${window.editableCode('tasks', t, rowHasWarning)}</div>
                   <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-                    <input class="knm" placeholder="과제명" value="${t.name||''}" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()" style="${nameMissing ? 'background-color:#FFFBEA; border:1px dashed #E24B4A;' : ''}">
+                    <input class="knm" placeholder="과제명" value="${valStr}" title="${valStr}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('tasks','${t.code}','name',this.value); window.stateChanged()" style="${nameMissing ? 'background-color:#FFFBEA; border:1px dashed #E24B4A;' : ''}">
                     <button class="btn-sm btn-o" onclick="window.openTm('tasks','${t.code}','name','과제명')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>
                     ${nameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;cursor:help;">⚠️</span>' : ''}
                   </div>
@@ -1414,6 +1450,54 @@ window.applyAddRelEdge = () => {
     }
 };
 
+window.relDragOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('drag-over'); };
+window.relDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over'); };
+window.relDrop = (e, targetCode, targetArrKey) => {
+    e.preventDefault(); e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    window.toast('연결은 트리 클릭 후 엣지 추가 버튼을 이용해주세요.');
+    window.draggedRel = null;
+};
+
+window.promoteRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
+    if(e) e.stopPropagation();
+    if (parentArrKey === 'tasks') {
+        window.toast('이미 과제 하위의 최상위 항목입니다.');
+        return;
+    }
+    
+    window.pushHistory();
+    const cRow = S[childArrKey].find(x => x.code === childCode);
+    const pRow = S[parentArrKey].find(x => x.code === parentCode);
+    if (!cRow || !pRow) return;
+
+    if (childArrKey === 'docs' && cRow.parentDoc === parentCode) {
+        cRow.parentDoc = '';
+    } else {
+        let refs = window.parseRef(cRow.docRef);
+        cRow.docRef = refs.filter(c => c !== parentCode).join(', ');
+    }
+
+    const addRef = (existing, newRefs) => {
+        let arr = window.parseRef(existing);
+        let newArr = window.parseRef(newRefs);
+        newArr.forEach(r => { if(!arr.includes(r)) arr.push(r); });
+        return arr.join(', ');
+    };
+
+    if (parentArrKey === 'docs') {
+        if (pRow.parentDoc) {
+            if (childArrKey === 'docs') cRow.parentDoc = pRow.parentDoc;
+            else cRow.docRef = addRef(cRow.docRef, pRow.parentDoc);
+        } else if (pRow.tskRef) {
+            cRow.tskRef = addRef(cRow.tskRef, pRow.tskRef);
+        }
+    }
+    
+    window.stateChanged();
+    window.toast('상위 레벨로 이동되었습니다.');
+};
+
 window.unlinkRel = (childCode, childArrKey, parentCode, parentArrKey, e) => {
     if(e) e.stopPropagation();
     window.pushHistory();
@@ -1461,7 +1545,8 @@ window.V.docs = (tab) => {
 
   if (window.dtab === 'rel') {
     const allEdges = window.getAllEdges();
-    
+    const selEdge = window.selectedEdgeId ? allEdges.find(e => e.id === window.selectedEdgeId) : null;
+
     const root = { children: [] };
     const nodeMap = {};
     
@@ -1544,18 +1629,25 @@ window.V.docs = (tab) => {
     });
     const orphansHtml = orphans.map(c => renderTreeNode(c, null, null, 0)).join('');
 
-    // Col 2 rendering
     let col2Html = '';
     if (!window.relSelectedNode) {
         col2Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">좌측 트리에서 기준 항목을 선택해 주세요.</div>`;
     } else {
+        const allItems = [...S.tasks, ...S.docs, ...S.terms, ...S.dats, ...S.exps];
+        const selItem = allItems.find(x => x.code === window.relSelectedNode);
+        const selName = selItem ? (selItem.name || selItem.term || selItem.sit || '') : '';
+        
+        col2Html = `<div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
+                      <div style="font-size:11px; color:gray; margin-bottom:4px;">선택:</div>
+                      <div style="display:flex;align-items:center;gap:6px;">${window.badge(window.relSelectedNode)} <span style="font-weight:600; color:#334155; font-size:13px;">${selName.replace(/"/g,'&quot;')}</span></div>
+                    </div>`;
+
         const nodeEdges = allEdges.filter(e => e.source === window.relSelectedNode || e.target === window.relSelectedNode);
         if (nodeEdges.length === 0) {
-            col2Html = `<div style="text-align:center; color:#94a3b8; padding:30px 20px; font-size:12px;">연결된 엣지가 없습니다.</div>`;
+            col2Html += `<div style="text-align:center; color:#94a3b8; padding:30px 20px; font-size:12px;">연결된 엣지가 없습니다.</div>`;
         } else {
-            col2Html = nodeEdges.map(e => {
+            col2Html += nodeEdges.map(e => {
                 const isSource = e.source === window.relSelectedNode; 
-                // Target(상위) ← Source(하위)
                 const otherCode = isSource ? e.target : e.source;
                 const dirIcon = isSource 
                     ? '<span style="color:#3B82F6;font-weight:bold;display:inline-block;width:55px;" title="선택 노드가 참조함">← (상위)</span>' 
@@ -1582,7 +1674,6 @@ window.V.docs = (tab) => {
         col2Html += `<button class="btn btn-o" style="width:100%; justify-content:center; margin-top:10px; padding:10px; border-style:dashed;" onclick="window.openAddRelEdgeModal()">+ 새로운 엣지 연결</button>`;
     }
 
-    // Col 3 rendering
     let col3Html = '';
     if (!window.relSelectedEdgeId) {
          col3Html = `<div style="text-align:center; color:#94a3b8; padding:50px 20px; font-size:12px;">중앙 목록에서 엣지를 선택하여<br>상세 정보를 편집하세요.</div>`;
@@ -1695,7 +1786,7 @@ window.V.docs = (tab) => {
 
   const cfgs={
     tsk:{k:'tasks',hd:['과제명','담당자','과제 목적','진행상황','비고','관련DOC(자동)','관련TRM(자동)','관련DAT(자동)','관련EXP(자동)'],fl:['name','assignee','purpose','status','note','_doc','_trm','_dat','_exp'],sl:{status:['미착수','진행중','검증중','완료','이슈']},ms:{assignee:'TEAM'},ro:['_doc','_trm','_dat','_exp']},
-    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
+    doc:{k:'docs',hd:['구분','문서명/조항','핵심 내용','소관 부서','현행화','위치','관련 TSK','문제유형','보완 방향','비고','관련EXP(자동)','관련TRM(자동)'],fl:['dtype','name','summary','dept','cur','loc','tskRef','issueType','action','note','_exp','_trm'],sl:{dtype:['법령','사규','지침','프로세스(운영)','관행','기타'],cur:['최신','갱신필요','미확인'],issueType:['중복','충돌','누락','암묵지','공백','예외','위계','확정']},ms:{tskRef:'TSK'},ro:['_exp','_trm']},
     exp:{k:'exps',hd:['예외상황/기준명','처리 방법','판단 주체','기준 유무','AI 처리','관련 DOC','관련 TSK','비고','관련TRM(자동)'],fl:['sit','hand','owner','rule','ai','docRef','tskRef','note','_trm'],sl:{rule:['명문화됨','담당자재량','기준없음'],ai:['가능','조건부가능','불가']},ms:{tskRef:'TSK',docRef:'DOC'},ro:['_trm']},
     trm:{k:'terms',hd:['용어명','정의','객체 유형','상위 객체','하위 객체','유사어','관련 DOC','관련 TSK','비고'],fl:['term','def','otype','parent','child','sim','docRef','tskRef','note'],sl:{otype:['객체','속성','기준값','프로세스']},ms:{parent:'TRM',child:'TRM',tskRef:'TSK',docRef:'DOC'},ro:[]},
     dat:{k:'dats',hd:['항목명','데이터 형태','출처','보유 여부','수집 주기','민감도','관련 TRM','관련 DOC','관련 TSK','비고(품질이슈 등)'],fl:['name','dtype','src','own','cycle','sens','trmRef','docRef','tskRef','note'],sl:{own:['보유','일부보유','미보유','미확인'],sens:['일반','개인정보','민감정보']},ms:{tskRef:'TSK',docRef:'DOC',trmRef:'TRM'},dl:{dtype:'dl-dtype'},ro:[]}
@@ -1749,11 +1840,34 @@ window.V.docs = (tab) => {
       const warn = isMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : '';
 
       let inner = '';
-      if(c.ro?.includes(f)) inner = `<div class="code-list">${window.fmtCodeList(row[f])}${warn}</div>`;
-      else if(c.ms?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
-      else if(c.sl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${bg}">${c.sl[f].map(o=>`<option${o===row[f]?' selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
-      else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
-      else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+      const valStr = String(row[f]||'').replace(/"/g,'&quot;');
+
+      if(c.ro?.includes(f)) {
+          inner = `<div class="code-list">${window.fmtCodeList(row[f])}${warn}</div>`;
+      }
+      else if(c.ms?.[f]) {
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${valStr}" title="${valStr}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
+      }
+      else if(c.sl?.[f]) {
+          let opts = c.sl[f].map(o=>`<option value="${o}" ${o===row[f]?'selected':''}>${o}</option>`);
+          if (f === 'issueType') {
+              opts.unshift(`<option value="">— 선택 —</option>`);
+              if (row[f] && !c.sl[f].includes(row[f])) opts.push(`<option value="${valStr}" selected>${valStr}</option>`);
+          } else {
+              if (row[f] && !c.sl[f].includes(row[f])) opts.push(`<option value="${valStr}" selected>${valStr}</option>`);
+          }
+          let onChangeFn = `window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${valStr}')`;
+          if (f === 'issueType') {
+              onChangeFn = `window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()`;
+          }
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="${onChangeFn}" style="${bg}">${opts.join('')}</select>${warn}</div>`;
+      }
+      else if(c.dl?.[f]) {
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${valStr}" title="${valStr}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+      }
+      else {
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${valStr}" title="${valStr}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
+      }
 
       return `<td style="${bg}">${inner}</td>`;
     }).join('');
@@ -1848,10 +1962,11 @@ window.V.data = () => {
             const isNameMissing = !d.name || String(d.name).trim() === '';
             const isOwnMissing = !d.own || String(d.own).trim() === '';
             const rowHasWarn = isNameMissing || isOwnMissing;
+            const valStr = String(d.name||'').replace(/"/g,'&quot;');
             return `
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'dats', '${d.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'dats', '${d.code}')" style="cursor:grab;">
               <td style="${rowHasWarn ? 'background-color:#FFFBEA;' : ''}">${window.editableCode('dats', d, rowHasWarn)}</td>
-              <td style="${isNameMissing ? 'background-color:#FFFBEA;' : ''}">${d.name||'—'}${isNameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
+              <td style="${isNameMissing ? 'background-color:#FFFBEA;' : ''}"><div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${valStr}" title="${valStr}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('dats','${d.code}','name',this.value); window.stateChanged()" style="${isNameMissing?'background-color:#FFFBEA;':''}"><button class="btn-sm btn-o" onclick="window.openTm('dats','${d.code}','name','항목명')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${isNameMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</div></td>
               <td>${d.dtype||'—'}</td>
               <td>${d.src||'—'}</td>
               <td style="${isOwnMissing ? 'background-color:#FFFBEA;' : ''}">${window.pill(d.own)}${isOwnMissing ? '<span title="필수 입력 항목" style="color:#E24B4A;font-size:12px;margin-left:4px;cursor:help;">⚠️</span>' : ''}</td>
@@ -2269,9 +2384,9 @@ window.initOG = () => {
         
         tip.innerHTML = `
           <div style="margin-bottom:8px;"><span class="pill pt" style="background:#e2e8f0;color:#475569">${d.rtype}</span></div>
-          <div style="margin-bottom:4px;">📌 <strong>참조위치:</strong> ${clause}</div>
+          <div style="margin-bottom:4px;">📌 <strong>참조위치:</strong> ${clause.replace(/"/g,'&quot;')}</div>
           <div style="margin-bottom:4px;">⚡ <strong>중요도:</strong> ${relevance}</div>
-          <div style="color:gray;">📄 <strong>원문:</strong> "${verbatim}"</div>
+          <div style="color:gray;">📄 <strong>원문:</strong> "${verbatim.replace(/"/g,'&quot;')}"</div>
         `;
         tip.classList.add('on');
         const wr = document.getElementById('o-gwrap').getBoundingClientRect();
@@ -2296,7 +2411,7 @@ window.initOG = () => {
     
   nS.on('mouseenter', (e, d) => {
       const tip=document.getElementById('o-tip'); if(!tip) return;
-      tip.innerHTML=`<strong>${d.label}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
+      tip.innerHTML=`<strong>${String(d.label).replace(/"/g,'&quot;')}</strong><br><span style="color:var(--color-text-secondary)">${d.srcType}${d.dtype ? ' · ' + d.dtype : ''} · ${d.id}</span>`;
       tip.classList.add('on');
       const wr=document.getElementById('o-gwrap').getBoundingClientRect();
       tip.style.left=Math.min(e.clientX-wr.left+12,wr.width-200)+'px';
@@ -2333,7 +2448,7 @@ window.initOG = () => {
     .attr('fill', '#334155')
     .attr('pointer-events', 'none')
     .style('text-shadow', '0px 1px 2px #f8fafc, 0px -1px 2px #f8fafc, 1px 0px 2px #f8fafc, -1px 0px 2px #f8fafc')
-    .text(d => d.label.length > 12 ? d.label.substring(0, 12) + '...' : d.label);
+    .text(d => d.label.length > 12 ? String(d.label).substring(0, 12) + '...' : d.label);
   
   window.oSvg.on('click',()=>{S.ontoSel=null;window.renderOAb();window.oGMain.selectAll('.ong').select('circle').attr('stroke','#fff').attr('stroke-width',2);});
   
@@ -2361,27 +2476,35 @@ window.V.poc = () => {
             ${window.th('pocs', '코드', 'width:100px;min-width:100px;text-align:center;')}
             ${['연관과제','입력 명세','출력 명세','참조 DOC','프롬프트 초안','검증 로직·규칙','검증결과','이슈내용','담당자(자동)','예정일','상태'].map(h=>window.th('pocs', h)).join('')}
             <th style="width:30px"></th></tr></thead>
-          <tbody>${S.pocs.map(p=>`
+          <tbody>${S.pocs.map(p=>{
+            const val1 = String(p.inputSpec||'').replace(/"/g,'&quot;');
+            const val2 = String(p.outputSpec||'').replace(/"/g,'&quot;');
+            const val3 = String(p.promptDraft||'').replace(/"/g,'&quot;');
+            const val4 = String(p.logic||'').replace(/"/g,'&quot;');
+            const val5 = String(p.result||'').replace(/"/g,'&quot;');
+            const val6 = String(p.issue||'').replace(/"/g,'&quot;');
+            return `
             <tr draggable="true" ondragstart="window.rowDragStart(event, 'pocs', '${p.code}')" ondragover="event.preventDefault(); this.style.backgroundColor='#f1f5f9';" ondragleave="this.style.backgroundColor='';" ondrop="this.style.backgroundColor=''; window.rowDrop(event, 'pocs', '${p.code}')" style="cursor:grab;">
             <td>${window.editableCode('pocs', p)}</td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.inputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','inputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','inputSpec','입력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.outputSpec||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','outputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','outputSpec','출력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.tsk||''}" title="${p.tsk||''}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','tsk',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','tsk','TSK')" title="선택">🔍</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val1}" title="${val1}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','inputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','inputSpec','입력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val2}" title="${val2}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','outputSpec',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','outputSpec','출력 명세')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><div style="display:flex;gap:4px;align-items:center"><div class="code-list">${window.fmtCodeList(p.contextDocs)}</div><button class="btn-sm btn-o" onclick="window.openMs('pocs','${p.code}','contextDocs','DOC')" title="선택">🔍</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.promptDraft||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','promptDraft',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','promptDraft','프롬프트 초안')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.logic||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.result||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
-            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${p.issue||''}" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val3}" title="${val3}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','promptDraft',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','promptDraft','프롬프트 초안')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val4}" title="${val4}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','logic',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','logic','검증 로직·규칙')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val5}" title="${val5}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','result',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','result','검증결과')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
+            <td><div style="display:flex;gap:4px;align-items:center"><input type="text" value="${val6}" title="${val6}" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','issue',this.value); window.saveStateFn()"><button class="btn-sm btn-o" onclick="window.openTm('pocs','${p.code}','issue','이슈내용')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button></div></td>
             <td><span style="color:var(--color-text-secondary);font-size:12px">${p._owner||'—'}</span></td>
-            <td><input type="text" value="${p.date||''}" placeholder="YYYY-MM" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
+            <td><input type="text" value="${p.date||''}" title="${p.date||''}" placeholder="YYYY-MM" oninput="this.title=this.value" onchange="window.pushHistory(); window.upd('pocs','${p.code}','date',this.value); window.saveStateFn()" style="width:76px"></td>
             <td><select onchange="window.pushHistory(); window.upd('pocs','${p.code}','status',this.value); window.stateChanged()">${['미착수','진행중','완료','이슈'].map(s=>`<option${s===p.status?' selected':''}>${s}</option>`).join('')}</select></td>
             <td><button class="del-btn" onclick="window.pushHistory(); window.del('pocs','${p.code}'); window.stateChanged()">×</button></td>
-          </tr>`).join('') || `<tr><td colspan="13" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
+          </tr>`}).join('') || `<tr><td colspan="13" style="text-align:center;padding:15px;color:gray">데이터가 없습니다</td></tr>`}</tbody></table>
         </div>
       </div>
     </div>`;
     setTimeout(window.initResizers, 50);
 };
+
 window.addPoc = () => { window.pushHistory(); S.pocs.push({code:window.nc('pocs','POC'),tsk:'',logic:'',result:'',issue:'',owner:'',date:'',status:'미착수',note:'', inputSpec:'', outputSpec:'', contextDocs:'', promptDraft:'', _owner:'',_locked:false}); window.stateChanged(); };
 
 // ── TEAM ─────────────────────────────────────────────
