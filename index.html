@@ -692,7 +692,10 @@ window.th = (arrKey, label, defStyle='') => {
   const wKey = `${arrKey}_${label}`;
   const w = window.colWidths[wKey];
   const s = w ? `width:${w}px; min-width:${w}px;` : defStyle;
-  return `<th data-wkey="${wKey}" style="${s}">${label}</th>`;
+  const extra = label === '진행 상태(객체전환)'
+    ? ` <button onclick="document.getElementById('otype-help-modal').style.display='flex'" style="width:16px;height:16px;border-radius:50%;border:1px solid #94a3b8;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:700;cursor:pointer;padding:0;line-height:1;margin-left:4px;">?</button>`
+    : '';
+  return `<th data-wkey="${wKey}" style="${s}">${label}${extra}</th>`;
 };
 
 window.changeCode = (arrKey, oldCode, newCode, el) => {
