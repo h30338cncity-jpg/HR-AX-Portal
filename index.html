@@ -1255,7 +1255,7 @@ window.saveStateFn = () => {
 const titles = {
   home: '홈 대시보드',
   tasks: '업무 과제 관리',
-  docs: '표준문서 및 프로세 관리',
+  docs: '표준문서 및 프로세스 관리',
   data: '데이터셋 현황',
   onto: '온톨로지 맵 & 연결 표',
   poc: 'PoC 현황',
@@ -3094,14 +3094,26 @@ window.V.objrel = () => {
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <select id="objrel-src" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; min-width:160px;">
             <option value="">주어 객체 선택</option>
-            ${objs.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+            ${['객체','속성','기준값','프로세스'].map(type => {
+              const filtered = objs.filter(o => o.otype === type);
+              if(!filtered.length) return '';
+              return `<optgroup label="── ${type} ──">
+                ${filtered.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+              </optgroup>`;
+            }).join('')}
           </select>
           <select id="objrel-type" style="padding:8px; border:1px solid #534AB7; border-radius:6px; font-size:13px; outline:none; color:#3C3489; font-weight:700; min-width:150px;">
             ${relTypes.map(r => `<option value="${r}">${r}</option>`).join('')}
           </select>
           <select id="objrel-tgt" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; min-width:160px;">
             <option value="">대상 객체 선택</option>
-            ${objs.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+           ${['객체','속성','기준값','프로세스'].map(type => {
+              const filtered = objs.filter(o => o.otype === type);
+              if(!filtered.length) return '';
+              return `<optgroup label="── ${type} ──">
+                ${filtered.map(o => `<option value="${o.code}">[${o.code}] ${o.term}</option>`).join('')}
+              </optgroup>`;
+            }).join('')}
           </select>
           <button class="btn btn-g" onclick="window.addObjRelation()">+ 관계 추가</button>
         </div>
