@@ -625,7 +625,17 @@ window.nc = (arrKey, pfx) => {
 window.toast = m => { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300) };
 window.upd = (arrKey,code,f,v) => { const r=S[arrKey].find(r=>r.code===code); if(r) r[f]=v; };
 window.pct = (n,d) => d ? Math.round(n/d*100) : 0;
-window.pill = v => {
+window.otypeStyle = (v) => {
+  const m = {
+    '용어(대기중)': 'background:#F1F5F9;color:#64748b;border:1px solid #cbd5e1;',
+    '객체':         'background:#E1F5EE;color:#085041;border:1px solid #6ee7b7;',
+    '속성':         'background:#E6F1FB;color:#0C447C;border:1px solid #93c5fd;',
+    '기준값':       'background:#FAEEDA;color:#633806;border:1px solid #fcd34d;',
+    '프로세스':     'background:#EEEDFE;color:#3C3489;border:1px solid #a5b4fc;',
+  };
+  return m[v] || 'background:#F1F5F9;color:#64748b;border:1px solid #cbd5e1;';
+};
+  window.pill = v => {
   const m={'완료':'pd','진행중':'pp','검증중':'pp','미착수':'pt','이슈':'pw','최신':'pd','갱신필요':'pw','미확인':'pt','보유':'pd','일부보유':'pp','미보유':'pw','명문화됨':'pd','담당자재량':'pp','기준없음':'pt','가능':'pd','조건부가능':'pp','불가':'pw','일반':'pt','개인정보':'pw','민감정보':'pw'};
   return `<span class="pill ${m[v]||'pt'}">${v}</span>`;
 };
@@ -2084,10 +2094,16 @@ window.V.docs = (tab) => {
       }
       else if(c.ms?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openMs('${c.k}','${row.code}','${f}','${c.ms[f]}')" title="선택">🔍</button>${warn}</div>`;
       else if(c.sl?.[f]) {
-          // 상태(otype) 변경 셀에 색상 하이라이트 추가
-          const isObjTab = window.dtab === 'obj';
-          const selectBg = isObjTab ? 'background:#F0FDF4; border:1px solid #10B981; color:#047857;' : bg;
-          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${selectBg} border-radius:4px; padding:2px 4px;">${c.sl[f].map(o=>`<option value="${o}" ${o===row[f]?'selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
+          let selectStyle = bg;
+          if (f === 'otype') {
+              selectStyle = window.otypeStyle(row[f]) + 'border-radius:20px; padding:3px 8px; font-weight:700; font-size:11px; cursor:pointer; outline:none; appearance:none; text-align:center;';
+          } else if (window.dtab === 'obj') {
+              selectStyle = 'background:#F0FDF4; border:1px solid #10B981; color:#047857;';
+          }
+          const onchangeExtra = f === 'otype'
+              ? `this.style.cssText=window.otypeStyle(this.value)+'border-radius:20px;padding:3px 8px;font-weight:700;font-size:11px;cursor:pointer;outline:none;appearance:none;text-align:center;';`
+              : '';
+          inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><select onchange="${onchangeExtra}window.handleSelectChange('${c.k}','${row.code}','${f}',this.value, '${row[f]}')" style="${selectStyle} border-radius:${f==='otype'?'20px':'4px'}; padding:${f==='otype'?'3px 8px':'2px 4px'};">${c.sl[f].map(o=>`<option value="${o}" ${o===row[f]?'selected':''}>${o}</option>`).join('')}</select>${warn}</div>`;
       }
       else if(c.dl?.[f]) inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" list="${c.dl[f]}" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
       else inner = `<div style="display:flex;gap:4px;align-items:center;width:100%"><input type="text" value="${(row[f]||'').replace(/"/g,'&quot;')}" onchange="window.pushHistory(); window.upd('${c.k}','${row.code}','${f}',this.value); window.stateChanged()" style="${bg}" placeholder="${f==='sim'?'예: 본봉, 기본연봉':''}"><button class="btn-sm btn-o" onclick="window.openTm('${c.k}','${row.code}','${f}','${h}')" title="팝업 입력" style="padding:2px 4px;font-size:11px">⤢</button>${warn}</div>`;
